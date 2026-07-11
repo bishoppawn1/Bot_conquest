@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070b12" />
+    <title>Bot Conquest — Prototype World</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div class="brand"><span class="brand-mark">BC</span><div><strong>BOT CONQUEST</strong><small>PROTOTYPE WORLD // LOCAL GRID</small></div></div>
+        <div class="status"><span class="pulse"></span> LOCAL MAP LINK ACTIVE</div>
+      </header>
+      <section class="game-frame">
+        <canvas id="game" width="1280" height="720" aria-label="Bot Conquest game"></canvas>
+        <div id="start" class="start-card">
+          <span class="eyebrow">SYSTEM BOOT COMPLETE</span>
+          <h1>Enter the<br><em>machine.</em></h1>
+          <p>Explore a vast mechanical ruin, break salvage, gather charge, and repair damaged shells.</p>
+          <button id="play">ENTER MAP <span>↗</span></button>
+          <small>PRESS ENTER TO AWAKEN</small>
+        </div>
+        <div id="gameover" class="start-card hidden">
+          <span class="eyebrow danger">SIGNAL LOST</span>
+          <h1>Bot<br><em>destroyed.</em></h1>
+          <p>Your core ran out of spare shells. Reboot the map fragment and try again.</p>
+          <button id="retry">REBOOT <span>↻</span></button>
+        </div>
+      </section>
+      <footer>
+        <div class="control"><kbd>A</kbd><kbd>D</kbd><span>MOVE</span></div>
+        <div class="control"><kbd>W</kbd><span>JUMP</span></div>
+        <div class="control"><kbd>⇧</kbd><span>DASH [LOCKED]</span></div>
+        <div class="control"><kbd>S</kbd><span>AIM DOWN</span></div>
+        <div class="control"><kbd>SPACE</kbd><span>SLASH</span></div>
+        <div class="control"><kbd>E</kbd><span>HEAL</span></div>
+        <div class="control"><kbd>Q</kbd><span>FIELD [LOCKED]</span></div>
+        <div class="control"><kbd>F</kbd><span>VOLT JAB [LOCKED]</span></div>
+        <div class="control"><kbd>R</kbd><span>RESTART</span></div>
+      </footer>
+    </main>
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "bot-conquest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test",
+    "check": "node --check server.js && for file in src/*.js; do node --check \"$file\" || exit 1; done && npm test"
+  }
+}
