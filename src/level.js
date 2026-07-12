@@ -130,6 +130,41 @@ export const REST_AREA = {
   station:{x:7520,y:594,w:64,h:66,interactionRadius:115}
 };
 
+export const REGIONS = [
+  {id:'verge',name:'RUSTED VERGE',x:0,w:2360},
+  {id:'vault',name:'SUNKEN VAULT',x:2360,w:1190},
+  {id:'foundry',name:'EMBER FOUNDRY',x:3550,w:2340},
+  {id:'bastion',name:'CORE BASTION',x:5890,w:1460},
+  {id:'concourse',name:'RELAY CONCOURSE',x:7350,w:1050,merchantHub:true},
+  {id:'crown',name:'CROWNWORKS',x:8400,w:1200}
+];
+
+// Region gates are readable non-blocking thresholds. Crossing one changes the
+// current region and triggers the temporary HUD title.
+export const REGION_GATES = [
+  {x:2372,y:510,w:72,h:170,from:'verge',to:'vault'},
+  {x:3562,y:440,w:72,h:170,from:'vault',to:'foundry'},
+  {x:5902,y:350,w:72,h:250,from:'foundry',to:'bastion'},
+  {x:7362,y:490,w:72,h:170,from:'bastion',to:'concourse'},
+  {x:8412,y:420,w:72,h:170,from:'concourse',to:'crown'}
+];
+
+// Pickups share one data shape so future movement, combat, and shell pickups
+// can use the same contact collection flow.
+export const PICKUP_SPAWNS = [
+  {id:'vault-core',kind:'ability',ability:'vault',x:7448,y:608,w:24,h:24,requiresBossClear:true}
+];
+
+// Merchants are presentation-only until the trading system is designed. Most
+// live in the concourse, while a few remain scattered through other regions.
+export const MERCHANT_SPAWNS = [
+  {id:'merchant-parts',x:8080,y:606,w:38,h:54,region:'concourse',hub:true,color:'#75f5ff'},
+  {id:'merchant-shells',x:8170,y:606,w:38,h:54,region:'concourse',hub:true,color:'#d6ff3f'},
+  {id:'merchant-salvage',x:8260,y:606,w:38,h:54,region:'concourse',hub:true,color:'#ffb85c'},
+  {id:'merchant-verge',x:2180,y:566,w:38,h:54,region:'verge',hub:false,color:'#75f5ff'},
+  {id:'merchant-foundry',x:4780,y:556,w:38,h:54,region:'foundry',hub:false,color:'#ffb85c'}
+];
+
 export const RECESSES = [
   {x:110,y:-120,w:980,h:780,floorY:660,ceilingY:-120,openSide:'right'},
   {x:1340,y:-800,w:780,h:1420,floorY:620,ceilingY:-800,openSide:'left'},

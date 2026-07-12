@@ -14,7 +14,8 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Aim is cardinal. `A`/`D` aim left/right while moving, `W` aims up while jumping, and `S` aims down. The last aim direction persists.
 - `Space` performs an instantaneous 105-unit directional slash locked to the current aim. Damage resolves across the full area on the press frame only. Its visual is a brief, static white forward slash—no extension, retraction, arrow, pointer, or circular arc.
 - New runs start with the basic jump, slash, and repair. `E` repairs one missing shell when the bot has at least 30 electricity.
-- Double jump, dash, wall movement, electric field, and electric jab remain implemented but locked for later pickups. Use `game.unlockAbility(name)` when progression grants one.
+- Vault, double jump, dash, wall movement, electric field, and electric jab remain implemented but locked for pickups. Use `game.unlockAbility(name)` when progression grants one.
+- The post-boss `vault-core` is the first generic contact pickup. It appears only after the boss is cleared; touching it unlocks `vault`. Holding jump while running into a reachable low obstacle then hops the bot onto it.
 - Once unlocked, `Q` creates the circular field, `F` uses electric jab, and `Shift` dashes.
 - There is no restart key or persistent restart control. A destroyed run may still use the game-over reboot button.
 - After the boss is cleared, `O` interacts with the recovery station. Resting restores all three shells and moves the spike-reset checkpoint beside the station.
@@ -60,6 +61,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Do not describe content as numbered sectors, stages, or levels.
 - Do not add linear completion screens or traversal-percentage HUD elements.
 - Do not render area-name text, directional captions, or text-box-like room labels directly into the world.
+- Region names are the sole exception: crossing a `REGION_GATES` threshold shows the destination name temporarily in the bottom-left HUD. Never leave region-name text permanently in the world.
 - Favor loops, alternate entrances, optional rooms, hidden caches, and ability-gated shortcuts as the map grows.
 - Never add a glowing finish gate or other terminal marker at a map boundary.
 - `FOUNDATION_BLOCKS` form the tested basic-jump lower network. Upward transitions may rise by at most 70 units and gaps may be no wider than 160 units. Simulation tests must physically cross every gap in both directions.
@@ -73,6 +75,9 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - `BRANCH_BLOCKS` contains twenty starting-kit exploration platforms across at least six chambers. They vary substantially in width and thickness and form broad leaps, return drops, combat perches, and cross-room choices—not staircases, serpentine chains, or isolated vertical ladders.
 - Every normal walkable surface must retain an exposed standing span at least 80 units wide. Simulation tests must physically traverse every intended connection and its safe return path.
 - Place ordinary encounters on upper platforms, lower platforms, and gated regions so exploration space is gameplay space rather than empty decoration.
+- `REGIONS` must cover the full world without gaps. `REGION_GATES` connects each neighboring pair as a visible, non-blocking threshold.
+- `MERCHANT_SPAWNS` is presentation-only until trading is designed. A strict majority belongs to the `concourse` merchant hub, with at least two merchants scattered in other regions.
+- `PICKUP_SPAWNS` is the shared data format for future ability, combat, and shell pickups. Boss or progression requirements belong in pickup data rather than renderer conditionals.
 - Ordinary junk must leave at least one bot-width bypass on its supporting platform. Only the explicitly ability-gated junk wall may seal an optional pocket.
 - True vertical walls use `kind: 'wall'` and the dedicated red-braced wall rendering. Do not render walls with the green top-edge treatment used by floors.
 - `RECESSES` contain no `label` field.
@@ -90,6 +95,14 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - The recovery station remains offline until `bossArena.cleared` is true.
 - Pressing `O` within the configured interaction radius restores the player to three lives, clears knockback/invulnerability motion, plays the recovery effect, and records the station-side checkpoint.
 - Resting does not refill electricity or unlock abilities.
+- The post-boss vault pickup may occupy the entrance side of this region. Merchant-hub NPCs remain beyond the configured `REST_AREA` boundary so the immediate recovery pocket stays calm.
+
+## Planned shell bodies
+
+- Shell swapping is a later system and is not implemented yet. Preserve room in player state and pickup design for visually distinct bodies.
+- The current design candidates are a tall/light shell with a jump bonus, a large/heavy shell with extra maximum health and slower movement, and a reach shell with an extended primary slash.
+- Each shell must change the rendered silhouette as well as gameplay statistics. Do not ship stat-only recolors.
+- Shell bonuses, drawbacks, acquisition, and swapping rules require a separate design pass before implementation.
 
 ## GitHub workflow
 

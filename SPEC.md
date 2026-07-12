@@ -20,6 +20,7 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 | Jump / aim up | `W` | Perform the starting basic jump and set upward aim |
 | Double jump | `W` in air | Locked at the beginning; available after its future pickup |
 | Wall movement | Hold/press `W` at wall | Locked at the beginning; available after its future pickup |
+| Vault | Hold `W` while running into a low obstacle | Locked initially; after the post-boss pickup, hop onto obstacles up to 115 units high |
 | Aim down | `S` | Set downward aim without moving |
 | Dash | `Shift` | Locked at the beginning; short horizontal burst after unlock |
 | Basic slash | `Space` | Instantly strike the full 105-unit area in the locked aim direction |
@@ -32,6 +33,22 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 There is no restart key or persistent restart control. The game-over screen may offer a reboot after the player loses all three shells.
 
 The basic slash supports left, right, up, and down. Its aim is captured when the attack begins. Pressing Space immediately evaluates the complete 105-unit directional hitbox once. Its only presentation is a 0.09-second straight white slash facing forward; it never extends, retracts, curves, or resembles a pointer.
+
+### Ability pickups
+
+Movement and combat upgrades use generic contact pickups. An available pickup is a small floating white square with a bright core, orbiting lines, motes, and a gentle bob. Moving the bot into it collects it immediately and permanently marks it collected for the run.
+
+The first pickup is the `vault-core` just beyond the boss. It does not appear until the Heavy Core is defeated. Collecting it unlocks vault: holding jump while running into a low obstacle up to 115 units high hops the bot onto its top. Future pickups use the same data and collection flow with their own progression requirements.
+
+### Planned shell bodies
+
+Shell swapping is planned but not implemented in this prototype. Shells will change both the bot silhouette and its statistics; they must not be simple recolors. Initial design directions are:
+
+- A tall, light shell with a stronger jump.
+- A large, heavy shell with substantially more maximum health but slower movement.
+- A reach-focused shell with a longer primary slash.
+
+Acquisition, inventory presentation, swapping locations, exact bonuses, and balance costs remain for a later design pass.
 
 ## Resource loop
 
@@ -81,16 +98,20 @@ Heavy overhead blocks frame eight large chambers. Twenty starting-kit platforms 
 
 The starting kit cannot reach the whole map. Twelve platforms form three substantial optional upper regions: upper assembly requires double jump, high foundry requires dash, and the relay crown requires wall movement. These regions contain combat and salvage while remaining outside the required route to the boss.
 
+Six named regions cover the current world and meet at five visible mechanical gates. The gates are non-blocking navigation thresholds rather than stage exits. Crossing a gate changes the current region and briefly displays its name in a bottom-left HUD panel; region names never remain as permanent world labels.
+
+The Relay Concourse is the merchant hub and contains a strict majority of the current merchant NPCs. Smaller merchants are scattered through the Rusted Verge and Ember Foundry. Merchants are visual placeholders until inventory, dialogue, pricing, and trading are designed.
+
 Enemies, junk, and secrets occupy the upper networks, the undercroft, and the ability-gated regions—not only the lower left-to-right floor. The map contains seven spike gaps, three exhaustible conduits, ten ordinary junk piles, one armored junk wall, one boss encounter, and two end alcoves.
 
 Solid rectangles never intersect: platform faces may touch but cannot overlap, bury one another, or contain a placed enemy, conduit, or junk pile. Every intended starting-kit connection has a simulated safe traversal or return drop. Ordinary junk always leaves at least one bot-width bypass, eliminating narrow obstacle pockets that can strand the player.
 
-The world contains no embedded area-name captions, directional labels, or text-box-like room names. Visual depth comes from three parallax structure layers, deep unlabeled recesses, and massive blocks with beveled top and side faces. True walls use red vertical bracing, dark center rails, repeated chevrons, and no green floor edge, so their collision role is immediately readable. The HUD shows coordinates, lives, electricity, scrap, and the available starting kit without naming map regions.
+The world contains no permanent embedded area-name captions, directional labels, or text-box-like room names. Visual depth comes from three parallax structure layers, deep unlabeled recesses, and massive blocks with beveled top and side faces. True walls use red vertical bracing, dark center rails, repeated chevrons, and no green floor edge, so their collision role is immediately readable. The HUD shows coordinates, lives, electricity, scrap, the available starting kit, and only the temporary region-entry title.
 
 ## Quality requirements
 
 - Gameplay rules stay deterministic apart from cosmetic particles and leg placement.
 - Rendering, input, level data, geometry, and simulation remain separate modules.
-- Automated tests cover starting locks, absent restart input, starting repair, reserved inventory input, post-boss rest, recovery checkpoints, post-unlock abilities, camera bounds, junk destruction, conduit depletion, four-direction melee combat, resources, life loss, enemy behavior, boss gates, all three boss attacks, boss rewards, simulated two-way room connections, the directed undercroft loop, and valid surface contact.
-- Level-data tests enforce world dimensions, varied 40–60-unit suspended-platform thickness, massive foundation framing, zero solid intersections, object clearance, jump-safe lower gaps, safe undercroft openings, bot-sized headroom, junk bypasses, dedicated wall geometry, enemy distribution above and below the main floor, framed unlabeled recesses, and three substantial ability-gated regions.
+- Automated tests cover starting locks, absent restart input, starting repair, reserved inventory input, post-boss rest, recovery checkpoints, the boss-gated vault pickup, vault movement, region-entry titles, post-unlock abilities, camera bounds, junk destruction, conduit depletion, four-direction melee combat, resources, life loss, enemy behavior, boss gates, all three boss attacks, boss rewards, simulated two-way room connections, the directed undercroft loop, and valid surface contact.
+- Level-data tests enforce world dimensions, varied 40–60-unit suspended-platform thickness, massive foundation framing, zero solid intersections, object clearance, jump-safe lower gaps, safe undercroft openings, bot-sized headroom, junk bypasses, dedicated wall geometry, enemy distribution above and below the main floor, contiguous named regions, matching region gates, merchant-hub distribution, generic pickup data, framed unlabeled recesses, and three substantial ability-gated regions.
 - The browser console has no errors during the start and play states.

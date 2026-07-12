@@ -61,8 +61,11 @@ export class Renderer {
     for(const recess of game.recesses)this.drawRecess(recess);
     for(const trap of game.traps){for(let x=trap.x;x<trap.x+trap.w;x+=20)this.polygon([[x,trap.y+20],[x+10,trap.y-5],[x+20,trap.y+20]],'#ff493f');ctx.fillStyle='#45191c';ctx.fillRect(trap.x,trap.y+20,trap.w,trap.h);}
     for(const platform of game.platforms)this.drawPlatform(platform);
+    for(const gate of game.regionGates)this.drawRegionGate(gate,game.time);
     this.drawBossArena(game);
     this.drawRestStation(game);
+    for(const merchant of game.merchants)this.drawMerchant(merchant,game.time);
+    for(const pickup of game.pickups)if(game.pickupAvailable(pickup))this.drawPickup(pickup,game.time);
     for(const pile of game.junkPiles)if(!pile.dead)this.drawJunkPile(pile);
     for(const conduit of game.conduits)this.drawConduit(conduit,game.time);
     for(const enemy of game.enemies)if(!enemy.dead)this.drawEnemy(enemy,game.time);
@@ -117,6 +120,7 @@ export class Renderer {
     ctx.fillStyle='#d6ff3f';ctx.fillRect(-8,-21,16,3);ctx.restore();
     if(player.healFlash>0)this.drawHeal(player);
     if(player.restFlash>0){ctx.save();ctx.strokeStyle='#d6ff3f';ctx.globalAlpha=player.restFlash;ctx.lineWidth=5;ctx.beginPath();ctx.arc(player.x+player.w/2,player.y+player.h/2,34+(1-player.restFlash)*45,0,Math.PI*2);ctx.stroke();ctx.restore();}
+    if(player.vaultFlash>0){ctx.save();ctx.strokeStyle='#ffffff';ctx.globalAlpha=player.vaultFlash*4;ctx.lineWidth=3;ctx.beginPath();ctx.arc(player.x+player.w/2,player.y+player.h,34,Math.PI,Math.PI*2);ctx.stroke();ctx.restore();}
     if(player.attackTime>0)this.drawPrimarySlash(player);
     if(player.specialTime>0){if(player.specialType==='field')this.drawElectricField(player);else this.drawElectricJab(player);}
   }
@@ -136,6 +140,18 @@ export class Renderer {
 
   drawWall(wall) {
     const {ctx}=this;ctx.save();ctx.fillStyle='#11191f';ctx.fillRect(wall.x,wall.y,wall.w,wall.h);ctx.fillStyle='#2c3a42';ctx.fillRect(wall.x+7,wall.y,wall.w-14,wall.h);ctx.strokeStyle='#ff765f';ctx.lineWidth=4;ctx.strokeRect(wall.x+3,wall.y+3,wall.w-6,wall.h-6);ctx.fillStyle='#0a1014';ctx.fillRect(wall.x+wall.w*.38,wall.y+10,wall.w*.24,wall.h-20);for(let y=wall.y+16;y<wall.y+wall.h-14;y+=28){ctx.fillStyle='#8b3e36';this.polygon([[wall.x+10,y],[wall.x+wall.w-10,y+8],[wall.x+wall.w-10,y+14],[wall.x+10,y+6]],ctx.fillStyle);ctx.fillStyle='#d6ff3f';ctx.beginPath();ctx.arc(wall.x+wall.w/2,y+20,2.5,0,Math.PI*2);ctx.fill();}ctx.restore();
+  }
+
+  drawRegionGate(gate,time) {
+    const {ctx}=this;ctx.save();ctx.globalAlpha=.72;ctx.fillStyle='#101820';ctx.fillRect(gate.x,gate.y,10,gate.h);ctx.fillRect(gate.x+gate.w-10,gate.y,10,gate.h);ctx.strokeStyle='#75f5ff';ctx.lineWidth=3;ctx.strokeRect(gate.x+2,gate.y+2,gate.w-4,gate.h-4);ctx.fillStyle='#263740';for(let y=gate.y+18;y<gate.y+gate.h-15;y+=28){ctx.fillRect(gate.x+10,y,gate.w-20,6);ctx.fillStyle=Math.sin(time*4+y*.08)>0?'#d6ff3f':'#3d555d';ctx.fillRect(gate.x+gate.w/2-3,y+1,6,4);ctx.fillStyle='#263740';}ctx.restore();
+  }
+
+  drawPickup(pickup,time) {
+    const {ctx}=this,cx=pickup.x+pickup.w/2,cy=pickup.y+pickup.h/2+Math.sin(time*4+pickup.x)*5;ctx.save();ctx.translate(cx,cy);ctx.rotate(time*.8);ctx.shadowBlur=24;ctx.shadowColor='#ffffff';ctx.fillStyle='#ffffff';ctx.fillRect(-pickup.w/2,-pickup.h/2,pickup.w,pickup.h);ctx.shadowBlur=0;ctx.strokeStyle='#9cefff';ctx.lineWidth=2;ctx.strokeRect(-pickup.w/2-3,-pickup.h/2-3,pickup.w+6,pickup.h+6);ctx.rotate(-time*1.7);ctx.globalAlpha=.75;ctx.beginPath();ctx.arc(0,0,24,0,Math.PI*1.3);ctx.stroke();ctx.beginPath();ctx.arc(0,0,34,Math.PI,Math.PI*2.3);ctx.stroke();for(let i=0;i<4;i++){const angle=time*2+i*Math.PI/2;ctx.fillStyle=i%2?'#ffffff':'#75f5ff';ctx.fillRect(Math.cos(angle)*30-2,Math.sin(angle)*30-2,4,4);}ctx.restore();
+  }
+
+  drawMerchant(merchant,time) {
+    const {ctx}=this;ctx.save();ctx.translate(merchant.x,merchant.y);ctx.fillStyle='#11191e';ctx.fillRect(2,18,merchant.w-4,merchant.h-18);ctx.fillStyle='#293940';ctx.fillRect(6,24,merchant.w-12,merchant.h-30);ctx.strokeStyle=merchant.color;ctx.lineWidth=3;ctx.strokeRect(3,19,merchant.w-6,merchant.h-21);ctx.fillStyle=merchant.color;ctx.fillRect(-4,10,merchant.w+8,9);ctx.fillStyle='#0a1014';ctx.fillRect(9,30,merchant.w-18,10);ctx.shadowBlur=10;ctx.shadowColor=merchant.color;ctx.fillStyle=merchant.color;ctx.beginPath();ctx.arc(merchant.w/2+Math.sin(time*2+merchant.x)*2,35,3,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#75878d';ctx.fillRect(8,merchant.h-3,8,3);ctx.fillRect(merchant.w-16,merchant.h-3,8,3);ctx.restore();
   }
 
   drawBossArena(game) {
@@ -191,5 +207,6 @@ export class Renderer {
     ctx.textAlign='right';ctx.fillStyle='#708086';ctx.font='9px Space Mono';ctx.fillText(`X ${Math.round(game.player.x).toString().padStart(4,'0')}  Y ${Math.round(game.player.y).toString().padStart(4,'0')}`,1238,42);ctx.fillStyle='#d6ff3f';ctx.fillText('LOCAL GRID // OPEN',1238,60);ctx.fillStyle='#657278';ctx.fillText('CORE KIT // JUMP + SLASH + HEAL',1238,82);ctx.textAlign='left';
     const boss=game.boss();if(game.bossArena.active&&boss&&!boss.dead){const width=480,ratio=Math.max(0,boss.health/boss.maxHealth),x=(VIEW_WIDTH-width)/2,y=25;ctx.fillStyle='rgba(7,11,16,.92)';ctx.fillRect(x-12,y-12,width+24,42);ctx.strokeStyle='#5a2e31';ctx.lineWidth=2;ctx.strokeRect(x-12,y-12,width+24,42);ctx.fillStyle='#242c32';ctx.fillRect(x,y,width,12);ctx.fillStyle='#ff493f';ctx.fillRect(x,y,width*ratio,12);ctx.fillStyle='#d4dcde';ctx.font='700 10px Space Mono';ctx.textAlign='center';ctx.fillText('HEAVY CORE',VIEW_WIDTH/2,y+27);ctx.textAlign='left';}
     if(game.canRest()){ctx.fillStyle='rgba(7,11,16,.9)';ctx.fillRect(475,632,330,42);ctx.strokeStyle='#d6ff3f';ctx.lineWidth=2;ctx.strokeRect(475,632,330,42);ctx.fillStyle='#d6ff3f';ctx.font='700 12px Space Mono';ctx.textAlign='center';ctx.fillText('O  //  REST AND RECOVER',640,658);ctx.textAlign='left';}
+    if(game.regionToastTime>0&&game.regionToast){const alpha=Math.min(1,game.regionToastTime*2,(2.4-game.regionToastTime)*5);ctx.save();ctx.globalAlpha=Math.max(0,alpha);ctx.fillStyle='rgba(7,11,16,.92)';ctx.fillRect(24,608,360,58);ctx.strokeStyle='#75f5ff';ctx.lineWidth=2;ctx.strokeRect(24,608,360,58);ctx.fillStyle='#71838a';ctx.font='9px Space Mono';ctx.fillText('REGION LINK // NEW LOCAL GRID',42,630);ctx.fillStyle='#ffffff';ctx.font='700 17px Space Mono';ctx.fillText(game.regionToast,42,654);ctx.restore();}
   }
 }

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {
   ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS,
   ENEMY_SPAWNS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
-  LOWER_BLOCKS, OVERHEAD_BLOCKS, PLATFORMS, POCKET_BLOCKS, RECESSES,
+  LOWER_BLOCKS, MERCHANT_SPAWNS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
+  PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_GATES, REGIONS,
   REST_AREA, TRAPS, WALL_BLOCKS, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
 } from '../src/level.js';
 
@@ -78,6 +79,32 @@ test('three substantial regions require later movement abilities',()=>{
   assert.ok(byId('assembly-cross').y-byId('double-entry').y>164,'double-jump entrance is reachable with the basic jump');
   assert.ok(horizontalGap(byId('foundry-high'),byId('dash-entry'))>300,'dash entrance is reachable with an ordinary leap');
   assert.ok(byId('relay-west').y-byId('wall-entry').y>200&&WALL_BLOCKS.some(wall=>wall.x+wall.w<=byId('wall-entry').x),'wall region lacks a real movement gate');
+});
+
+test('named regions are contiguous and connected by visible gates',()=>{
+  assert.equal(REGIONS[0].x,0);assert.equal(REGIONS.at(-1).x+REGIONS.at(-1).w,WORLD_WIDTH);
+  for(let index=1;index<REGIONS.length;index++)assert.equal(REGIONS[index-1].x+REGIONS[index-1].w,REGIONS[index].x);
+  assert.equal(REGION_GATES.length,REGIONS.length-1);
+  for(let index=0;index<REGION_GATES.length;index++){
+    assert.equal(REGION_GATES[index].from,REGIONS[index].id);
+    assert.equal(REGION_GATES[index].to,REGIONS[index+1].id);
+  }
+});
+
+test('the concourse is the merchant hub while scattered merchants remain',()=>{
+  const hub=REGIONS.find(region=>region.merchantHub);
+  const hubMerchants=MERCHANT_SPAWNS.filter(merchant=>merchant.region===hub.id&&merchant.hub);
+  assert.ok(hubMerchants.length>MERCHANT_SPAWNS.length/2);
+  assert.ok(MERCHANT_SPAWNS.filter(merchant=>!merchant.hub).length>=2);
+  assert.ok(new Set(MERCHANT_SPAWNS.map(merchant=>merchant.region)).size>=3);
+});
+
+test('the post-boss pickup uses the generic pickup format',()=>{
+  assert.equal(PICKUP_SPAWNS.length,1);
+  const pickup=PICKUP_SPAWNS[0];
+  assert.equal(pickup.kind,'ability');assert.equal(pickup.ability,'vault');assert.equal(pickup.requiresBossClear,true);
+  assert.ok(pickup.x>7190&&pickup.x<REST_AREA.x+REST_AREA.w);
+  assert.ok(PLATFORMS.every(block=>!intersects(pickup,block)));
 });
 
 test('the boss arena remains a large uncluttered chamber',()=>{

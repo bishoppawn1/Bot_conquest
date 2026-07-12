@@ -57,7 +57,7 @@ test('the starting kit cannot enter later-ability regions',()=>{
 });
 test('double jump works after its ability is unlocked',()=>{const g=new Game();tick(g,60);g.unlockAbility('doubleJump');press(g,'jump');assert.equal(g.player.jumps,1);press(g,'jump');assert.equal(g.player.jumps,0);});
 test('dash accelerates after its ability is unlocked',()=>{const g=new Game();tick(g,60);g.unlockAbility('dash');g.player.facing=-1;press(g,'dash');assert.ok(g.player.vx< -500);assert.ok(g.player.dashCooldown>0);});
-test('repair starts unlocked while traversal and special attacks stay locked',()=>{const g=new Game();assert.deepEqual(g.player.abilities,{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false});});
+test('repair starts unlocked while traversal and special attacks stay locked',()=>{const g=new Game();assert.deepEqual(g.player.abilities,{doubleJump:false,dash:false,wallClimb:false,vault:false,heal:true,field:false,electricJab:false});});
 test('space starts a slash in the direction the player aims',()=>{const g=new Game();tick(g,60);g.player.aimX=-1;g.player.aimY=0;press(g,'attack');assert.equal(g.player.attackId,1);assert.ok(g.player.attackTime>0);assert.ok(g.attackBox().x<g.player.x);});
 test('slash destroys a basic enemy in front of the player',()=>{const g=new Game();tick(g,60);const e=g.enemies[0];g.enemies=[e];e.x=g.player.x+g.player.w+8;e.y=g.player.y;press(g,'attack');assert.equal(e.dead,true);});
 test('slash does not damage an enemy behind the player',()=>{const g=new Game();tick(g,60);const e=g.enemies[0];g.enemies=[e];e.x=g.player.x-35;e.y=g.player.y;g.player.aimX=1;g.player.aimY=0;press(g,'attack');assert.equal(e.dead,false);assert.equal(e.health,1);});
