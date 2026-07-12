@@ -15,7 +15,8 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - `Space` performs an instantaneous 105-unit directional slash locked to the current aim. Damage resolves across the full area on the press frame only. Its visual is a brief, static white forward slash—no extension, retraction, arrow, pointer, or circular arc.
 - New runs start with the basic jump, slash, and repair. `E` repairs one missing shell when the bot has at least 30 electricity.
 - Double jump, dash, wall movement, electric field, and electric jab remain implemented but locked for later pickups. Use `game.unlockAbility(name)` when progression grants one.
-- Once unlocked, `Q` creates the circular field, `F` uses electric jab, and `Shift` dashes. `R` restarts.
+- Once unlocked, `Q` creates the circular field, `F` uses electric jab, and `Shift` dashes.
+- There is no restart key or persistent restart control. A destroyed run may still use the game-over reboot button.
 - After the boss is cleared, `O` interacts with the recovery station. Resting restores all three shells and moves the spike-reset checkpoint beside the station.
 - `I` is reserved for the future combined inventory/map interface. It must remain unbound and have no behavior until that system is designed.
 - The player starts with three lives and loses one to enemy contact, spikes, or falling.
@@ -61,22 +62,24 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Do not render area-name text, directional captions, or text-box-like room labels directly into the world.
 - Favor loops, alternate entrances, optional rooms, hidden caches, and ability-gated shortcuts as the map grows.
 - Never add a glowing finish gate or other terminal marker at a map boundary.
-- `FOUNDATION_BLOCKS` form the tested basic-jump lower network. Upward transitions may rise by at most 70 units. A gap paired with any upward transition may be no wider than 100 units; flat and downward transitions may be no wider than 160 units. Simulation tests must physically cross every gap in both directions.
-- `OVERHEAD_BLOCKS` and the first eight `RECESSES` form real hollow rooms: every recess must remain bounded by a spanning solid ceiling and foundation floor.
-- `POCKET_BLOCKS` frame two smaller playable alcoves at the extreme ends of the world, where their back walls cannot seal a through-route.
-- Normal collision geometry may never be thinner than 60 units. Favor blocks hundreds of units wide and 90+ units thick; a run of narrow ledges is a level-design regression.
+- `FOUNDATION_BLOCKS` form the tested basic-jump lower network. Upward transitions may rise by at most 70 units and gaps may be no wider than 160 units. Simulation tests must physically cross every gap in both directions.
+- Two safe 160-unit openings in the vault foundations lead to `LOWER_BLOCKS`. They contain no spikes and must form a recoverable undercroft loop with a separate entrance and exit.
+- `OVERHEAD_BLOCKS` and the first eight `RECESSES` form real hollow rooms. The vault recess intentionally has floor openings; all others retain continuous foundation framing.
+- `POCKET_BLOCKS` form the two end-alcove ceilings. `WALL_BLOCKS` contains their two back walls plus the relay-crown climbing wall.
+- Suspended platforms may be 40–60 units thick to preserve air and visibility beneath them. Foundations stay 120+ units thick and ceilings remain massive structural forms.
 - No two entries in `PLATFORMS` may geometrically overlap. Touching faces are allowed; intersecting rectangles, buried surfaces, and objects spawned inside solids are forbidden.
 - Every `INTERIOR_BLOCKS` obstacle is exactly 70 units high, sits flush on one foundation, and leaves at least 80 units of exposed recovery floor on both sides and between neighbors. Preserve these invariants to prevent one-way drops and softlocks.
-- `ABILITY_GATED_BLOCKS` contains exactly three small optional double-jump caches. Upgrade-gated geometry must never interrupt the main route or claim a large share of playable space.
-- `BRANCH_BLOCKS` contains normal-jump vertical routes across at least six chambers. Consecutive blocks meet through exposed side landings, rise in exact 140-unit steps, remain reversible with the 600-unit-per-second starting jump, and sit over a safe foundation. At least three routes must span 800 or more vertical units.
-- Never place a route block directly over its access block with less than the 36-unit player-body clearance. Every normal walkable surface must retain an exposed standing span at least 80 units wide. Simulation tests must physically land both short and long takeoffs across every branch connection.
+- `ABILITY_GATED_BLOCKS` contains twelve surfaces across three substantial optional regions: upper assembly (`doubleJump`), high foundry (`dash`), and relay crown (`wallClimb`). Their entrances must remain impossible with the starting jump while never interrupting the boss route.
+- `BRANCH_BLOCKS` contains twenty starting-kit exploration platforms across at least six chambers. They vary substantially in width and thickness and form broad leaps, return drops, combat perches, and cross-room choices—not staircases, serpentine chains, or isolated vertical ladders.
+- Every normal walkable surface must retain an exposed standing span at least 80 units wide. Simulation tests must physically traverse every intended connection and its safe return path.
+- Place ordinary encounters on upper platforms, lower platforms, and gated regions so exploration space is gameplay space rather than empty decoration.
 - Ordinary junk must leave at least one bot-width bypass on its supporting platform. Only the explicitly ability-gated junk wall may seal an optional pocket.
 - True vertical walls use `kind: 'wall'` and the dedicated red-braced wall rendering. Do not render walls with the green top-edge treatment used by floors.
 - `RECESSES` contain no `label` field.
 
 ## Boss arena
 
-- `BOSS_ARENA` is the open chamber on the sixth foundation. Keep its full 1,300-unit width clear of ordinary interior blocks, enemies, conduits, and junk.
+- `BOSS_ARENA` is the open chamber on the `boss-floor` foundation mass. Keep its full 1,300-unit width clear of ordinary interior blocks, enemies, conduits, and junk.
 - Crossing `triggerX` activates the encounter. Both animated gates descend from the ceiling, become solid player colliders, and remain closed while the boss lives.
 - The boss has 18 health and cycles deterministically through three moves: telegraphed horizontal charge, aerial slam with a ground shockwave, and a three-projectile volley.
 - Killing the boss awards 150 scrap, deletes its active hazards, marks the arena cleared, and retracts both gates. The boss never respawns during that run.
@@ -108,4 +111,6 @@ Use `http://127.0.0.1:4173/?debug=boss` for visual boss-arena QA. This query onl
 
 Use `http://127.0.0.1:4173/?debug=rest` for visual recovery-area QA. It previews the post-boss cleared state without changing default progression.
 
-Use `http://127.0.0.1:4173/?debug=vertical` for visual QA of the first tall assembly shaft. It only changes the preview spawn.
+Use `http://127.0.0.1:4173/?debug=explore` for visual QA of the assembly platform network and ability-gated upper space.
+
+Use `http://127.0.0.1:4173/?debug=lower` for visual QA of the vault undercroft.

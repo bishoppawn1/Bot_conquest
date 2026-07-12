@@ -8,11 +8,11 @@ const KEY_MAP = {
 };
 
 export const actionFor = event => KEY_MAP[event.code] ?? KEY_MAP[event.key];
+export const shouldBegin = (event,isPlaying) => event.code === 'Enter' && !isPlaying;
 
 export function bindInput({ getGame, isPlaying, begin }) {
   const keydown = event => {
-    if (event.code === 'Enter' && !isPlaying()) begin();
-    if (event.code === 'KeyR') begin();
+    if (shouldBegin(event,isPlaying())) begin();
     const action = actionFor(event);
     if (action) { getGame().setInput({ [action]: true }); event.preventDefault(); }
   };

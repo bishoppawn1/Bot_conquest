@@ -24,9 +24,13 @@ function begin() {
     game.player.x=game.restArea.station.x+game.restArea.station.w+40;
     game.player.y=game.restArea.floorY-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
-  } else if (debugSpawn === 'vertical') {
-    game.player.x=1500;
-    game.player.y=550-game.player.h;
+  } else if (debugSpawn === 'explore') {
+    game.player.x=1660;
+    game.player.y=140-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'lower') {
+    game.player.x=3020;
+    game.player.y=950-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   }
   playing = true;

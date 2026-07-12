@@ -4,7 +4,7 @@
 
 Bot Conquest takes place across one interconnected mechanical world. It is not divided into numbered sectors, discrete stages, or finish-line courses. Its spaces support exploration, backtracking, alternate routes, optional rooms, shortcuts, hidden caches, environmental storytelling, and small secrets.
 
-The current replacement fragment spans 9,600 horizontal units and 1,800 vertical units. It is not the complete map and has no region-clear state, glowing finish gate, or traversal-percentage objective.
+The current replacement fragment spans 9,600 horizontal units and 2,200 vertical units. It is not the complete map and has no region-clear state, glowing finish gate, or traversal-percentage objective.
 
 ## Player
 
@@ -28,7 +28,8 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 | Electric jab | `F` | Locked initially; spend 25 electricity after unlock |
 | Rest | `O` | After defeating the boss, interact near the recovery station to restore all shells and set a checkpoint |
 | Inventory / map | `I` | Reserved for a later system; deliberately does nothing now |
-| Restart | `R` | Return the current prototype map to its initial state |
+
+There is no restart key or persistent restart control. The game-over screen may offer a reboot after the player loses all three shells.
 
 The basic slash supports left, right, up, and down. Its aim is captured when the attack begins. Pressing Space immediately evaluates the complete 105-unit directional hitbox once. Its only presentation is a 0.09-second straight white slash facing forward; it never extends, retracts, curves, or resembles a pointer.
 
@@ -38,7 +39,7 @@ Enemies award scrap when killed: crawler 6, roller 8, hopper 10, drone 12, and b
 
 The player has an electricity meter capped at 100. A standard slash against an enemy adds 12 electricity. Three conduits each contain 24 electricity, yield 4 per slash, and stay permanently empty after six successful harvests. A target hit by a special attack returns 4 electricity.
 
-Nine ordinary junk piles have 5–6 health and burst into configured scrap payouts when destroyed. A tenth, 90-unit-tall VOLT-sealed junk wall has minimum damage 2 and requires the future electric jab. Hitting junk does not generate electricity.
+Ten ordinary junk piles have configured health and burst into scrap payouts when destroyed. An additional 90-unit-tall VOLT-sealed junk wall has minimum damage 2 and requires the future electric jab. Hitting junk does not generate electricity.
 
 The electric field lasts 0.9 seconds and uses a true 112-unit-radius circular collision test. The electric jab lasts 0.5 seconds, reaches 170 units in its locked direction, and deals two damage.
 
@@ -74,15 +75,15 @@ The foundation immediately beyond the boss arena is a calm recovery room with no
 
 ## Current map fragment
 
-The current map is a complete geometric reset and must not derive its layout from the discarded access-path prototype. It spans X 0–9,600 and Y -1,000–800. Eight enormous foundations form a rolling lower traversal network. Every lower-route upward change is limited to 70 units. Upward hazard crossings are capped at 100 units wide, while flat and downward crossings may reach 160 units, leaving practical margin for the starting jump instead of requiring edge-perfect movement.
+The current map is a complete geometric reset and must not derive its layout from the discarded access-path prototype. It spans X 0–9,600 and Y -1,000–1,200. Ten foundation pieces form the lower traversal network. Two safe, spike-free openings in the vault floor lead into an undercroft below Y 800; separate entrance and exit platforms make it a recoverable loop instead of a one-way pit.
 
-Heavy overhead blocks pair with those foundations to create eight chambers, including three shafts that extend more than 1,200 units from floor to ceiling. Each recess is genuine negative space between a solid floor and ceiling. Two smaller playable alcoves are physically framed at the outer ends of the world, where they cannot block traversal. Nine interior blocks create cover and access steps; each is exactly 70 units high, sits flush on one foundation, and preserves at least 80 units of recovery floor on both sides. No ordinary collision block is thinner than 60 units.
+Heavy overhead blocks frame eight large chambers. Twenty starting-kit platforms are scattered across six of them as broad leaps, return drops, combat perches, and alternate crossings. They are not a staircase or serpentine chain. Their widths vary from 150 to 380 units and their thicknesses vary from 40 to 60 units, creating substantially more readable air beneath them. Massive foundations remain at least 120 units thick.
 
-Twenty-nine normal-jump branch blocks form six vertical routes. The assembly, foundry, and relay shafts each climb 840 units through reversible side landings; three shorter stacks provide additional upper spaces. Consecutive surfaces rise exactly 140 units and are tuned for the more forgiving 600-unit-per-second starting jump. They meet at exposed edges rather than forming sealed slots. Every normal surface retains at least 80 units of standing room for the 50 × 36 bot, and each route stays above a safe foundation.
+The starting kit cannot reach the whole map. Twelve platforms form three substantial optional upper regions: upper assembly requires double jump, high foundry requires dash, and the relay crown requires wall movement. These regions contain combat and salvage while remaining outside the required route to the boss.
 
-Only three small optional cache shelves require double jump; together they occupy less than 15% of the lower foundation width and never gate forward traversal. The map contains seven spike gaps, twenty-one ordinary combat encounters, one boss encounter, three exhaustible conduits, nine ordinary junk piles, and one armored junk wall.
+Enemies, junk, and secrets occupy the upper networks, the undercroft, and the ability-gated regions—not only the lower left-to-right floor. The map contains seven spike gaps, three exhaustible conduits, ten ordinary junk piles, one armored junk wall, one boss encounter, and two end alcoves.
 
-Solid rectangles never intersect: platform faces may touch but cannot overlap, bury one another, or contain a placed enemy, conduit, or junk pile. Lower transitions and all vertical-route steps are reversible with the basic jump. Ordinary junk always leaves at least one bot-width bypass, eliminating narrow obstacle pockets that can strand the player.
+Solid rectangles never intersect: platform faces may touch but cannot overlap, bury one another, or contain a placed enemy, conduit, or junk pile. Every intended starting-kit connection has a simulated safe traversal or return drop. Ordinary junk always leaves at least one bot-width bypass, eliminating narrow obstacle pockets that can strand the player.
 
 The world contains no embedded area-name captions, directional labels, or text-box-like room names. Visual depth comes from three parallax structure layers, deep unlabeled recesses, and massive blocks with beveled top and side faces. True walls use red vertical bracing, dark center rails, repeated chevrons, and no green floor edge, so their collision role is immediately readable. The HUD shows coordinates, lives, electricity, scrap, and the available starting kit without naming map regions.
 
@@ -90,6 +91,6 @@ The world contains no embedded area-name captions, directional labels, or text-b
 
 - Gameplay rules stay deterministic apart from cosmetic particles and leg placement.
 - Rendering, input, level data, geometry, and simulation remain separate modules.
-- Automated tests cover starting locks, starting repair, reserved inventory input, post-boss rest, recovery checkpoints, post-unlock abilities, camera bounds, junk destruction, conduit depletion, four-direction melee combat, resources, life loss, enemy behavior, boss gates, all three boss attacks, boss rewards, physically simulated two-way crossings for every lower gap, short and long takeoffs across every vertical-route connection, and valid surface contact.
-- Level-data tests enforce world dimensions, minimum 60-unit block thickness, zero solid intersections, object clearance, jump-safe lower gaps, reversible 70-unit vertical steps, bot-sized headroom, junk bypasses, dedicated wall geometry, recovery space around every interior obstacle, framed unlabeled recesses, and upper ability gates.
+- Automated tests cover starting locks, absent restart input, starting repair, reserved inventory input, post-boss rest, recovery checkpoints, post-unlock abilities, camera bounds, junk destruction, conduit depletion, four-direction melee combat, resources, life loss, enemy behavior, boss gates, all three boss attacks, boss rewards, simulated two-way room connections, the directed undercroft loop, and valid surface contact.
+- Level-data tests enforce world dimensions, varied 40–60-unit suspended-platform thickness, massive foundation framing, zero solid intersections, object clearance, jump-safe lower gaps, safe undercroft openings, bot-sized headroom, junk bypasses, dedicated wall geometry, enemy distribution above and below the main floor, framed unlabeled recesses, and three substantial ability-gated regions.
 - The browser console has no errors during the start and play states.
