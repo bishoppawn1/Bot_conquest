@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, ENEMY_SPAWNS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES, OVERHEAD_BLOCKS, PLATFORMS, POCKET_BLOCKS, RECESSES, REST_AREA, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from '../src/level.js';
+import { ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, ENEMY_SPAWNS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES, OVERHEAD_BLOCKS, PLATFORMS, POCKET_BLOCKS, RECESSES, REST_AREA, TRAPS, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from '../src/level.js';
 
 test('the replacement map is wide without reserving most of its height for locked routes',()=>{
   assert.equal(WORLD_WIDTH,9600);
-  assert.equal(WORLD_TOP,-600);
-  assert.equal(WORLD_HEIGHT,1400);
+  assert.equal(WORLD_TOP,-1000);
+  assert.equal(WORLD_HEIGHT,1800);
   assert.ok(PLATFORMS.some(block=>block.x+block.w===WORLD_WIDTH));
   assert.ok(ENEMY_SPAWNS.some(enemy=>enemy.x>9000));
 });
@@ -23,7 +23,9 @@ test('the lower foundation network is traversable with the basic jump',()=>{
     const rise=previous.y-next.y;
     const gap=next.x-(previous.x+previous.w);
     assert.ok(rise<=70,`foundation ${index} rises too high for the basic jump`);
-    assert.ok(gap<=160,`foundation gap ${index} is too wide`);
+    assert.ok(gap<=(rise>0?100:160),`foundation gap ${index} is too wide for its ${rise}-unit rise`);
+    assert.equal(TRAPS[index-1].x,previous.x+previous.w,`trap ${index-1} does not begin at the platform edge`);
+    assert.equal(TRAPS[index-1].w,gap,`trap ${index-1} does not exactly cover its gap`);
   }
 });
 
@@ -70,7 +72,7 @@ test('the boss arena is a large open chamber on the normal-jump route',()=>{
 });
 
 test('normal-jump branches add vertical loops above the main foundations',()=>{
-  assert.ok(BRANCH_BLOCKS.length>=12);
+  assert.ok(BRANCH_BLOCKS.length>=28);
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.branch)).size>=6);
   assert.ok(BRANCH_BLOCKS.every(block=>!block.requires));
   const horizontalGap=(first,second)=>Math.max(0,second.x-(first.x+first.w),first.x-(second.x+second.w));
@@ -78,8 +80,39 @@ test('normal-jump branches add vertical loops above the main foundations',()=>{
     const foundation=FOUNDATION_BLOCKS.find(floor=>block.x>=floor.x&&block.x+block.w<=floor.x+floor.w);
     assert.ok(foundation,`branch ${block.branch} is not above a safe foundation`);
     const candidates=block.step===0?INTERIOR_BLOCKS:BRANCH_BLOCKS.filter(candidate=>candidate.branch===block.branch&&candidate.step===block.step-1);
-    assert.ok(candidates.some(candidate=>candidate.y-block.y<=70&&candidate.y>=block.y&&horizontalGap(candidate,block)<=120),`branch ${block.branch} step ${block.step} is not reachable with the normal jump`);
+    assert.ok(candidates.some(candidate=>candidate.y-block.y===140&&horizontalGap(candidate,block)<=10),`branch ${block.branch} step ${block.step} lacks a reversible side landing`);
   }
+  const routes=[...new Set(BRANCH_BLOCKS.map(block=>block.branch))].map(name=>BRANCH_BLOCKS.filter(block=>block.branch===name));
+  assert.ok(routes.filter(route=>Math.max(...route.map(block=>block.y))-Math.min(...route.map(block=>block.y))>=800).length>=3,'the world needs several genuinely tall playable shafts');
+});
+
+test('walkable surfaces leave enough headroom for the bot instead of forming sealed slots',()=>{
+  const botWidth=50,botHeight=36;
+  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS]){
+    const blockers=PLATFORMS.filter(block=>block!==surface&&block.y<surface.y&&block.y+block.h>surface.y-botHeight)
+      .map(block=>[Math.max(surface.x,block.x),Math.min(surface.x+surface.w,block.x+block.w)])
+      .filter(([start,end])=>end>start)
+      .sort((a,b)=>a[0]-b[0]);
+    let cursor=surface.x,best=0;
+    for(const [start,end] of blockers){best=Math.max(best,start-cursor);cursor=Math.max(cursor,end);}
+    best=Math.max(best,surface.x+surface.w-cursor);
+    assert.ok(best>=botWidth+30,`${surface.kind} at ${surface.x},${surface.y} has no usable standing area`);
+  }
+});
+
+test('ordinary junk never seals the route supporting it',()=>{
+  for(const pile of JUNK_PILES.filter(pile=>!pile.gate)){
+    const support=PLATFORMS.find(block=>pile.x>=block.x&&pile.x+pile.w<=block.x+block.w&&pile.y+pile.h===block.y);
+    assert.ok(support,`junk at ${pile.x},${pile.y} has no supporting platform`);
+    const left=pile.x-support.x,right=support.x+support.w-(pile.x+pile.w);
+    assert.ok(Math.max(left,right)>=50,`junk at ${pile.x},${pile.y} blocks both sides of its route`);
+  }
+});
+
+test('true walls use dedicated wall geometry instead of floor styling',()=>{
+  const walls=POCKET_BLOCKS.filter(block=>block.kind==='wall');
+  assert.equal(walls.length,2);
+  assert.ok(walls.every(wall=>wall.h>=140&&wall.h>wall.w*2));
 });
 
 test('the post-boss rest area is an uncluttered recovery room',()=>{

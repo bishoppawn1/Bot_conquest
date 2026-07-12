@@ -1,6 +1,6 @@
 # Bot Conquest
 
-A dependency-free 2D canvas platformer prototype set in a growing interconnected world. Explore a 9,600-unit-wide mechanical ruin whose main route and vertical branch loops are traversable with the starting jump, with only three small optional caches reserved for later mobility. The world includes open chambers, patrol encounters, salvage pockets, breakable junk, exhaustible conduits, a locking three-move boss encounter, and a post-boss recovery room.
+A dependency-free 2D canvas platformer prototype set in a growing interconnected world. Explore a 9,600-unit-wide, 1,800-unit-tall mechanical ruin whose lower route and six reversible vertical branches are traversable with the starting jump, with only three small optional caches reserved for later mobility. The world includes three 840-unit playable shafts, shorter upper stacks, readable braced walls, patrol encounters, salvage pockets, breakable junk, exhaustible conduits, a locking three-move boss encounter, and a post-boss recovery room.
 
 ## Run
 
@@ -29,6 +29,6 @@ Open http://127.0.0.1:4173.
 npm test
 ```
 
-The suite checks movement, jumping, dashing, wall interaction, cardinal melee combat, resources, powered abilities, enemy damage, traps, lives, enemy variety, proximity aggro, edge avoidance, and surface queries.
+The suite checks movement, jumping, dashing, wall interaction, cardinal melee combat, resources, powered abilities, enemy damage, traps, lives, enemy variety, proximity aggro, edge avoidance, vertical-route reversibility, headroom, junk bypasses, and surface queries.
 
 See [SPEC.md](SPEC.md) for the current gameplay contract and [AGENTS.md](AGENTS.md) for contributor guidance and code ownership boundaries.

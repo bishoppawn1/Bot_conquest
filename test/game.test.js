@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/game.js';
+import { BRANCH_BLOCKS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS } from '../src/level.js';
+import { supportingPlatform } from '../src/geometry.js';
 
 const tick=(g,n=1)=>{for(let i=0;i<n;i++)g.update(1/60);};
 const press=(g,key)=>{g.setInput({[key]:true});tick(g);g.setInput({[key]:false});tick(g);};
@@ -9,6 +11,33 @@ test('player starts with three lives at the training spawn',()=>{const g=new Gam
 test('player body is wider than it is tall',()=>{const g=new Game();assert.ok(g.player.w>g.player.h);});
 test('A and D movement changes horizontal velocity and facing',()=>{const g=new Game();tick(g,30);g.setInput({right:true});tick(g,15);assert.ok(g.player.vx>0);assert.equal(g.player.facing,1);g.setInput({right:false,left:true});tick(g,30);assert.ok(g.player.vx<0);assert.equal(g.player.facing,-1);});
 test('player starts with one basic jump and no double jump',()=>{const g=new Game();tick(g,60);press(g,'jump');assert.equal(g.player.jumps,0);const vy=g.player.vy;press(g,'jump');assert.ok(g.player.vy>vy,'locked double jump must not reset upward velocity');});
+test('the starting jump physically clears every vertical-route connection',()=>{
+  const gap=(first,second)=>Math.max(0,second.x-(first.x+first.w),first.x-(second.x+second.w));
+  for(const next of BRANCH_BLOCKS)for(const takeoffDistance of[70,100]){
+    const previous=next.step===0?INTERIOR_BLOCKS.find(block=>block.y-next.y===140&&gap(block,next)<=10):BRANCH_BLOCKS.find(block=>block.branch===next.branch&&block.step===next.step-1);
+    const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];
+    const player=g.player,direction=Math.sign((next.x+next.w/2)-(previous.x+previous.w/2)),move=direction>0?'right':'left';
+    player.x=direction>0?next.x-player.w-takeoffDistance:next.x+next.w+takeoffDistance;
+    player.y=previous.y-player.h;player.vx=direction*250;player.vy=0;player.onGround=true;player.jumps=1;
+    g.setInput({[move]:true,jump:true});g.update(1/60);g.setInput({jump:false});
+    const target=g.platforms.find(block=>block.x===next.x&&block.y===next.y);let landed=false;
+    for(let frame=0;frame<120;frame++){g.update(1/60);if(supportingPlatform(player,g.platforms,3)===target){landed=true;break;}}
+    assert.ok(landed,`${next.branch} step ${next.step} failed from a ${takeoffDistance}-unit takeoff`);
+  }
+});
+test('every lower-route gap is physically jumpable in both directions',()=>{
+  for(let index=0;index<FOUNDATION_BLOCKS.length-1;index++)for(const direction of[1,-1]){
+    const source=direction>0?FOUNDATION_BLOCKS[index]:FOUNDATION_BLOCKS[index+1],target=direction>0?FOUNDATION_BLOCKS[index+1]:FOUNDATION_BLOCKS[index];
+    const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];
+    const player=g.player,move=direction>0?'right':'left';
+    player.x=direction>0?source.x+source.w-player.w-20:source.x+20;
+    player.y=source.y-player.h;player.vx=direction*250;player.vy=0;player.onGround=true;player.jumps=1;
+    g.setInput({[move]:true,jump:true});g.update(1/60);g.setInput({jump:false});
+    const destination=g.platforms.find(block=>block.x===target.x&&block.y===target.y);let landed=false;
+    for(let frame=0;frame<160;frame++){g.update(1/60);if(supportingPlatform(player,g.platforms,3)===destination){landed=true;break;}}
+    assert.ok(landed,`foundation transition ${index} failed moving ${direction>0?'right':'left'}`);
+  }
+});
 test('double jump works after its ability is unlocked',()=>{const g=new Game();tick(g,60);g.unlockAbility('doubleJump');press(g,'jump');assert.equal(g.player.jumps,1);press(g,'jump');assert.equal(g.player.jumps,0);});
 test('dash accelerates after its ability is unlocked',()=>{const g=new Game();tick(g,60);g.unlockAbility('dash');g.player.facing=-1;press(g,'dash');assert.ok(g.player.vx< -500);assert.ok(g.player.dashCooldown>0);});
 test('repair starts unlocked while traversal and special attacks stay locked',()=>{const g=new Game();assert.deepEqual(g.player.abilities,{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false});});
@@ -16,12 +45,12 @@ test('space starts a slash in the direction the player aims',()=>{const g=new Ga
 test('slash destroys a basic enemy in front of the player',()=>{const g=new Game();tick(g,60);const e=g.enemies[0];g.enemies=[e];e.x=g.player.x+g.player.w+8;e.y=g.player.y;press(g,'attack');assert.equal(e.dead,true);});
 test('slash does not damage an enemy behind the player',()=>{const g=new Game();tick(g,60);const e=g.enemies[0];g.enemies=[e];e.x=g.player.x-35;e.y=g.player.y;g.player.aimX=1;g.player.aimY=0;press(g,'attack');assert.equal(e.dead,false);assert.equal(e.health,1);});
 test('enemy collision costs one life and grants invulnerability',()=>{const g=new Game();tick(g,60);const e=g.enemies[0];e.x=g.player.x;e.y=g.player.y;tick(g);assert.equal(g.player.lives,2);assert.ok(g.player.invuln>0);tick(g,5);assert.equal(g.player.lives,2);});
-test('touching spikes costs one life and returns to the last safe platform',()=>{const g=new Game();g.enemies=[];tick(g,30);g.player.x=1400;g.player.y=584;g.player.vx=0;g.player.vy=0;tick(g);assert.deepEqual(g.safePosition,{x:1400,y:584});g.player.x=2230;g.player.y=710;g.player.vx=0;g.player.vy=0;tick(g);assert.equal(g.player.lives,2);assert.equal(g.player.x,1400);assert.equal(g.player.y,584);assert.ok(g.player.invuln>0);});
+test('touching spikes costs one life and returns to the last safe platform',()=>{const g=new Game();g.enemies=[];tick(g,30);g.player.x=1700;g.player.y=584;g.player.vx=0;g.player.vy=0;tick(g);assert.deepEqual(g.safePosition,{x:1700,y:584});g.player.x=2280;g.player.y=710;g.player.vx=0;g.player.vy=0;tick(g);assert.equal(g.player.lives,2);assert.equal(g.player.x,1700);assert.equal(g.player.y,584);assert.ok(g.player.invuln>0);});
 test('losing all lives ends the run',()=>{const g=new Game();g.player.lives=1;g.player.y=900;tick(g);assert.equal(g.player.lives,0);assert.equal(g.running,false);});
 test('wall contact permits a wall jump after wall movement is unlocked',()=>{const g=new Game();g.unlockAbility('wallClimb');g.player.x=380;g.player.y=610;g.player.vx=300;tick(g);assert.equal(g.player.onWall,1);press(g,'jump');assert.ok(g.player.vx<0);assert.ok(g.player.vy<0);});
 test('vertical camera follows the player into the upper world',()=>{const g=new Game();g.player.y=-1500;tick(g);assert.ok(g.cameraY<0);assert.ok(g.cameraY>=-1800);});
 test('enemy roster has varied movement archetypes and sizes',()=>{const g=new Game();assert.ok(new Set(g.enemies.map(e=>e.type)).size>=5);assert.ok(new Set(g.enemies.map(e=>`${e.w}x${e.h}`)).size>=5);});
-test('non-patrolling enemy remains idle until the nearby player shares its platform',()=>{const g=new Game();const e=g.enemy({type:'crawler',x:1080,y:620,w:30,h:40});g.enemies=[e];const startX=e.x;tick(g,90);assert.equal(e.active,false);assert.equal(e.x,startX);g.player.x=1040;g.player.y=624;tick(g);assert.equal(e.active,true);assert.ok(e.x<startX);});
+test('non-patrolling enemy remains idle until the nearby player shares its platform',()=>{const g=new Game();const e=g.enemy({type:'crawler',x:1120,y:620,w:30,h:40});g.enemies=[e];const startX=e.x;tick(g,90);assert.equal(e.active,false);assert.equal(e.x,startX);g.player.x=1080;g.player.y=624;tick(g);assert.equal(e.active,true);assert.ok(e.x<startX);});
 test('ground enemy does not detect or camp for a player across a spike gap',()=>{const g=new Game();const e=g.enemy({type:'roller',x:3560,y:575,w:34,h:35,patrol:true,patrolRange:70,patrolDirection:1});g.enemies=[e];tick(g,60);g.player.x=3370;g.player.y=644;tick(g,120);assert.equal(e.active,false);assert.ok(e.x>=3550,'enemy should remain on its own foundation instead of camping the gap');});
 test('selected ground enemies passively patrol within a leash',()=>{const g=new Game();const e=g.enemies.find(enemy=>enemy.patrol);g.enemies=[e];tick(g,60);const startX=e.x;tick(g,60);assert.equal(e.active,false);assert.notEqual(e.x,startX);assert.ok(Math.abs(e.x-e.originX)<=e.patrolRange+2);});
 test('enemy detection ranges are shorter and ground-specific',()=>{const g=new Game();const ground=g.enemies.filter(e=>e.type!=='drone');const drones=g.enemies.filter(e=>e.type==='drone');assert.ok(ground.every(e=>e.aggroRadius<=240));assert.ok(drones.every(e=>e.aggroRadius===340));});

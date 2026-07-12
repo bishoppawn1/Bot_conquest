@@ -3,6 +3,7 @@ import { ABILITY_COSTS, ATTACK_RANGE, ATTACK_TIMING, circleIntersectsRect, direc
 import { BOSS_ARENA, CONDUITS, ENEMY_SPAWNS, JUNK_PILES, PLATFORMS, RECESSES, REST_AREA, SPAWN, TRAPS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
 
 export { WORLD_WIDTH as WIDTH, WORLD_HEIGHT as HEIGHT } from './level.js';
+export const PLAYER_JUMP_SPEED = 600;
 
 export class Game {
   constructor() { this.reset(); }
@@ -33,8 +34,8 @@ export class Game {
     if(this.input.down){p.aimX=0;p.aimY=1;}else if(this.input.jump){p.aimX=0;p.aimY=-1;}else if(axis){p.facing=axis;p.aimX=axis;p.aimY=0;}
     if(this.pressed('dash')&&p.abilities.dash&&p.dashCooldown<=0){p.dashTime=.14;p.dashCooldown=.55;p.vx=p.facing*700;p.vy=0;this.burst(p.x+19,p.y+22,'#d6ff3f',10);}
     if(this.pressed('jump')){
-      if(p.onWall&&p.abilities.wallClimb){p.vx=-p.onWall*330;p.vy=-420;p.jumps=p.abilities.doubleJump?1:0;}
-      else if(p.jumps>0){p.vy=-430;p.jumps--;p.onGround=false;this.burst(p.x+19,p.y+40,'#d6ff3f',5);}
+      if(p.onWall&&p.abilities.wallClimb){p.vx=-p.onWall*330;p.vy=-PLAYER_JUMP_SPEED;p.jumps=p.abilities.doubleJump?1:0;}
+      else if(p.jumps>0){p.vy=-PLAYER_JUMP_SPEED;p.jumps--;p.onGround=false;this.burst(p.x+19,p.y+40,'#d6ff3f',5);}
     }
     if(this.pressed('attack')&&p.attackCooldown<=0)this.startAttack();
     if(this.pressed('heal'))this.tryHeal();

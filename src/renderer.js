@@ -130,7 +130,12 @@ export class Renderer {
   }
 
   drawPlatform(platform) {
+    if(platform.kind==='wall'){this.drawWall(platform);return;}
     const {ctx}=this,depth=platform.h>=90?18:12,accent=platform.requires?'#ff7b55':'#d6ff3f';ctx.fillStyle=platform.kind==='ceiling'?'#202d35':'#1a262e';ctx.fillRect(platform.x,platform.y,platform.w,platform.h);this.polygon([[platform.x,platform.y],[platform.x+depth,platform.y-depth],[platform.x+platform.w+depth,platform.y-depth],[platform.x+platform.w,platform.y]],platform.requires?'#49352f':'#43565e');this.polygon([[platform.x+platform.w,platform.y],[platform.x+platform.w+depth,platform.y-depth],[platform.x+platform.w+depth,platform.y+platform.h-depth],[platform.x+platform.w,platform.y+platform.h]],'#090f14');ctx.fillStyle=accent;ctx.fillRect(platform.x,platform.y,platform.w,3);if(platform.h>=60)for(let x=platform.x+24;x<platform.x+platform.w-24;x+=92){const panelY=platform.y+25;ctx.fillStyle='#10191e';ctx.fillRect(x,panelY,56,Math.min(18,platform.h-34));ctx.strokeStyle='#31434b';ctx.lineWidth=2;ctx.strokeRect(x+3,panelY+3,50,Math.min(12,platform.h-40));}if(platform.h>=140){ctx.fillStyle='#111a20';ctx.fillRect(platform.x+18,platform.y+platform.h-32,platform.w-36,12);ctx.fillStyle='#2c3b42';ctx.fillRect(platform.x+22,platform.y+platform.h-29,platform.w-44,3);}
+  }
+
+  drawWall(wall) {
+    const {ctx}=this;ctx.save();ctx.fillStyle='#11191f';ctx.fillRect(wall.x,wall.y,wall.w,wall.h);ctx.fillStyle='#2c3a42';ctx.fillRect(wall.x+7,wall.y,wall.w-14,wall.h);ctx.strokeStyle='#ff765f';ctx.lineWidth=4;ctx.strokeRect(wall.x+3,wall.y+3,wall.w-6,wall.h-6);ctx.fillStyle='#0a1014';ctx.fillRect(wall.x+wall.w*.38,wall.y+10,wall.w*.24,wall.h-20);for(let y=wall.y+16;y<wall.y+wall.h-14;y+=28){ctx.fillStyle='#8b3e36';this.polygon([[wall.x+10,y],[wall.x+wall.w-10,y+8],[wall.x+wall.w-10,y+14],[wall.x+10,y+6]],ctx.fillStyle);ctx.fillStyle='#d6ff3f';ctx.beginPath();ctx.arc(wall.x+wall.w/2,y+20,2.5,0,Math.PI*2);ctx.fill();}ctx.restore();
   }
 
   drawBossArena(game) {

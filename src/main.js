@@ -24,6 +24,10 @@ function begin() {
     game.player.x=game.restArea.station.x+game.restArea.station.w+40;
     game.player.y=game.restArea.floorY-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'vertical') {
+    game.player.x=1500;
+    game.player.y=550-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
   }
   playing = true;
   renderer.resetLegs();

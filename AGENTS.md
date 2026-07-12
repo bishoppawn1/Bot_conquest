@@ -61,14 +61,17 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Do not render area-name text, directional captions, or text-box-like room labels directly into the world.
 - Favor loops, alternate entrances, optional rooms, hidden caches, and ability-gated shortcuts as the map grows.
 - Never add a glowing finish gate or other terminal marker at a map boundary.
-- `FOUNDATION_BLOCKS` form the tested basic-jump lower network. Upward transitions may rise by at most 70 units and gaps may be no wider than 160 units.
+- `FOUNDATION_BLOCKS` form the tested basic-jump lower network. Upward transitions may rise by at most 70 units. A gap paired with any upward transition may be no wider than 100 units; flat and downward transitions may be no wider than 160 units. Simulation tests must physically cross every gap in both directions.
 - `OVERHEAD_BLOCKS` and the first eight `RECESSES` form real hollow rooms: every recess must remain bounded by a spanning solid ceiling and foundation floor.
 - `POCKET_BLOCKS` frame two smaller playable alcoves at the extreme ends of the world, where their back walls cannot seal a through-route.
 - Normal collision geometry may never be thinner than 60 units. Favor blocks hundreds of units wide and 90+ units thick; a run of narrow ledges is a level-design regression.
 - No two entries in `PLATFORMS` may geometrically overlap. Touching faces are allowed; intersecting rectangles, buried surfaces, and objects spawned inside solids are forbidden.
 - Every `INTERIOR_BLOCKS` obstacle is exactly 70 units high, sits flush on one foundation, and leaves at least 80 units of exposed recovery floor on both sides and between neighbors. Preserve these invariants to prevent one-way drops and softlocks.
 - `ABILITY_GATED_BLOCKS` contains exactly three small optional double-jump caches. Upgrade-gated geometry must never interrupt the main route or claim a large share of playable space.
-- `BRANCH_BLOCKS` contains normal-jump vertical loops across at least six chambers. Each branch must rise in steps of at most 70 units, sit over a safe foundation, and reconnect through a survivable drop.
+- `BRANCH_BLOCKS` contains normal-jump vertical routes across at least six chambers. Consecutive blocks meet through exposed side landings, rise in exact 140-unit steps, remain reversible with the 600-unit-per-second starting jump, and sit over a safe foundation. At least three routes must span 800 or more vertical units.
+- Never place a route block directly over its access block with less than the 36-unit player-body clearance. Every normal walkable surface must retain an exposed standing span at least 80 units wide. Simulation tests must physically land both short and long takeoffs across every branch connection.
+- Ordinary junk must leave at least one bot-width bypass on its supporting platform. Only the explicitly ability-gated junk wall may seal an optional pocket.
+- True vertical walls use `kind: 'wall'` and the dedicated red-braced wall rendering. Do not render walls with the green top-edge treatment used by floors.
 - `RECESSES` contain no `label` field.
 
 ## Boss arena
@@ -104,3 +107,5 @@ The development server runs at `http://127.0.0.1:4173`. Before handing off visua
 Use `http://127.0.0.1:4173/?debug=boss` for visual boss-arena QA. This query only changes the initial preview spawn; it must never affect the default URL or ordinary progression.
 
 Use `http://127.0.0.1:4173/?debug=rest` for visual recovery-area QA. It previews the post-boss cleared state without changing default progression.
+
+Use `http://127.0.0.1:4173/?debug=vertical` for visual QA of the first tall assembly shaft. It only changes the preview spawn.
