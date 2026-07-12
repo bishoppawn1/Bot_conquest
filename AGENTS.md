@@ -16,6 +16,8 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - New runs start with the basic jump, slash, and repair. `E` repairs one missing shell when the bot has at least 30 electricity.
 - Double jump, dash, wall movement, electric field, and electric jab remain implemented but locked for later pickups. Use `game.unlockAbility(name)` when progression grants one.
 - Once unlocked, `Q` creates the circular field, `F` uses electric jab, and `Shift` dashes. `R` restarts.
+- After the boss is cleared, `O` interacts with the recovery station. Resting restores all three shells and moves the spike-reset checkpoint beside the station.
+- `I` is reserved for the future combined inventory/map interface. It must remain unbound and have no behavior until that system is designed.
 - The player starts with three lives and loses one to enemy contact, spikes, or falling.
 - Touching a spike immediately removes one life and returns the bot to its last safe position on the most recently supported platform. It must not continue falling through the spike pit or return all the way to the initial spawn.
 
@@ -66,6 +68,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - No two entries in `PLATFORMS` may geometrically overlap. Touching faces are allowed; intersecting rectangles, buried surfaces, and objects spawned inside solids are forbidden.
 - Every `INTERIOR_BLOCKS` obstacle is exactly 70 units high, sits flush on one foundation, and leaves at least 80 units of exposed recovery floor on both sides and between neighbors. Preserve these invariants to prevent one-way drops and softlocks.
 - `ABILITY_GATED_BLOCKS` contains exactly three small optional double-jump caches. Upgrade-gated geometry must never interrupt the main route or claim a large share of playable space.
+- `BRANCH_BLOCKS` contains normal-jump vertical loops across at least six chambers. Each branch must rise in steps of at most 70 units, sit over a safe foundation, and reconnect through a survivable drop.
 - `RECESSES` contain no `label` field.
 
 ## Boss arena
@@ -74,6 +77,19 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Crossing `triggerX` activates the encounter. Both animated gates descend from the ceiling, become solid player colliders, and remain closed while the boss lives.
 - The boss has 18 health and cycles deterministically through three moves: telegraphed horizontal charge, aerial slam with a ground shockwave, and a three-projectile volley.
 - Killing the boss awards 150 scrap, deletes its active hazards, marks the arena cleared, and retracts both gates. The boss never respawns during that run.
+
+## Rest and recovery
+
+- `REST_AREA` occupies the foundation immediately after the boss arena. Keep its floor clear of ordinary enemies, conduits, junk, and interior obstacles.
+- The recovery station remains offline until `bossArena.cleared` is true.
+- Pressing `O` within the configured interaction radius restores the player to three lives, clears knockback/invulnerability motion, plays the recovery effect, and records the station-side checkpoint.
+- Resting does not refill electricity or unlock abilities.
+
+## GitHub workflow
+
+- After completing and verifying any code, content, test, specification, or documentation change, commit it and push the current branch to `origin` before the final response.
+- Never leave a completed requested change only in the local worktree. Confirm the pushed commit and clean tracking status after every iteration.
+- Do not overwrite unrelated remote work or force-push unless the user explicitly authorizes it.
 
 ## Commands
 
@@ -86,3 +102,5 @@ npm run check
 The development server runs at `http://127.0.0.1:4173`. Before handing off visual changes, run `npm run check` and inspect the game in a browser at both the start screen and during live play.
 
 Use `http://127.0.0.1:4173/?debug=boss` for visual boss-arena QA. This query only changes the initial preview spawn; it must never affect the default URL or ordinary progression.
+
+Use `http://127.0.0.1:4173/?debug=rest` for visual recovery-area QA. It previews the post-boss cleared state without changing default progression.

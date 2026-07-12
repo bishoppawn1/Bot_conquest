@@ -1,13 +1,13 @@
 const KEY_MAP = {
   KeyA:'left', KeyD:'right', KeyW:'jump', KeyS:'down',
   ShiftLeft:'dash', ShiftRight:'dash', Space:'attack',
-  KeyE:'heal', KeyQ:'field', KeyF:'electricJab',
+  KeyE:'heal', KeyQ:'field', KeyF:'electricJab', KeyO:'rest',
   a:'left', A:'left', d:'right', D:'right', w:'jump', W:'jump', s:'down', S:'down',
-  e:'heal', E:'heal', q:'field', Q:'field', f:'electricJab', F:'electricJab',
+  e:'heal', E:'heal', q:'field', Q:'field', f:'electricJab', F:'electricJab', o:'rest', O:'rest',
   Shift:'dash', ' ':'attack', SPACE:'attack'
 };
 
-const actionFor = event => KEY_MAP[event.code] ?? KEY_MAP[event.key];
+export const actionFor = event => KEY_MAP[event.code] ?? KEY_MAP[event.key];
 
 export function bindInput({ getGame, isPlaying, begin }) {
   const keydown = event => {

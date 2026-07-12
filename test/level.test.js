@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ABILITY_GATED_BLOCKS, BOSS_ARENA, CONDUITS, ENEMY_SPAWNS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES, OVERHEAD_BLOCKS, PLATFORMS, POCKET_BLOCKS, RECESSES, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from '../src/level.js';
+import { ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, ENEMY_SPAWNS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES, OVERHEAD_BLOCKS, PLATFORMS, POCKET_BLOCKS, RECESSES, REST_AREA, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from '../src/level.js';
 
 test('the replacement map is wide without reserving most of its height for locked routes',()=>{
   assert.equal(WORLD_WIDTH,9600);
@@ -69,6 +69,26 @@ test('the boss arena is a large open chamber on the normal-jump route',()=>{
   assert.equal(BOSS_ARENA.boss.y+BOSS_ARENA.boss.h,BOSS_ARENA.floorY);
 });
 
+test('normal-jump branches add vertical loops above the main foundations',()=>{
+  assert.ok(BRANCH_BLOCKS.length>=12);
+  assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.branch)).size>=6);
+  assert.ok(BRANCH_BLOCKS.every(block=>!block.requires));
+  const horizontalGap=(first,second)=>Math.max(0,second.x-(first.x+first.w),first.x-(second.x+second.w));
+  for(const block of BRANCH_BLOCKS){
+    const foundation=FOUNDATION_BLOCKS.find(floor=>block.x>=floor.x&&block.x+block.w<=floor.x+floor.w);
+    assert.ok(foundation,`branch ${block.branch} is not above a safe foundation`);
+    const candidates=block.step===0?INTERIOR_BLOCKS:BRANCH_BLOCKS.filter(candidate=>candidate.branch===block.branch&&candidate.step===block.step-1);
+    assert.ok(candidates.some(candidate=>candidate.y-block.y<=70&&candidate.y>=block.y&&horizontalGap(candidate,block)<=120),`branch ${block.branch} step ${block.step} is not reachable with the normal jump`);
+  }
+});
+
+test('the post-boss rest area is an uncluttered recovery room',()=>{
+  const centerInside=object=>object.x+object.w/2>REST_AREA.x&&object.x+object.w/2<REST_AREA.x+REST_AREA.w;
+  assert.equal(REST_AREA.station.y+REST_AREA.station.h,REST_AREA.floorY);
+  assert.ok(REST_AREA.station.interactionRadius>=100);
+  assert.ok([...ENEMY_SPAWNS,...CONDUITS,...JUNK_PILES].every(object=>!centerInside(object)));
+});
+
 test('solid blocks never intersect or bury another platform',()=>{
   const intersects=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
   for(let first=0;first<PLATFORMS.length;first++)for(let second=first+1;second<PLATFORMS.length;second++){
@@ -88,7 +108,7 @@ test('lower obstacles preserve reversible floor routes without softlock pockets'
 
 test('placed gameplay objects are not embedded inside solid geometry',()=>{
   const intersects=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
-  for(const object of [...ENEMY_SPAWNS,...CONDUITS,...JUNK_PILES,BOSS_ARENA.boss])assert.ok(PLATFORMS.every(block=>!intersects(object,block)),`object at ${object.x},${object.y} is embedded in a block`);
+  for(const object of [...ENEMY_SPAWNS,...CONDUITS,...JUNK_PILES,BOSS_ARENA.boss,REST_AREA.station])assert.ok(PLATFORMS.every(block=>!intersects(object,block)),`object at ${object.x},${object.y} is embedded in a block`);
 });
 
 test('the reset keeps the limited electricity economy',()=>{

@@ -26,6 +26,8 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 | Repair | `E` | Available from the start; spend 30 electricity to restore one missing shell |
 | Electric field | `Q` | Locked initially; spend 40 electricity after unlock |
 | Electric jab | `F` | Locked initially; spend 25 electricity after unlock |
+| Rest | `O` | After defeating the boss, interact near the recovery station to restore all shells and set a checkpoint |
+| Inventory / map | `I` | Reserved for a later system; deliberately does nothing now |
 | Restart | `R` | Return the current prototype map to its initial state |
 
 The basic slash supports left, right, up, and down. Its aim is captured when the attack begins. Pressing Space immediately evaluates the complete 105-unit directional hitbox once. Its only presentation is a 0.09-second straight white slash facing forward; it never extends, retracts, curves, or resembles a pointer.
@@ -66,11 +68,17 @@ The Heavy Core boss has 18 health and three deterministic attacks:
 
 The HUD displays the boss health bar throughout the encounter. Defeating the Heavy Core awards 150 scrap, removes remaining boss hazards, retracts both gates, and permanently clears the arena for the run.
 
+### Recovery room
+
+The foundation immediately beyond the boss arena is a calm recovery room with no ordinary enemies, junk, conduits, or floor obstacles. Its station powers on only after the Heavy Core is defeated. While within 115 units, the HUD displays the `O // REST AND RECOVER` prompt. Resting restores all three core shells, clears current knockback, plays a recovery pulse, and moves the spike-reset checkpoint beside the station. It does not refill electricity or unlock abilities.
+
 ## Current map fragment
 
 The current map is a complete geometric reset and must not derive its layout from the discarded access-path prototype. It spans X 0–9,600 and Y -600–800. Eight enormous foundations form a rolling lower traversal network, with every upward change limited to 70 units and every hazard gap limited to 160 units so the starting jump remains sufficient.
 
-Heavy overhead blocks pair with those foundations to create eight large lower chambers. Each recess is genuine negative space between a solid floor and ceiling. Two smaller playable alcoves are physically framed at the outer ends of the world, where they cannot block traversal. Fourteen interior blocks create cover and alternate elevations; each is exactly 70 units high, sits flush on one foundation, and preserves at least 80 units of recovery floor on both sides. No ordinary collision block is thinner than 60 units.
+Heavy overhead blocks pair with those foundations to create eight large lower chambers. Each recess is genuine negative space between a solid floor and ceiling. Two smaller playable alcoves are physically framed at the outer ends of the world, where they cannot block traversal. Ten interior blocks create cover and alternate elevations; each is exactly 70 units high, sits flush on one foundation, and preserves at least 80 units of recovery floor on both sides. No ordinary collision block is thinner than 60 units.
+
+Twelve additional normal-jump branch blocks form upper loops across six chambers. Their 70-unit rises let the player climb above the main route, see and drop back to platforms below, and choose alternate traversal lines without requiring an upgrade. Every branch remains over a safe foundation and reconnects through a non-fatal drop.
 
 Only three small optional cache shelves require double jump; together they occupy less than 15% of the lower foundation width and never gate forward traversal. The map contains seven spike gaps, twenty-one ordinary combat encounters, one boss encounter, three exhaustible conduits, nine ordinary junk piles, and one armored junk wall.
 
@@ -82,6 +90,6 @@ The world contains no embedded area-name captions, directional labels, or text-b
 
 - Gameplay rules stay deterministic apart from cosmetic particles and leg placement.
 - Rendering, input, level data, geometry, and simulation remain separate modules.
-- Automated tests cover starting locks, starting repair, post-unlock abilities, camera bounds, junk destruction, conduit depletion, four-direction melee combat, resources, life loss, enemy behavior, boss gates, all three boss attacks, boss rewards, and valid surface contact.
+- Automated tests cover starting locks, starting repair, reserved inventory input, post-boss rest, recovery checkpoints, post-unlock abilities, camera bounds, junk destruction, conduit depletion, four-direction melee combat, resources, life loss, enemy behavior, boss gates, all three boss attacks, boss rewards, branch reachability, and valid surface contact.
 - Level-data tests enforce world dimensions, minimum 60-unit block thickness, zero solid intersections, object clearance, reversible lower-route gaps, recovery space around every interior obstacle, framed unlabeled recesses, and upper ability gates.
 - The browser console has no errors during the start and play states.

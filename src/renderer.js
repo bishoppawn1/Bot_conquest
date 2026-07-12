@@ -62,6 +62,7 @@ export class Renderer {
     for(const trap of game.traps){for(let x=trap.x;x<trap.x+trap.w;x+=20)this.polygon([[x,trap.y+20],[x+10,trap.y-5],[x+20,trap.y+20]],'#ff493f');ctx.fillStyle='#45191c';ctx.fillRect(trap.x,trap.y+20,trap.w,trap.h);}
     for(const platform of game.platforms)this.drawPlatform(platform);
     this.drawBossArena(game);
+    this.drawRestStation(game);
     for(const pile of game.junkPiles)if(!pile.dead)this.drawJunkPile(pile);
     for(const conduit of game.conduits)this.drawConduit(conduit,game.time);
     for(const enemy of game.enemies)if(!enemy.dead)this.drawEnemy(enemy,game.time);
@@ -115,6 +116,7 @@ export class Renderer {
     ctx.save();ctx.rotate(Math.atan2(player.aimY,player.aimX));ctx.shadowBlur=10;ctx.shadowColor='#ff3434';ctx.fillStyle='#ff3d3d';ctx.beginPath();ctx.arc(12,-6,4,0,Math.PI*2);ctx.arc(19,0,2.5,0,Math.PI*2);ctx.arc(10,5,2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.restore();
     ctx.fillStyle='#d6ff3f';ctx.fillRect(-8,-21,16,3);ctx.restore();
     if(player.healFlash>0)this.drawHeal(player);
+    if(player.restFlash>0){ctx.save();ctx.strokeStyle='#d6ff3f';ctx.globalAlpha=player.restFlash;ctx.lineWidth=5;ctx.beginPath();ctx.arc(player.x+player.w/2,player.y+player.h/2,34+(1-player.restFlash)*45,0,Math.PI*2);ctx.stroke();ctx.restore();}
     if(player.attackTime>0)this.drawPrimarySlash(player);
     if(player.specialTime>0){if(player.specialType==='field')this.drawElectricField(player);else this.drawElectricJab(player);}
   }
@@ -136,6 +138,10 @@ export class Renderer {
     for(const gate of game.bossGates()){ctx.save();ctx.fillStyle='#283038';ctx.fillRect(gate.x,gate.y,gate.w,gate.h);ctx.fillStyle='#ff493f';ctx.fillRect(gate.x,gate.y,4,gate.h);ctx.fillRect(gate.x+gate.w-4,gate.y,4,gate.h);for(let y=gate.y+16;y<gate.y+gate.h;y+=28){ctx.fillStyle='#11181d';ctx.fillRect(gate.x+7,y,gate.w-14,10);ctx.fillStyle='#6d3535';ctx.fillRect(gate.x+9,y+2,gate.w-18,2);}ctx.restore();}
     for(const bolt of game.bossProjectiles){ctx.save();ctx.shadowBlur=18;ctx.shadowColor='#ff765f';ctx.fillStyle='#ff493f';ctx.beginPath();ctx.arc(bolt.x+bolt.w/2,bolt.y+bolt.h/2,bolt.w/2,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffd06a';ctx.lineWidth=2;ctx.stroke();ctx.restore();}
     if(game.bossShockwave){const wave=game.bossShockwave;ctx.save();ctx.strokeStyle='#ff765f';ctx.shadowBlur=18;ctx.shadowColor='#ff493f';ctx.lineWidth=7;ctx.globalAlpha=Math.min(1,wave.time/.25);ctx.beginPath();ctx.ellipse(wave.x,wave.y,wave.radius,18,0,Math.PI,Math.PI*2);ctx.stroke();ctx.restore();}
+  }
+
+  drawRestStation(game) {
+    const {ctx}=this,station=game.restArea.station,online=game.bossArena.cleared;ctx.save();ctx.translate(station.x,station.y);ctx.fillStyle='#151f25';ctx.fillRect(0,station.h-14,station.w,14);ctx.strokeStyle=online?'#d6ff3f':'#46555b';ctx.lineWidth=3;ctx.strokeRect(1,station.h-13,station.w-2,12);ctx.fillStyle='#26343b';ctx.beginPath();ctx.moveTo(8,station.h-14);ctx.lineTo(12,20);ctx.lineTo(28,5);ctx.lineTo(50,14);ctx.lineTo(56,station.h-14);ctx.closePath();ctx.fill();ctx.strokeStyle=online?'#75f5ff':'#526168';ctx.stroke();ctx.shadowBlur=online?16:0;ctx.shadowColor='#75f5ff';ctx.fillStyle=online?'#75f5ff':'#3d494e';ctx.beginPath();ctx.arc(32,25,8,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#0c1216';ctx.fillRect(17,42,30,8);ctx.fillStyle=online?'#d6ff3f':'#39454a';ctx.fillRect(20,44,24,4);ctx.restore();
   }
 
   drawElectricJab(player) {
@@ -179,5 +185,6 @@ export class Renderer {
     ctx.fillStyle='#263239';ctx.fillRect(140,67,190,7);ctx.fillStyle='#75f5ff';ctx.fillRect(140,67,190*(game.player.electricity/100),7);ctx.fillStyle='#aab8ba';ctx.fillText(`${Math.round(game.player.electricity)} / 100`,140,92);ctx.fillStyle='#d6ff3f';ctx.font='700 14px Space Mono';ctx.fillText(String(game.player.scrap).padStart(3,'0'),302,45);
     ctx.textAlign='right';ctx.fillStyle='#708086';ctx.font='9px Space Mono';ctx.fillText(`X ${Math.round(game.player.x).toString().padStart(4,'0')}  Y ${Math.round(game.player.y).toString().padStart(4,'0')}`,1238,42);ctx.fillStyle='#d6ff3f';ctx.fillText('LOCAL GRID // OPEN',1238,60);ctx.fillStyle='#657278';ctx.fillText('CORE KIT // JUMP + SLASH + HEAL',1238,82);ctx.textAlign='left';
     const boss=game.boss();if(game.bossArena.active&&boss&&!boss.dead){const width=480,ratio=Math.max(0,boss.health/boss.maxHealth),x=(VIEW_WIDTH-width)/2,y=25;ctx.fillStyle='rgba(7,11,16,.92)';ctx.fillRect(x-12,y-12,width+24,42);ctx.strokeStyle='#5a2e31';ctx.lineWidth=2;ctx.strokeRect(x-12,y-12,width+24,42);ctx.fillStyle='#242c32';ctx.fillRect(x,y,width,12);ctx.fillStyle='#ff493f';ctx.fillRect(x,y,width*ratio,12);ctx.fillStyle='#d4dcde';ctx.font='700 10px Space Mono';ctx.textAlign='center';ctx.fillText('HEAVY CORE',VIEW_WIDTH/2,y+27);ctx.textAlign='left';}
+    if(game.canRest()){ctx.fillStyle='rgba(7,11,16,.9)';ctx.fillRect(475,632,330,42);ctx.strokeStyle='#d6ff3f';ctx.lineWidth=2;ctx.strokeRect(475,632,330,42);ctx.fillStyle='#d6ff3f';ctx.font='700 12px Space Mono';ctx.textAlign='center';ctx.fillText('O  //  REST AND RECOVER',640,658);ctx.textAlign='left';}
   }
 }

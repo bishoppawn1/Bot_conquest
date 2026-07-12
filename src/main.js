@@ -18,6 +18,12 @@ function begin() {
     game.player.x=game.bossArena.triggerX+80;
     game.player.y=game.bossArena.floorY-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'rest') {
+    const boss=game.boss();boss.dead=true;boss.health=0;
+    game.bossArena.cleared=true;
+    game.player.x=game.restArea.station.x+game.restArea.station.w+40;
+    game.player.y=game.restArea.floorY-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
   }
   playing = true;
   renderer.resetLegs();

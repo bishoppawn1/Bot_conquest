@@ -1,6 +1,6 @@
 import { clamp, hasFloorAhead, overlaps, shareSupportingPlatform, supportingPlatform } from './geometry.js';
 import { ABILITY_COSTS, ATTACK_RANGE, ATTACK_TIMING, circleIntersectsRect, directionalBox, ELECTRICITY_MAX, ELECTRICITY_PER_HIT, fieldCircle, SCRAP_VALUES } from './combat.js';
-import { BOSS_ARENA, CONDUITS, ENEMY_SPAWNS, JUNK_PILES, PLATFORMS, RECESSES, SPAWN, TRAPS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
+import { BOSS_ARENA, CONDUITS, ENEMY_SPAWNS, JUNK_PILES, PLATFORMS, RECESSES, REST_AREA, SPAWN, TRAPS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
 
 export { WORLD_WIDTH as WIDTH, WORLD_HEIGHT as HEIGHT } from './level.js';
 
@@ -8,15 +8,16 @@ export class Game {
   constructor() { this.reset(); }
   reset() {
     this.time=0; this.running=true; this.cameraX=0; this.cameraY=0; this.shake=0;
-    this.input={left:false,right:false,jump:false,down:false,dash:false,attack:false,heal:false,field:false,electricJab:false};
+    this.input={left:false,right:false,jump:false,down:false,dash:false,attack:false,heal:false,field:false,electricJab:false,rest:false};
     this.prev={...this.input}; this.particles=[];this.bossProjectiles=[];this.bossShockwave=null;
     this.spawn={...SPAWN};
     this.safePosition={...this.spawn};
-    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:1,lives:3,scrap:0,electricity:0,abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healFlash:0};
+    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:1,lives:3,scrap:0,electricity:0,abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healFlash:0,restFlash:0};
     this.platforms=PLATFORMS.map(platform=>({...platform}));
     this.traps=TRAPS.map(trap=>({...trap}));
     this.recesses=RECESSES.map(recess=>({...recess}));
     this.bossArena={...BOSS_ARENA,boss:{...BOSS_ARENA.boss},active:false,cleared:false,gateProgress:0};
+    this.restArea={...REST_AREA,station:{...REST_AREA.station}};
     const boss=this.enemy(BOSS_ARENA.boss);Object.assign(boss,{isBoss:true,maxHealth:BOSS_ARENA.boss.health,bossMove:'dormant',bossTimer:0,bossMoveIndex:0});
     this.enemies=[...ENEMY_SPAWNS.map(spawn=>this.enemy(spawn)),boss];
     this.conduits=CONDUITS.map((conduit,index)=>({...conduit,kind:'conduit',id:`conduit-${index}`,maxCharge:conduit.charge,hitFlash:0}));
@@ -27,7 +28,7 @@ export class Game {
   pressed(key){return this.input[key]&&!this.prev[key];}
   update(dt=1/60){
     if(!this.running)return; dt=Math.min(dt,.034); this.time+=dt; const p=this.player;
-    p.invuln=Math.max(0,p.invuln-dt);p.dashCooldown=Math.max(0,p.dashCooldown-dt);p.attackCooldown=Math.max(0,p.attackCooldown-dt);p.attackTime=Math.max(0,p.attackTime-dt);p.specialTime=Math.max(0,p.specialTime-dt);p.healFlash=Math.max(0,p.healFlash-dt);for(const c of this.conduits)c.hitFlash=Math.max(0,c.hitFlash-dt);
+    p.invuln=Math.max(0,p.invuln-dt);p.dashCooldown=Math.max(0,p.dashCooldown-dt);p.attackCooldown=Math.max(0,p.attackCooldown-dt);p.attackTime=Math.max(0,p.attackTime-dt);p.specialTime=Math.max(0,p.specialTime-dt);p.healFlash=Math.max(0,p.healFlash-dt);p.restFlash=Math.max(0,p.restFlash-dt);for(const c of this.conduits)c.hitFlash=Math.max(0,c.hitFlash-dt);
     const axis=(this.input.right?1:0)-(this.input.left?1:0);
     if(this.input.down){p.aimX=0;p.aimY=1;}else if(this.input.jump){p.aimX=0;p.aimY=-1;}else if(axis){p.facing=axis;p.aimX=axis;p.aimY=0;}
     if(this.pressed('dash')&&p.abilities.dash&&p.dashCooldown<=0){p.dashTime=.14;p.dashCooldown=.55;p.vx=p.facing*700;p.vy=0;this.burst(p.x+19,p.y+22,'#d6ff3f',10);}
@@ -39,6 +40,7 @@ export class Game {
     if(this.pressed('heal'))this.tryHeal();
     if(this.pressed('field'))this.startSpecial('field');
     if(this.pressed('electricJab'))this.startSpecial('electricJab');
+    if(this.pressed('rest'))this.tryRest();
     if(p.dashTime>0)p.dashTime-=dt; else {const target=axis*250;p.vx+=(target-p.vx)*Math.min(1,(p.onGround?13:6)*dt);p.vy+=1100*dt;}
     this.moveActor(p,dt,true);
     this.rememberSafePlatform();
@@ -99,6 +101,8 @@ export class Game {
     p.electricity-=cost;p.specialAimX=p.aimX;p.specialAimY=p.aimY;p.specialType=type;p.specialTime=ATTACK_TIMING[type];p.specialHits=new Set();return true;
   }
   tryHeal(){const p=this.player;if(!p.abilities.heal||p.lives>=3||p.electricity<ABILITY_COSTS.heal)return false;p.electricity-=ABILITY_COSTS.heal;p.lives++;p.healFlash=.6;this.burst(p.x+p.w/2,p.y+p.h/2,'#75f5ff',24);return true;}
+  canRest(){const p=this.player,station=this.restArea.station,dx=(p.x+p.w/2)-(station.x+station.w/2),dy=(p.y+p.h/2)-(station.y+station.h/2);return this.bossArena.cleared&&Math.hypot(dx,dy)<=station.interactionRadius;}
+  tryRest(){if(!this.canRest())return false;const p=this.player,station=this.restArea.station;p.lives=3;p.invuln=0;p.vx=0;p.vy=0;p.restFlash=1;const checkpointX=clamp(station.x+station.w+24,this.restArea.x+16,this.restArea.x+this.restArea.w-p.w-16);this.safePosition={x:checkpointX,y:this.restArea.floorY-p.h};this.burst(station.x+station.w/2,station.y+station.h/2,'#d6ff3f',30);return true;}
   unlockAbility(name){if(name in this.player.abilities){this.player.abilities[name]=true;if(name==='doubleJump'&&this.player.onGround)this.player.jumps=2;return true;}return false;}
   gainElectricity(amount=ELECTRICITY_PER_HIT){this.player.electricity=clamp(this.player.electricity+amount,0,ELECTRICITY_MAX);}
   hitTarget(target,damage,hitSet,electricity=ELECTRICITY_PER_HIT){

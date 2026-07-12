@@ -41,9 +41,24 @@ export const INTERIOR_BLOCKS = [
   {x:3820,y:540,w:400,h:70,kind:'interior'},
   {x:4320,y:540,w:300,h:70,kind:'interior'},
   {x:5140,y:600,w:300,h:70,kind:'interior'},
-  {x:7540,y:590,w:330,h:70,kind:'interior'},
-  {x:7970,y:590,w:160,h:70,kind:'interior'},
   {x:8660,y:520,w:420,h:70,kind:'interior'}
+];
+
+// Optional loops that are entirely reachable with the starting jump. Each
+// rises in 70-unit steps and reconnects through a safe drop to its foundation.
+export const BRANCH_BLOCKS = [
+  {x:600,y:520,w:260,h:60,kind:'branch',branch:'west-loop',step:0},
+  {x:850,y:450,w:250,h:60,kind:'branch',branch:'west-loop',step:1},
+  {x:1500,y:480,w:230,h:60,kind:'branch',branch:'split-perches',step:0},
+  {x:2000,y:480,w:180,h:60,kind:'branch',branch:'split-perches',step:0},
+  {x:2800,y:540,w:260,h:60,kind:'branch',branch:'lower-vault-loop',step:0},
+  {x:3050,y:470,w:250,h:60,kind:'branch',branch:'lower-vault-loop',step:1},
+  {x:4050,y:470,w:250,h:60,kind:'branch',branch:'foundry-loop',step:0},
+  {x:4250,y:400,w:300,h:60,kind:'branch',branch:'foundry-loop',step:1},
+  {x:5200,y:530,w:240,h:60,kind:'branch',branch:'pre-arena-loop',step:0},
+  {x:5420,y:460,w:250,h:60,kind:'branch',branch:'pre-arena-loop',step:1},
+  {x:8500,y:450,w:260,h:60,kind:'branch',branch:'far-loop',step:0},
+  {x:8750,y:380,w:250,h:60,kind:'branch',branch:'far-loop',step:1}
 ];
 
 // Small alcoves exist only at the outer ends of the world, where their back
@@ -70,6 +85,11 @@ export const BOSS_ARENA = {
   boss:{type:'boss',x:6500,y:500,w:120,h:100,health:18}
 };
 
+export const REST_AREA = {
+  x:7420,y:450,w:650,h:210,floorY:660,
+  station:{x:7520,y:594,w:64,h:66,interactionRadius:115}
+};
+
 export const RECESSES = [
   {x:110,y:290,w:780,h:370,floorY:660,ceilingY:290,openSide:'right'},
   {x:1340,y:390,w:780,h:230,floorY:620,ceilingY:390,openSide:'left'},
@@ -87,6 +107,7 @@ export const PLATFORMS = [
   ...FOUNDATION_BLOCKS,
   ...OVERHEAD_BLOCKS,
   ...INTERIOR_BLOCKS,
+  ...BRANCH_BLOCKS,
   ...POCKET_BLOCKS,
   ...ABILITY_GATED_BLOCKS
 ];
@@ -114,28 +135,26 @@ export const ENEMY_SPAWNS = [
   {type:'drone',x:4140,y:410,w:42,h:30},
   {type:'roller',x:5000,y:642,w:46,h:28,patrol:true,patrolRange:70},
   {type:'hopper',x:5550,y:625,w:34,h:45},
-  {type:'roller',x:7420,y:632,w:46,h:28,patrol:true,patrolRange:65},
-  {type:'crawler',x:8040,y:550,w:30,h:40},
   {type:'hopper',x:8460,y:545,w:34,h:45},
   {type:'brute',x:9200,y:527,w:58,h:63},
-  {type:'drone',x:8830,y:390,w:42,h:30}
+  {type:'drone',x:9150,y:390,w:42,h:30}
 ];
 
 export const CONDUITS = [
   {x:330,y:608,w:28,h:52,charge:24,energyPerHit:4},
   {x:3990,y:488,w:28,h:52,charge:24,energyPerHit:4},
-  {x:7700,y:538,w:28,h:52,charge:24,energyPerHit:4}
+  {x:8500,y:538,w:28,h:52,charge:24,energyPerHit:4}
 ];
 
 export const JUNK_PILES = [
   {x:500,y:544,w:76,h:46,health:5,scrapValue:24},
-  {x:1560,y:504,w:82,h:46,health:5,scrapValue:26},
+  {x:1560,y:434,w:82,h:46,health:5,scrapValue:26},
   {x:2700,y:564,w:84,h:46,health:6,scrapValue:32},
   {x:3190,y:564,w:76,h:46,health:5,scrapValue:26},
   {x:3710,y:564,w:86,h:46,health:6,scrapValue:34},
-  {x:5200,y:554,w:80,h:46,health:5,scrapValue:28},
+  {x:5200,y:484,w:80,h:46,health:5,scrapValue:28},
   {x:8950,y:474,w:88,h:46,health:6,scrapValue:36},
-  {x:7600,y:544,w:78,h:46,health:5,scrapValue:28},
-  {x:8750,y:474,w:90,h:46,health:6,scrapValue:38},
+  {x:9100,y:544,w:78,h:46,health:5,scrapValue:28},
+  {x:8600,y:404,w:90,h:46,health:6,scrapValue:38},
   {x:9300,y:500,w:120,h:90,health:8,scrapValue:60,minimumDamage:2,gate:true}
 ];
