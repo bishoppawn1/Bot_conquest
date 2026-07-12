@@ -158,8 +158,15 @@ test('ordinary junk never seals the platform supporting it',()=>{
 });
 
 test('true walls use dedicated vertical geometry',()=>{
-  assert.equal(WALL_BLOCKS.length,3);
+  assert.equal(WALL_BLOCKS.length,5);
   assert.ok(WALL_BLOCKS.every(wall=>wall.kind==='wall'&&wall.h>=140&&wall.h>wall.w*2));
+});
+
+test('full-height bulkheads seal both approaches to the boss arena roof',()=>{
+  const left=WALL_BLOCKS.find(wall=>wall.id==='boss-roof-left'),right=WALL_BLOCKS.find(wall=>wall.id==='boss-roof-right');
+  assert.ok(left&&right);
+  assert.equal(left.x+left.w,BOSS_ARENA.x);assert.equal(right.x,BOSS_ARENA.x+BOSS_ARENA.w);
+  for(const guard of [left,right]){assert.equal(guard.y,WORLD_TOP);assert.equal(guard.y+guard.h,BOSS_ARENA.y);}
 });
 
 test('the post-boss rest area remains uncluttered',()=>{

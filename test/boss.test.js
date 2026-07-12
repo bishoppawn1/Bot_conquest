@@ -14,6 +14,11 @@ test('closed arena gates prevent the player from escaping',()=>{
   const game=new Game();game.bossArena.active=true;game.bossArena.gateProgress=1;const gate=game.bossGates()[0];game.player.x=gate.x+gate.w+10;game.player.y=game.bossArena.floorY-game.player.h;game.player.vx=-500;game.player.vy=0;game.moveActor(game.player,.1,true);assert.ok(game.player.x>=gate.x+gate.w);
 });
 
+test('standing above the arena cannot trigger gates and lock the player out',()=>{
+  const game=new Game(),arena=game.bossArena;game.player.x=arena.triggerX+20;game.player.y=arena.y-game.player.h-100;game.updateBossArena(1);
+  assert.equal(arena.active,false);assert.equal(arena.gateProgress,0);assert.equal(game.bossGates().length,0);
+});
+
 test('the boss cycles through charge, slam shockwave, and projectile volley',()=>{
   const game=new Game(),boss=game.boss();game.bossArena.active=true;boss.bossMove='idle';boss.bossTimer=0;game.player.x=6150;game.player.y=game.bossArena.floorY-game.player.h;const moves=new Set();let sawShockwave=false,maxProjectiles=0;
   for(let index=0;index<720;index++){game.updateBoss(boss,1/60);moves.add(boss.bossMove);sawShockwave||=Boolean(game.bossShockwave);maxProjectiles=Math.max(maxProjectiles,game.bossProjectiles.length);}

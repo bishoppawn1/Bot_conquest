@@ -101,8 +101,9 @@ export class Game {
   }
   updateBossArena(dt){
     const arena=this.bossArena,boss=this.boss();if(!arena||!boss)return;
-    const center=this.player.x+this.player.w/2;
-    if(!arena.active&&!arena.cleared&&center>=arena.triggerX&&center<arena.rightGateX){arena.active=true;boss.bossMove='idle';boss.bossTimer=.65;}
+    const center=this.player.x+this.player.w/2,centerY=this.player.y+this.player.h/2;
+    const insideChamber=centerY>=arena.y&&centerY<arena.floorY;
+    if(!arena.active&&!arena.cleared&&insideChamber&&center>=arena.triggerX&&center<arena.rightGateX){arena.active=true;boss.bossMove='idle';boss.bossTimer=.65;}
     const target=arena.active&&!arena.cleared?1:0;
     arena.gateProgress+=Math.sign(target-arena.gateProgress)*Math.min(Math.abs(target-arena.gateProgress),dt*3.4);
   }

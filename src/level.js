@@ -95,7 +95,9 @@ export const POCKET_BLOCKS = [
 export const WALL_BLOCKS = [
   {x:40,y:500,w:60,h:160,kind:'wall'},
   {x:9540,y:450,w:60,h:140,kind:'wall'},
-  {x:8340,y:-600,w:60,h:540,kind:'wall'}
+  {x:8340,y:-600,w:60,h:540,kind:'wall'},
+  {id:'boss-roof-left',x:5790,y:-1000,w:100,h:1350,kind:'wall'},
+  {id:'boss-roof-right',x:7190,y:-1000,w:160,h:1350,kind:'wall'}
 ];
 
 // Three substantial optional regions remain unreachable with the starting
