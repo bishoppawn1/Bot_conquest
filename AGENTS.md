@@ -97,7 +97,8 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Grand Exchange is the expansive region from X 12700–14500. Preserve broad floor space, multiple height layers, the far-corner Edge Forge door, and an enemy-free interaction pocket around that door.
 - `MERCHANT_SPAWNS` defines overworld doors, not exposed NPCs. Three cluster in the Relay Concourse and scattered doors appear elsewhere, including the Grand Exchange damage forge.
 - Merchant door rectangles must never overlap any solid platform or wall; the full doorway and its standing pocket must remain exposed.
-- Each door is either already in an enemy-free pocket or stays sealed until every ordinary enemy within its `clearRadius` is dead. Pressing `O` beneath an unlocked door teleports into the isolated `MERCHANT_ROOM`; its exit returns to the saved overworld position. Merchants may preview the titanium and uranium inventory, but material recipes remain undesigned.
+- Each door is either already in an enemy-free pocket or stays sealed until every ordinary enemy within its 210-unit circular `clearRadius` is dead. This check must use full two-dimensional distance from the door center; an enemy above, below, or elsewhere outside that small field must never lock the door. Pressing `O` beneath an unlocked door teleports into the isolated `MERCHANT_ROOM`; its exit returns to the saved overworld position. Merchants may preview the titanium and uranium inventory, but material recipes remain undesigned.
+- Pressing `O` near an interior merchant opens the large, simulation-pausing catalog instead of buying immediately. The catalog lists every configured offer, full effect, cost, and ownership/availability state. `W`/`S` select, `O` buys the selected available offer, and `I` closes without opening the normal inventory.
 - Merchant services are data-driven: `damageUpgrade` adds `+1` slash damage through four forge tiers; `healthUpgrade` adds one maximum shell through three tiers; `energyUpgrade` adds 25 maximum electricity through three tiers; `modifierShop` sells its configured reusable modifier stock; and `internalSlot` adds reduced-effect internal body bays through three tiers. All purchases persist for the run and appear in ITEMS.
 - `PICKUP_SPAWNS` is the shared data format for ability and map pickups and remains extensible to combat and shell pickups. It owns pickup color, name, input hint, tutorial copy, progression requirements, and map-region reveal data rather than placing those decisions in renderer conditionals.
 - Ordinary junk must leave at least one bot-width bypass on its supporting platform. Only the explicitly ability-gated junk wall may seal an optional pocket.
@@ -187,13 +188,13 @@ Use `http://127.0.0.1:4175/?debug=vault-upper` for the Wall-Climb loft, `http://
 
 Use `http://127.0.0.1:4175/?debug=merchant` to verify an unlocked merchant door and its separate interior.
 
-Use `http://127.0.0.1:4175/?debug=merchant-room` to inspect the modifier merchant interior directly. Add `&panel=health`, `&panel=energy`, or `&panel=internal` to inspect the other upgrade services.
+Use `http://127.0.0.1:4175/?debug=merchant-room` to inspect the full modifier catalog directly. Add `&panel=health`, `&panel=energy`, or `&panel=internal` to inspect the other merchant catalogs.
 
 Use `http://127.0.0.1:4175/?debug=wall` to verify continuous wall climbing and jumps away from either wall side.
 
 Use `http://127.0.0.1:4175/?debug=gauntlet` for the trap-heavy Shard Gauntlet and `http://127.0.0.1:4175/?debug=exchange` for the Grand Exchange damage forge.
 
-Use `http://127.0.0.1:4175/?debug=forge-room` for the Edge Forge purchase prompt and `http://127.0.0.1:4175/?debug=postboss` to inspect the opened roof after the Heavy Core bulkheads are destroyed.
+Use `http://127.0.0.1:4175/?debug=forge-room` for the full Edge Forge catalog and `http://127.0.0.1:4175/?debug=postboss` to inspect the opened roof after the Heavy Core bulkheads are destroyed.
 
 Use `http://127.0.0.1:4175/?debug=recovery` to inspect a rebuilt bot and its nearby scrap-bearing wreckage.
 

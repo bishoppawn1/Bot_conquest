@@ -278,12 +278,12 @@ export const BODY_MODIFIERS = Object.freeze([
 // Merchant terminals lead to one sealed, enemy-free interior. A terminal
 // remains locked until its explicitly local enemy group is defeated.
 export const MERCHANT_SPAWNS = [
-  {id:'merchant-parts',name:'PARTS BROKER',x:7800,y:540,w:80,h:120,region:'concourse',hub:true,color:'#75f5ff',clearRadius:260,service:'modifierShop',stock:['adaptive-lattice','dense-matrix']},
-  {id:'merchant-shells',name:'SHELL ARCHIVE',x:7930,y:540,w:80,h:120,region:'concourse',hub:true,color:'#d6ff3f',clearRadius:260,service:'healthUpgrade',upgradeCosts:HEALTH_UPGRADE_COSTS},
-  {id:'merchant-salvage',name:'CAPACITOR EXCHANGE',x:8060,y:540,w:80,h:120,region:'concourse',hub:true,color:'#ffb85c',clearRadius:260,service:'energyUpgrade',upgradeCosts:ENERGY_UPGRADE_COSTS},
-  {id:'merchant-verge',name:'VERGE TINKER',x:2160,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:260},
-  {id:'merchant-foundry',name:'INNER FOUNDRY',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:300,service:'internalSlot',upgradeCosts:INTERNAL_SLOT_COSTS},
-  {id:'merchant-forge',name:'EDGE FORGE',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:260,service:'damageUpgrade',upgradeCosts:FORGE_UPGRADE_COSTS}
+  {id:'merchant-parts',name:'PARTS BROKER',x:7800,y:540,w:80,h:120,region:'concourse',hub:true,color:'#75f5ff',clearRadius:210,service:'modifierShop',stock:['adaptive-lattice','dense-matrix']},
+  {id:'merchant-shells',name:'SHELL ARCHIVE',x:7930,y:540,w:80,h:120,region:'concourse',hub:true,color:'#d6ff3f',clearRadius:210,service:'healthUpgrade',upgradeCosts:HEALTH_UPGRADE_COSTS},
+  {id:'merchant-salvage',name:'CAPACITOR EXCHANGE',x:8060,y:540,w:80,h:120,region:'concourse',hub:true,color:'#ffb85c',clearRadius:210,service:'energyUpgrade',upgradeCosts:ENERGY_UPGRADE_COSTS},
+  {id:'merchant-verge',name:'VERGE TINKER',x:2160,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:210},
+  {id:'merchant-foundry',name:'INNER FOUNDRY',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:210,service:'internalSlot',upgradeCosts:INTERNAL_SLOT_COSTS},
+  {id:'merchant-forge',name:'EDGE FORGE',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:210,service:'damageUpgrade',upgradeCosts:FORGE_UPGRADE_COSTS}
 ];
 
 export const MERCHANT_ROOM = {

@@ -104,7 +104,7 @@ function begin() {
     const door=game.merchants.find(merchant=>merchant.id==='merchant-verge');
     game.player.x=door.x+15;
     game.player.y=door.y+door.h-game.player.h;
-    for(const enemy of game.enemies)if(!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isDepthBoss&&!enemy.isMiniBoss&&Math.abs(enemy.originX+enemy.w/2-(door.x+door.w/2))<=door.clearRadius)enemy.dead=true;
+    for(const enemy of game.enemies)if(!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isDepthBoss&&!enemy.isMiniBoss&&Math.hypot(enemy.originX+enemy.w/2-(door.x+door.w/2),enemy.originY+enemy.h/2-(door.y+door.h/2))<=door.clearRadius)enemy.dead=true;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'merchant-room') {
     const serviceIds={health:'merchant-shells',energy:'merchant-salvage',internal:'merchant-foundry',modifier:'merchant-parts'},merchantId=serviceIds[debugPanel]??'merchant-parts';game.merchantRoom.activeMerchant=game.merchants.find(merchant=>merchant.id===merchantId);
@@ -113,6 +113,7 @@ function begin() {
     game.player.y=game.merchantRoom.merchant.y;
     game.player.scrap=6000;
     game.safePosition={x:game.player.x,y:game.player.y};
+    game.openMerchantMenu(game.merchantRoom.activeMerchant);
   } else if (debugSpawn === 'wall') {
     game.unlockAbility('wallClimb');
     game.player.x=8290;
@@ -135,6 +136,7 @@ function begin() {
     game.player.y=game.merchantRoom.merchant.y;
     game.player.scrap=6000;
     game.safePosition={x:game.player.x,y:game.player.y};
+    game.openMerchantMenu(game.merchantRoom.activeMerchant);
   }
   playing = true;
   syncAbilityControls();
