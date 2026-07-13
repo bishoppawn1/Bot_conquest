@@ -86,6 +86,8 @@ test('three substantial regions require later movement abilities',()=>{
 });
 
 test('named regions are contiguous and connected by visible gates',()=>{
+  assert.equal(REGIONS.length,8);assert.equal(REGIONS.some(region=>region.id==='concourse'),false);
+  const bastion=REGIONS.find(region=>region.id==='bastion');assert.equal(bastion.x+bastion.w,8400);
   assert.equal(REGIONS[0].x,0);assert.equal(REGIONS.at(-1).x+REGIONS.at(-1).w,WORLD_WIDTH);
   for(let index=1;index<REGIONS.length;index++)assert.equal(REGIONS[index-1].x+REGIONS[index-1].w,REGIONS[index].x);
   assert.equal(REGION_GATES.length,REGIONS.length-1);
@@ -95,9 +97,9 @@ test('named regions are contiguous and connected by visible gates',()=>{
   }
 });
 
-test('major upgrade merchants are discoveries beyond the post-boss concourse',()=>{
+test('major upgrade merchants are discoveries beyond the merged Core Bastion',()=>{
   const discoveryIds=['merchant-parts','merchant-shells','merchant-salvage'],discoveries=discoveryIds.map(id=>MERCHANT_SPAWNS.find(merchant=>merchant.id===id));
-  assert.ok(discoveries.every(Boolean));assert.ok(discoveries.every(merchant=>merchant.region!=='concourse'&&!merchant.hub));
+  assert.ok(discoveries.every(Boolean));assert.ok(discoveries.every(merchant=>merchant.region!=='bastion'&&!merchant.hub));
   assert.ok(discoveries.some(merchant=>merchant.y<0),'one major merchant should require upper exploration');
   assert.ok(discoveries.filter(merchant=>merchant.x>=9600).length>=2,'major merchants should be spread into later eastern regions');
   assert.ok(new Set(MERCHANT_SPAWNS.map(merchant=>merchant.region)).size>=4);

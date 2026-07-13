@@ -92,6 +92,12 @@ test('the starting kit cannot enter later-ability regions',()=>{
   assert.equal(canTraverse('foundry-high','dash-entry'),false);
   assert.equal(canTraverse('relay-west','wall-entry'),false);
 });
+test('Wall Climb opens the Crownworks route without a full-height barrier',()=>{
+  const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];g.unlockAbility('wallClimb');
+  const entry=g.platforms.find(block=>block.id==='wall-entry');Object.assign(g.player,{x:8440,y:-76,vx:0,vy:0,onGround:true,jumps:1});g.setInput({jump:true});let launched=false,reached=false;
+  for(let frame=0;frame<180;frame++){if(!launched&&g.player.y<-285){g.setInput({jump:true,right:true});launched=true;}else if(launched)g.setInput({jump:false,right:true});g.update(1/60);if(supportingPlatform(g.player,g.platforms,3)===entry){reached=true;break;}}
+  assert.equal(reached,true);assert.ok(canTraverse('wall-entry','wall-gallery'));assert.ok(canTraverse('wall-gallery','wall-east'));assert.ok(canTraverse('wall-east','wall-cache'));
+});
 test('double jump works after its ability is unlocked',()=>{const g=new Game();tick(g,60);g.unlockAbility('doubleJump');press(g,'jump');assert.equal(g.player.jumps,1);press(g,'jump');assert.equal(g.player.jumps,0);});
 test('dash accelerates after its ability is unlocked',()=>{const g=new Game();tick(g,60);g.unlockAbility('dash');g.player.facing=-1;press(g,'dash');assert.ok(g.player.vx< -500);assert.ok(g.player.dashCooldown>0);});
 test('repair starts unlocked while traversal and special attacks stay locked',()=>{const g=new Game();assert.deepEqual(g.player.abilities,{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false});});

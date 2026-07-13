@@ -171,7 +171,7 @@ export class Game {
   syncDepthAccess(){
     if(this.depthAccessOpen||!this.player.abilities.wallClimb||!this.vaultBossArena.cleared)return false;
     const floor=this.platforms.find(block=>block.id==='under-cache');
-    this.platforms=this.platforms.filter(block=>block.id!=='under-cache');
+    this.platforms=this.platforms.filter(block=>block.id!=='under-cache'&&block.id!=='vault-high');
     this.platforms.push(...DEPTH_ACCESS_BLOCKS.map(block=>({...block})));this.depthAccessOpen=true;
     if(floor)this.burst(3170,floor.y+floor.h/2,'#75f5ff',34);
     return true;

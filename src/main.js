@@ -46,7 +46,7 @@ function begin() {
   } else if (debugSpawn === 'inventory') {
     Object.assign(game.player,{scrap:860,primaryDamage:5,damageUpgrades:2,healthUpgrades:1,energyUpgrades:1,internalSlotUpgrades:1,materials:{titanium:4,uranium:1},purchasedItems:[{id:'edge-coil-1',kind:'upgrade',name:'EDGE COIL MK 1',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'edge-coil-2',kind:'upgrade',name:'EDGE COIL MK 2',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'shell-capacity-1',kind:'upgrade',name:'SHELL CAPACITY MK 1',detail:'+1 MAX SHELL'},{id:'capacitor-bank-1',kind:'upgrade',name:'CAPACITOR BANK MK 1',detail:'+25 MAX ELECTRICITY'},{id:'internal-bay-1',kind:'upgrade',name:'INTERNAL BAY 1',detail:'REDUCED-EFFECT MODIFIER SLOT'},{id:'modifier-aegis-filament',modifierId:'aegis-filament',kind:'modifier',name:'AEGIS FILAMENT',equippedSlot:'internal-1'},{id:'modifier-reactive-governor',modifierId:'reactive-governor',kind:'modifier',name:'REACTIVE GOVERNOR',equippedSlot:'legs'},{id:'modifier-extender-arm',modifierId:'extender-arm',kind:'modifier',name:'EXTENDER ARM',equippedSlot:'weapon'}]});
     game.player.body.internalSlots.push({id:'internal-1',part:'internal',label:'INTERNAL BAY 1',efficiency:.3});game.recomputeBodyStats();game.player.lives=4;game.player.electricity=125;game.player.shield=1;
-    for(const region of ['verge','vault','foundry','bastion','concourse'])game.mappedRegions.add(region);game.inventoryOpen=true;
+    for(const region of ['verge','vault','foundry','bastion'])game.mappedRegions.add(region);game.inventoryOpen=true;
     if(debugPanel==='map'||debugPanel==='overview'||debugPanel==='nomap'){game.inventoryPage=0;game.mapOverview=debugPanel==='overview';if(debugPanel==='nomap')game.mapRegionIndex=5;}
     else if(debugPanel==='materials')game.inventoryPage=2;else if(debugPanel==='items')game.inventoryPage=3;
   } else if (debugSpawn === 'explore') {
@@ -118,8 +118,8 @@ function begin() {
     game.openMerchantMenu(game.merchantRoom.activeMerchant);
   } else if (debugSpawn === 'wall') {
     game.unlockAbility('wallClimb');
-    game.player.x=8290;
-    game.player.y=-180;
+    game.player.x=8445;
+    game.player.y=-76;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'gauntlet') {
     game.player.x=9750;

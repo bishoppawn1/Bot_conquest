@@ -8,7 +8,14 @@ const tick=(game,count=1)=>{for(let frame=0;frame<count;frame++)game.update(1/60
 test('the deep Vault hatch opens only after Wall Climb and the Warden clear',()=>{
   const game=new Game();assert.ok(game.platforms.some(block=>block.id==='under-cache'));assert.equal(game.depthAccessOpen,false);
   game.unlockAbility('wallClimb');assert.equal(game.syncDepthAccess(),false);game.vaultBossArena.cleared=true;assert.equal(game.syncDepthAccess(),true);
-  assert.equal(game.platforms.some(block=>block.id==='under-cache'),false);assert.ok(game.platforms.some(block=>block.id==='vault-depth-access'));assert.equal(game.depthAccessOpen,true);
+  assert.equal(game.platforms.some(block=>block.id==='under-cache'),false);assert.equal(game.platforms.some(block=>block.id==='vault-high'),false);assert.ok(game.platforms.some(block=>block.id==='vault-depth-access'));assert.equal(game.depthAccessOpen,true);
+});
+
+test('the opened deep hatch has enough headroom to climb and enter the lower world',()=>{
+  const game=new Game();game.enemies=[];game.traps=[];game.junkPiles=[];game.vaultBossArena.cleared=true;game.unlockAbility('wallClimb');game.syncDepthAccess();const target=game.platforms.find(block=>block.id==='vault-deep-drop-one');
+  Object.assign(game.player,{x:3020,y:1084,vx:0,vy:0,onGround:true,jumps:1});game.setInput({jump:true});let phase=0,reached=false;
+  for(let frame=0;frame<220;frame++){if(phase===0&&game.player.y<970){game.setInput({jump:false,right:true});phase=1;}if(phase===1&&game.player.x>3120){game.setInput({right:false,left:true});phase=2;}game.update(1/60);if(supportingPlatform(game.player,game.platforms,3)===target){reached=true;break;}}
+  assert.equal(reached,true);
 });
 
 test('dropping into the deep arena activates the Rift Stalker behind a sealed exit',()=>{

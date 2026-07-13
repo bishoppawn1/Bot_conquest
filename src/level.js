@@ -128,12 +128,12 @@ export const VAULT_UPPER_BLOCKS = [
   {id:'vault-upper-east',x:3190,y:280,w:260,h:50,kind:'vault-upper',requires:'wallClimb',region:'vault-upper'}
 ];
 
-// Once Wall Climb is owned and the Abyss Warden is dead, the hatch retracts
-// and this ledge appears beside it. Crossing the ledge commits the player to
-// three 240-unit drops ending in the Rift Stalker arena.
+// Once Wall Climb is owned and the Abyss Warden is dead, the low hatch above
+// this lip retracts. Climbing the short lip exposes a 90-unit shaft; crossing
+// it commits the player to three 240-unit drops ending at the Rift Stalker.
 export const DEPTH_ACCESS_BLOCKS = [
   {id:'vault-depth-floor-west',x:2860,y:1120,w:210,h:80,kind:'lower'},
-  {id:'vault-depth-access',x:3070,y:900,w:60,h:220,kind:'wall',requires:'wallClimb',region:'vault-depth',gateEntry:true},
+  {id:'vault-depth-access',x:3070,y:1000,w:50,h:120,kind:'wall',requires:'wallClimb',region:'vault-depth',gateEntry:true},
   {id:'vault-depth-floor-east',x:3210,y:1120,w:120,h:80,kind:'lower'}
 ];
 
@@ -166,7 +166,7 @@ export const POCKET_BLOCKS = [
 export const WALL_BLOCKS = [
   {x:40,y:500,w:60,h:160,kind:'wall'},
   {x:14440,y:450,w:60,h:210,kind:'wall'},
-  {x:8340,y:-600,w:60,h:540,kind:'wall'},
+  {id:'crown-climb',x:8380,y:-260,w:60,h:220,kind:'wall'},
   {id:'boss-roof-left',x:5790,y:-1000,w:100,h:1350,kind:'wall',destructibleAfterBoss:true},
   {id:'boss-roof-right',x:7190,y:-1000,w:160,h:1350,kind:'wall',destructibleAfterBoss:true},
   {id:'vault-arena-left',x:2800,y:985,w:60,h:135,kind:'wall'}
@@ -186,9 +186,9 @@ export const ABILITY_GATED_BLOCKS = [
   {id:'dash-pier',x:4700,y:-70,w:140,h:45,kind:'cache',requires:'dash',region:'high-foundry'},
   {id:'dash-cache',x:4320,y:-230,w:380,h:55,kind:'cache',requires:'dash',region:'high-foundry'},
 
-  {id:'wall-entry',x:8420,y:-310,w:180,h:45,kind:'cache',requires:'wallClimb',region:'relay-crown',gateEntry:true},
-  {id:'wall-gallery',x:8750,y:-470,w:340,h:60,kind:'cache',requires:'wallClimb',region:'relay-crown'},
-  {id:'wall-east',x:9200,y:-320,w:180,h:45,kind:'cache',requires:'wallClimb',region:'relay-crown'},
+  {id:'wall-entry',x:8500,y:-330,w:220,h:45,kind:'cache',requires:'wallClimb',region:'relay-crown',gateEntry:true},
+  {id:'wall-gallery',x:8750,y:-470,w:570,h:60,kind:'cache',requires:'wallClimb',region:'relay-crown'},
+  {id:'wall-east',x:9340,y:-525,w:180,h:45,kind:'cache',requires:'wallClimb',region:'relay-crown'},
   {id:'wall-cache',x:9000,y:-650,w:320,h:55,kind:'cache',requires:'wallClimb',region:'relay-crown'}
 ];
 
@@ -233,8 +233,7 @@ export const REGIONS = [
   {id:'verge',name:'RUSTED VERGE',x:0,w:2360},
   {id:'vault',name:'SUNKEN VAULT',x:2360,w:1190},
   {id:'foundry',name:'EMBER FOUNDRY',x:3550,w:2340},
-  {id:'bastion',name:'CORE BASTION',x:5890,w:1460},
-  {id:'concourse',name:'RELAY CONCOURSE',x:7350,w:1050,merchantHub:true},
+  {id:'bastion',name:'CORE BASTION',x:5890,w:2510,merchantHub:true},
   {id:'crown',name:'CROWNWORKS',x:8400,w:1200},
   {id:'gauntlet',name:'SHARD GAUNTLET',x:9600,w:1800},
   {id:'drift',name:'QUIET DRIFT',x:11400,w:1300},
@@ -247,8 +246,7 @@ export const REGION_GATES = [
   {x:2372,y:510,w:72,h:170,from:'verge',to:'vault'},
   {x:3562,y:440,w:72,h:170,from:'vault',to:'foundry'},
   {x:5902,y:350,w:72,h:250,from:'foundry',to:'bastion'},
-  {x:7362,y:490,w:72,h:170,from:'bastion',to:'concourse'},
-  {x:8412,y:420,w:72,h:170,from:'concourse',to:'crown'},
+  {x:8412,y:420,w:72,h:170,from:'bastion',to:'crown'},
   {x:9612,y:480,w:72,h:170,from:'crown',to:'gauntlet'},
   {x:11412,y:450,w:72,h:170,from:'gauntlet',to:'drift'},
   {x:12712,y:490,w:72,h:170,from:'drift',to:'exchange'}
@@ -261,7 +259,7 @@ export const PICKUP_SPAWNS = [
   {id:'vault-core',kind:'ability',ability:'wallClimb',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'WALL CLIMB',key:'W + A / D',description:'Hold W on a wall; press away to jump at any height.',requiresBossClear:true},
   {id:'dash-core',kind:'ability',ability:'dash',x:2570,y:2066,w:24,h:24,color:'#d6ff3f',name:'DASH DRIVE',key:'SHIFT',description:'Burst across the deep return gaps.',requiresDepthBossClear:true},
   {id:'map-west',kind:'map',x:1080,y:256,w:24,h:24,color:'#d6ff3f',name:'WESTERN SURVEY',regions:['verge','vault']},
-  {id:'map-central',kind:'map',x:4740,y:356,w:24,h:24,color:'#d6ff3f',name:'CENTRAL SURVEY',regions:['foundry','bastion','concourse']},
+  {id:'map-central',kind:'map',x:4740,y:356,w:24,h:24,color:'#d6ff3f',name:'CENTRAL SURVEY',regions:['foundry','bastion']},
   {id:'map-east',kind:'map',x:11020,y:326,w:24,h:24,color:'#d6ff3f',name:'EASTERN SURVEY',regions:['crown','gauntlet','drift','exchange']}
 ];
 
@@ -372,7 +370,7 @@ export const ENEMY_SPAWNS = [
   {type:'brute',x:8140,y:597,w:58,h:63},
   {type:'crawler',x:9300,y:200,w:30,h:40,patrol:true,patrolRange:100},
   {type:'hopper',x:8800,y:-515,w:34,h:45},
-  {type:'brute',x:9250,y:-383,w:58,h:63},
+  {type:'brute',x:9400,y:-588,w:58,h:63},
   {type:'drone',x:9000,y:0,w:42,h:30},
   {type:'hopper',x:9700,y:605,w:34,h:45},
   {type:'drone',x:10300,y:500,w:42,h:30},
