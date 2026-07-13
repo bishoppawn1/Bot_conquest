@@ -345,6 +345,6 @@ export const JUNK_PILES = [
   {x:9300,y:500,w:120,h:90,health:8,scrapValue:60,minimumDamage:2,gate:true},
   {x:10280,y:344,w:82,h:46,health:6,scrapValue:38},
   {x:12160,y:294,w:82,h:46,health:6,scrapValue:45},
-  {x:13560,y:274,w:88,h:46,health:7,scrapValue:0,material:{type:'titanium',amount:2}},
-  {x:14000,y:384,w:90,h:46,health:7,scrapValue:0,material:{type:'uranium',amount:1}}
+  {x:13560,y:274,w:88,h:46,health:7,scrapValue:50},
+  {x:14000,y:384,w:90,h:46,health:7,scrapValue:55}
 ];

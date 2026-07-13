@@ -58,7 +58,7 @@ Acquisition, swapping locations, exact bonuses, and balance costs remain for a l
 
 The starting primary slash deals three damage, and every ordinary enemy begins with three health. Enemies award scrap when killed: crawler 6, roller 8, hopper 10, drone 12, and brute 25. The Grand Exchange Edge Forge offers four increasingly expensive, run-persistent `+1` primary-slash upgrades at 500, 900, 1,500, and 2,400 scrap. Each first-tier increase is therefore one third of the starting output rather than a damage doubling. Purchased edge coils appear in the inventory and a completed forge cannot be purchased again.
 
-Titanium and uranium are persistent special materials for future merchant recipes. Selected salvage piles award their configured material instead of scrap, and the Cache Scrapper awards three titanium. Ordinary merchants display the carried material totals, but actual material recipes and prices remain intentionally undesigned.
+Titanium and uranium are persistent special materials for future merchant recipes. Their world density is intentionally very low: only two ordinary salvage piles contain rare material, one titanium and one uranium, and both are hidden on ability-gated upper routes. The Cache Scrapper separately awards three titanium as a mini-boss reward. Ordinary merchants display the carried material totals, but actual material recipes and prices remain intentionally undesigned.
 
 The player has an electricity meter capped at 100. A standard slash against an enemy adds 12 electricity. Three conduits each contain 24 electricity, yield 4 per slash, and stay permanently empty after six successful harvests. A target hit by a special attack returns 4 electricity.
 

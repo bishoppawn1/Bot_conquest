@@ -112,6 +112,11 @@ test('ability and map cores use the generic pickup format',()=>{
   assert.ok(PICKUP_SPAWNS.every(pickup=>PLATFORMS.every(block=>!intersects(pickup,block))));
 });
 
+test('rare material salvage is sparse and hidden on ability-gated routes',()=>{
+  const rare=JUNK_PILES.filter(pile=>pile.material);assert.equal(rare.length,2);assert.deepEqual(new Set(rare.map(pile=>pile.material.type)),new Set(['titanium','uranium']));
+  for(const pile of rare)assert.ok(ABILITY_GATED_BLOCKS.some(block=>pile.y+pile.h===block.y&&pile.x>=block.x&&pile.x+pile.w<=block.x+block.w),`${pile.material.type} salvage is not on an ability-gated route`);
+});
+
 test('the boss arena remains a large uncluttered chamber',()=>{
   assert.ok(BOSS_ARENA.w>=1200&&BOSS_ARENA.h>=240);
   assert.ok(INTERIOR_BLOCKS.every(block=>!intersects(block,BOSS_ARENA)));

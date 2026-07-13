@@ -36,7 +36,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Special-attack hits return 4 electricity per target.
 - The starting primary slash deals 3 damage and every ordinary enemy starts with 3 health. Each forge tier still adds exactly 1 damage so its proportional effect begins at one third rather than doubling the weapon.
 - Killing enemies awards scrap based on archetype. The Grand Exchange `EDGE FORGE` offers four run-persistent `+1` primary-slash damage upgrades costing 500, 900, 1500, and 2400 scrap. Do not add other scrap spending behavior without a new design decision.
-- Titanium and uranium are persistent special materials reserved for future merchant recipes. Selected salvage piles award their configured material instead of scrap; the Cache Scrapper awards three titanium. Do not invent material prices or merchant recipes without a new design decision.
+- Titanium and uranium are persistent special materials reserved for future merchant recipes. They must remain genuinely rare: exactly two ordinary salvage piles award them—one titanium and one uranium—and both sit on ability-gated upper routes. The Cache Scrapper separately awards three titanium. Do not add more material piles or invent material prices or merchant recipes without a new design decision.
 - Ordinary junk piles are solid destructible obstacles. Destroying one awards its configured scrap or special material but no electricity.
 
 ## Enemy rules
