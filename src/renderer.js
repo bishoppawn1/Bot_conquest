@@ -7,6 +7,15 @@ export const LEG_COUNT = 3;
 export const LEG_REACH = 112;
 export const LEG_SPREAD = 44;
 
+export function localMapProjection(region,objects,frame,padding=60) {
+  const top=Math.min(...objects.map(object=>object.y),0)-padding;
+  const bottom=Math.max(...objects.map(object=>object.y+object.h),0)+padding;
+  const worldHeight=Math.max(1,bottom-top);
+  const scale=Math.min(frame.w/region.w,frame.h/worldHeight);
+  const width=region.w*scale,height=worldHeight*scale;
+  return{scale,top,bottom,x:frame.x+(frame.w-width)/2,y:frame.y+(frame.h-height)/2,width,height};
+}
+
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -309,13 +318,14 @@ export class Renderer {
     ctx.fillStyle='#71838a';ctx.font='10px Space Mono';ctx.fillText('LOCAL MAP // Q WORLD OVERVIEW',x,y+25);
     ctx.fillStyle='#081116';ctx.fillRect(x,y+50,w,h);ctx.strokeStyle=known?'#75f5ff':'#354248';ctx.lineWidth=2;ctx.strokeRect(x,y+50,w,h);
     if(!known){ctx.textAlign='center';ctx.fillStyle='#3d4b50';ctx.font='700 44px Space Mono';ctx.fillText('NO MAP',x+w/2,y+225);ctx.fillStyle='#65757a';ctx.font='10px Space Mono';ctx.fillText('FIND A SURVEY CORE TO RESTORE THIS REGION',x+w/2,y+258);ctx.textAlign='left';return;}
-    const pad=24,mapX=x+pad,mapY=y+74,mapW=w-pad*2,mapH=h-48,worldTop=game.worldTop??-1000,worldHeight=(game.worldBottom??1200)-worldTop,sx=mapW/region.w,sy=mapH/worldHeight;
+    const pad=24,mapX=x+pad,mapY=y+74,mapW=w-pad*2,mapH=h-48,mapObjects=[...game.platforms.filter(block=>block.kind!=='merchant-room'&&block.x+block.w>region.x&&block.x<region.x+region.w),...game.traps.filter(trap=>trap.x+trap.w>region.x&&trap.x<region.x+region.w),...game.merchants.filter(merchant=>merchant.x+merchant.w>region.x&&merchant.x<region.x+region.w)];if(region.id===game.regionId)mapObjects.push(game.player);const projection=localMapProjection(region,mapObjects,{x:mapX,y:mapY,w:mapW,h:mapH}),scale=projection.scale;
     ctx.save();ctx.beginPath();ctx.rect(mapX,mapY,mapW,mapH);ctx.clip();
-    for(const block of game.platforms){if(block.kind==='merchant-room'||block.x+block.w<=region.x||block.x>=region.x+region.w)continue;const left=Math.max(block.x,region.x),right=Math.min(block.x+block.w,region.x+region.w),rx=mapX+(left-region.x)*sx,ry=mapY+(block.y-worldTop)*sy,rw=Math.max(2,(right-left)*sx),rh=Math.max(2,block.h*sy);ctx.fillStyle=block.kind==='wall'?'#69383d':'#26383e';ctx.fillRect(rx,ry,rw,rh);if(block.kind!=='wall'){ctx.fillStyle='#d6ff3f';ctx.fillRect(rx,ry,rw,2);}}
-    for(const trap of game.traps){if(trap.x+trap.w<=region.x||trap.x>=region.x+region.w)continue;ctx.fillStyle='#ff493f';ctx.fillRect(mapX+(trap.x-region.x)*sx,mapY+(trap.y-worldTop)*sy,Math.max(3,trap.w*sx),Math.max(3,trap.h*sy));}
-    for(const merchant of game.merchants){if(merchant.x+merchant.w<=region.x||merchant.x>=region.x+region.w)continue;ctx.fillStyle=merchant.color??'#75f5ff';ctx.fillRect(mapX+(merchant.x-region.x)*sx,mapY+(merchant.y-worldTop)*sy,Math.max(4,merchant.w*sx),Math.max(5,merchant.h*sy));}
-    if(region.id===game.regionId){const px=mapX+(game.player.x+game.player.w/2-region.x)*sx,py=mapY+(game.player.y+game.player.h/2-worldTop)*sy;ctx.fillStyle='#ff493f';ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.stroke();}
-    ctx.restore();ctx.fillStyle='#84959a';ctx.font='9px Space Mono';ctx.fillText('FOUNDATIONS // ROUTES // HAZARDS // MERCHANT LINKS',x+24,y+h+36);
+    ctx.strokeStyle='#1c343c';ctx.lineWidth=1;ctx.strokeRect(projection.x,projection.y,projection.width,projection.height);
+    for(const block of game.platforms){if(block.kind==='merchant-room'||block.x+block.w<=region.x||block.x>=region.x+region.w)continue;const left=Math.max(block.x,region.x),right=Math.min(block.x+block.w,region.x+region.w),rx=projection.x+(left-region.x)*scale,ry=projection.y+(block.y-projection.top)*scale,rw=Math.max(2,(right-left)*scale),rh=Math.max(2,block.h*scale);ctx.fillStyle=block.kind==='wall'?'#69383d':'#26383e';ctx.fillRect(rx,ry,rw,rh);if(block.kind!=='wall'){ctx.fillStyle='#d6ff3f';ctx.fillRect(rx,ry,rw,2);}}
+    for(const trap of game.traps){if(trap.x+trap.w<=region.x||trap.x>=region.x+region.w)continue;const left=Math.max(trap.x,region.x),right=Math.min(trap.x+trap.w,region.x+region.w);ctx.fillStyle='#ff493f';ctx.fillRect(projection.x+(left-region.x)*scale,projection.y+(trap.y-projection.top)*scale,Math.max(3,(right-left)*scale),Math.max(3,trap.h*scale));}
+    for(const merchant of game.merchants){if(merchant.x+merchant.w<=region.x||merchant.x>=region.x+region.w)continue;const left=Math.max(merchant.x,region.x),right=Math.min(merchant.x+merchant.w,region.x+region.w);ctx.fillStyle=merchant.color??'#75f5ff';ctx.fillRect(projection.x+(left-region.x)*scale,projection.y+(merchant.y-projection.top)*scale,Math.max(4,(right-left)*scale),Math.max(5,merchant.h*scale));}
+    if(region.id===game.regionId){const px=projection.x+(game.player.x+game.player.w/2-region.x)*scale,py=projection.y+(game.player.y+game.player.h/2-projection.top)*scale;ctx.fillStyle='#ff493f';ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.stroke();}
+    ctx.restore();ctx.fillStyle='#84959a';ctx.font='9px Space Mono';ctx.fillText('TRUE SCALE // FOUNDATIONS // ROUTES // HAZARDS // MERCHANT LINKS',x+24,y+h+36);
   }
 
   drawHud(game) {

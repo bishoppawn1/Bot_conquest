@@ -114,7 +114,7 @@ The foundation immediately beyond the boss arena is a calm recovery room with no
 
 Pressing `I` opens the combined overlay and pauses world simulation. It starts on STATUS; outside the world overview, `A` and `D` move between MAP, STATUS, MATERIALS, and ITEMS while `W` and `S` move the selection within the active page. STATUS reports only shells, electricity, primary damage, and scrap. MATERIALS reports only titanium and uranium. ITEMS lists merchant purchases such as Edge Forge coils.
 
-MAP sits to the left of STATUS and opens on the player's current region. A revealed local map diagrams that region's foundations, routes, hazards, merchant links, and current-player marker; an unrevealed local map displays `NO MAP`. Pressing `Q` zooms out to a three-by-three overview of all nine regions. While zoomed out, `W`, `A`, `S`, and `D` select a region and never change inventory pages; pressing `Q` again zooms into the selected region. Three survey cores reveal configured west, central, and east groups that together cover the world.
+MAP sits to the left of STATUS and opens on the player's current region. A revealed local map diagrams that region's foundations, routes, hazards, merchant links, and current-player marker using one uniform world-to-map scale on both axes; it must never widen geometry to fill the panel. An unrevealed local map displays `NO MAP`. Pressing `Q` zooms out to a three-by-three overview of all nine regions. While zoomed out, `W`, `A`, `S`, and `D` select a region and never change inventory pages; pressing `Q` again zooms into the selected region. Three survey cores reveal configured west, central, and east groups that together cover the world.
 
 ## Current map fragment
 

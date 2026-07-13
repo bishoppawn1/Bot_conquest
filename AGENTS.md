@@ -23,6 +23,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - A destroyed bot loses all carried scrap and electricity. Its old shell remains at the death location as a three-health wreck containing the lost scrap; destroying the wreck restores that scrap but no electricity. A newer death replaces any unrecovered wreck.
 - After the boss is cleared, `O` interacts with the recovery station. Resting restores all three shells and moves both the spike-reset checkpoint and full-death respawn point beside the station.
 - `I` opens and closes the combined inventory/map overlay and pauses simulation while open. Outside the map overview, `A`/`D` move between MAP, STATUS, MATERIALS, and ITEMS and `W`/`S` move through entries. MAP sits immediately left of STATUS.
+- Local maps must use one uniform world-to-map scale for X and Y. Center the resulting true-scale region diagram inside the panel; never stretch its horizontal and vertical axes independently to fill the available rectangle.
 - MAP opens on the player's current region. An unrevealed region displays `NO MAP`; the three survey cores reveal configured groups. `Q` zooms out to the nine-region overview, `W`/`A`/`S`/`D` select another region without changing pages, and `Q` zooms into that selected local map.
 - STATUS shows shells, electricity, primary damage, and scrap. MATERIALS shows only titanium and uranium. ITEMS lists merchant purchases.
 - The player starts with three lives and loses one to enemy contact, spikes, or falling.
