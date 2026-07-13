@@ -24,10 +24,10 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 | Aim down | `S` | Set downward aim without moving |
 | Dash | `Shift` | Locked at the beginning; short horizontal burst after unlock |
 | Basic slash | `Space` | Instantly strike the full 105-unit area in the locked aim direction |
-| Repair | `E` | Available from the start; spend 30 electricity to restore one missing shell |
+| Repair | `E` | Spend 30 electricity, then channel for 0.7 seconds to restore one missing shell; damage interrupts it and it cannot start during post-hit invulnerability |
 | Electric field | `Q` | Locked initially; spend 40 electricity after unlock |
 | Electric jab | `F` | Locked initially; spend 24 electricity after collecting the blue Volt Jab core |
-| Rest | `O` | After defeating the boss, interact near the recovery station to restore all shells and set a checkpoint |
+| Interact | `O` | Rest at the recovery station or enter/leave an unlocked merchant room |
 | Inventory / map | `I` | Reserved for a later system; deliberately does nothing now |
 
 There is no restart key or persistent restart control. The game-over screen may offer a reboot after the player loses all three shells.
@@ -40,7 +40,7 @@ Movement and combat upgrades use generic contact pickups. An available pickup is
 
 The blue `volt-core` lies on the escape route from the Sunken Vault mini-boss room. It unlocks Volt Jab and shows `F` in its integration popup. A 24-electricity conduit and a two-health powered seal immediately follow it, teaching the player to harvest the conduit with basic slashes and spend one Volt Jab to continue.
 
-The white `vault-core` just beyond the Heavy Core does not appear until that boss is defeated. Collecting it unlocks vault: holding jump while running into a low obstacle up to 115 units high hops the bot onto its top. Future pickups use the same data and collection flow with their own progression requirements.
+The white `vault-core` just beyond the Heavy Core does not appear until that boss is defeated. Collecting it unlocks wall climb. Holding `W` against a wall climbs continuously; pressing `D` away from a left wall or `A` away from a right wall jumps from the current height. The ability never teleports the bot to the top. Future pickups use the same data and collection flow with their own progression requirements.
 
 ### Planned shell bodies
 
@@ -102,13 +102,13 @@ The foundation immediately beyond the boss arena is a calm recovery room with no
 
 The current map is a complete geometric reset and must not derive its layout from the discarded access-path prototype. It spans X 0–9,600 and Y -1,000–1,200. Twelve foundation pieces form the lower traversal network. Within the Sunken Vault, five foundations descend from Y 680 to Y 820 and rise again in 70-unit increments. A reversible branch continues to Y 1,040 before one deliberate drop reaches the mini-boss floor at Y 1,120. The gate-controlled escape uses three tested basic-jump platforms; no accidental early drop is allowed to strand the player.
 
-Heavy overhead blocks frame eight large chambers. Twenty starting-kit platforms are scattered across six of them as broad leaps, return drops, combat perches, and alternate crossings. They are not a staircase or serpentine chain. Most suspended platforms are 40–60 units thick; only the two deep mini-boss floor masses reach 80 units. Massive foundations remain at least 120 units thick.
+Heavy overhead blocks frame large chambers. Twenty starting-kit platforms are scattered across six of them as broad leaps, return drops, combat perches, and alternate crossings. They are not a staircase or serpentine chain. Most suspended platforms are 40–60 units thick; only the two deep mini-boss floor masses reach 80 units. Massive foundations remain at least 120 units thick except the five 60-unit Vault foundations, whose reduced depth leaves more passage clearance.
 
 The starting kit cannot reach the whole map. Twelve platforms form three substantial optional upper regions: upper assembly requires double jump, high foundry requires dash, and the relay crown requires wall movement. These regions contain combat and salvage while remaining outside the required route to the boss.
 
 Six named regions cover the current world and meet at five visible mechanical gates. The gates are non-blocking navigation thresholds rather than stage exits. Crossing a gate changes the current region and briefly displays its name in a bottom-left HUD panel; region names never remain as permanent world labels.
 
-The Relay Concourse is the merchant hub and contains a strict majority of the current merchant NPCs. Smaller merchants are scattered through the Rusted Verge and Ember Foundry. Merchants are visual placeholders until inventory, dialogue, pricing, and trading are designed. Approaching one displays an explicit `MERCHANT UPLINK // SERVICES OFFLINE` notice so the placeholder cannot be mistaken for a working shop.
+The Relay Concourse contains a strict majority of the current merchant doors, with additional doors in the Rusted Verge and Ember Foundry. A door in a safe pocket can open immediately; otherwise it remains sealed until nearby ordinary enemies are defeated. Pressing `O` beneath an unlocked door moves the bot into a separate enemy-free merchant room, and its interior exit returns to the saved overworld position. The merchant inside displays an explicit services-offline notice until inventory, dialogue, pricing, and trading are designed.
 
 Enemies, junk, and secrets occupy the upper networks, the deep vault, and the ability-gated regions—not only the lower left-to-right floor. The map contains six spike gaps, three exhaustible conduits, ten ordinary junk piles, two powered seals, one mini-boss encounter, one full boss encounter, and two end alcoves. The Sunken Vault uses a darker blue-black background, stronger vignette, and drifting cyan particulate lines to distinguish its depth.
 
@@ -120,6 +120,6 @@ The world contains no permanent embedded area-name captions, directional labels,
 
 - Gameplay rules stay deterministic apart from cosmetic particles and leg placement.
 - Rendering, input, level data, geometry, and simulation remain separate modules.
-- Automated tests cover starting locks, absent restart input, starting repair, reserved inventory input, post-boss rest, recovery checkpoints, both ability cores and their popups, vault movement, the Volt Jab tutorial seal, region-entry titles, post-unlock abilities, camera bounds, junk destruction, conduit depletion, four-direction melee combat, resources, life loss, enemy behavior, mini-boss activation/gating/reward, boss gates, all three full-boss attacks, boss rewards, simulated two-way room connections, the directed vault descent, and valid surface contact.
+- Automated tests cover starting locks, absent restart input, interruptible repair timing, reserved inventory input, post-boss rest, recovery checkpoints, both ability cores and their popups, continuous wall climbing and directional wall jumps, merchant-door clearance and round-trip teleporting, the Volt Jab tutorial seal, region-entry titles, camera bounds, combat, resources, life loss, enemy behavior, bosses, two-way room connections, the directed vault descent, and valid surface contact.
 - Level-data tests enforce world dimensions, varied suspended-platform thickness, massive foundation framing, zero solid intersections, object clearance, the reversible stepped vault, its intentional mini-boss drop and tested escape, bot-sized headroom, junk bypasses, dedicated wall geometry, enemy distribution above and below the main floor, contiguous named regions, matching region gates, merchant-hub distribution, generic pickup data, framed unlabeled recesses, and three substantial ability-gated regions.
 - The browser console has no errors during the start and play states.

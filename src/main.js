@@ -51,8 +51,19 @@ function begin() {
     game.player.y=pickup.y;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'merchant') {
-    game.player.x=8025;
+    game.player.x=7815;
     game.player.y=660-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'merchant-room') {
+    game.merchantRoom.activeMerchant=game.merchants[0];
+    game.merchantRoom.returnPosition={x:7815,y:660-game.player.h};
+    game.player.x=game.merchantRoom.spawn.x;
+    game.player.y=game.merchantRoom.spawn.y;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'wall') {
+    game.unlockAbility('wallClimb');
+    game.player.x=8290;
+    game.player.y=-180;
     game.safePosition={x:game.player.x,y:game.player.y};
   }
   playing = true;

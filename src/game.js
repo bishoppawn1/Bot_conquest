@@ -1,10 +1,11 @@
 import { clamp, hasFloorAhead, overlaps, shareSupportingPlatform, supportingPlatform } from './geometry.js';
 import { ABILITY_COSTS, ATTACK_RANGE, ATTACK_TIMING, circleIntersectsRect, directionalBox, ELECTRICITY_MAX, ELECTRICITY_PER_HIT, fieldCircle, SCRAP_VALUES } from './combat.js';
-import { BOSS_ARENA, CONDUITS, ENEMY_SPAWNS, JUNK_PILES, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, PICKUP_SPAWNS, PLATFORMS, RECESSES, REGION_GATES, REGIONS, REST_AREA, SPAWN, TRAPS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
+import { BOSS_ARENA, CONDUITS, ENEMY_SPAWNS, JUNK_PILES, MERCHANT_ROOM, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, PICKUP_SPAWNS, PLATFORMS, RECESSES, REGION_GATES, REGIONS, REST_AREA, SPAWN, TRAPS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
 
 export { WORLD_WIDTH as WIDTH, WORLD_HEIGHT as HEIGHT } from './level.js';
 export const PLAYER_JUMP_SPEED = 600;
-export const VAULT_HEIGHT = 115;
+export const HEAL_DURATION = .7;
+export const WALL_CLIMB_SPEED = 155;
 
 export class Game {
   constructor() { this.reset(); }
@@ -14,7 +15,7 @@ export class Game {
     this.prev={...this.input}; this.particles=[];this.bossProjectiles=[];this.bossShockwave=null;this.abilityPopup=null;this.rewardToast=null;
     this.spawn={...SPAWN};
     this.safePosition={...this.spawn};
-    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:1,lives:3,scrap:0,electricity:0,abilities:{doubleJump:false,dash:false,wallClimb:false,vault:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healFlash:0,restFlash:0,vaultFlash:0};
+    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:1,lives:3,scrap:0,electricity:0,abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
     this.platforms=PLATFORMS.map(platform=>({...platform}));
     this.traps=TRAPS.map(trap=>({...trap}));
     this.recesses=RECESSES.map(recess=>({...recess}));
@@ -25,6 +26,7 @@ export class Game {
     this.regionId=this.regionAt(this.spawn.x)?.id??null;this.regionToast=null;this.regionToastTime=0;
     this.pickups=PICKUP_SPAWNS.map(pickup=>({...pickup,collected:false}));
     this.merchants=MERCHANT_SPAWNS.map(merchant=>({...merchant}));
+    this.merchantRoom={...MERCHANT_ROOM,spawn:{...MERCHANT_ROOM.spawn},exit:{...MERCHANT_ROOM.exit},merchant:{...MERCHANT_ROOM.merchant},activeMerchant:null,returnPosition:null};
     const boss=this.enemy(BOSS_ARENA.boss);Object.assign(boss,{isBoss:true,maxHealth:BOSS_ARENA.boss.health,bossMove:'dormant',bossTimer:0,bossMoveIndex:0});
     const miniBosses=this.miniBossArenas.map(arena=>{const enemy=this.enemy(arena.enemy);return Object.assign(enemy,{isMiniBoss:true,arenaId:arena.id,name:arena.name,maxHealth:arena.enemy.health,rewardScrap:arena.rewardScrap});});
     this.enemies=[...ENEMY_SPAWNS.map(spawn=>this.enemy(spawn)),...miniBosses,boss];
@@ -36,20 +38,23 @@ export class Game {
   pressed(key){return this.input[key]&&!this.prev[key];}
   update(dt=1/60){
     if(!this.running)return; dt=Math.min(dt,.034); this.time+=dt; const p=this.player;
-    p.invuln=Math.max(0,p.invuln-dt);p.dashCooldown=Math.max(0,p.dashCooldown-dt);p.attackCooldown=Math.max(0,p.attackCooldown-dt);p.attackTime=Math.max(0,p.attackTime-dt);p.specialTime=Math.max(0,p.specialTime-dt);p.healFlash=Math.max(0,p.healFlash-dt);p.restFlash=Math.max(0,p.restFlash-dt);p.vaultFlash=Math.max(0,p.vaultFlash-dt);this.regionToastTime=Math.max(0,this.regionToastTime-dt);if(this.abilityPopup)this.abilityPopup.time=Math.max(0,this.abilityPopup.time-dt);if(this.rewardToast)this.rewardToast.time=Math.max(0,this.rewardToast.time-dt);for(const c of this.conduits)c.hitFlash=Math.max(0,c.hitFlash-dt);
+    p.invuln=Math.max(0,p.invuln-dt);p.dashCooldown=Math.max(0,p.dashCooldown-dt);p.wallJumpTime=Math.max(0,p.wallJumpTime-dt);p.attackCooldown=Math.max(0,p.attackCooldown-dt);p.attackTime=Math.max(0,p.attackTime-dt);p.specialTime=Math.max(0,p.specialTime-dt);p.healFlash=Math.max(0,p.healFlash-dt);p.restFlash=Math.max(0,p.restFlash-dt);this.regionToastTime=Math.max(0,this.regionToastTime-dt);if(this.abilityPopup)this.abilityPopup.time=Math.max(0,this.abilityPopup.time-dt);if(this.rewardToast)this.rewardToast.time=Math.max(0,this.rewardToast.time-dt);for(const c of this.conduits)c.hitFlash=Math.max(0,c.hitFlash-dt);
+    if(p.healTime>0){p.healTime=Math.max(0,p.healTime-dt);if(p.healTime===0)this.completeHeal();}
     const axis=(this.input.right?1:0)-(this.input.left?1:0);
     if(this.input.down){p.aimX=0;p.aimY=1;}else if(this.input.jump){p.aimX=0;p.aimY=-1;}else if(axis){p.facing=axis;p.aimX=axis;p.aimY=0;}
     if(this.pressed('dash')&&p.abilities.dash&&p.dashCooldown<=0){p.dashTime=.14;p.dashCooldown=.55;p.vx=p.facing*700;p.vy=0;this.burst(p.x+19,p.y+22,'#d6ff3f',10);}
-    if(this.pressed('jump')){
-      if(p.onWall&&p.abilities.wallClimb){p.vx=-p.onWall*330;p.vy=-PLAYER_JUMP_SPEED;p.jumps=p.abilities.doubleJump?1:0;}
-      else if(p.jumps>0){p.vy=-PLAYER_JUMP_SPEED;p.jumps--;p.onGround=false;this.burst(p.x+19,p.y+40,'#d6ff3f',5);}
-    }
-    if(this.pressed('attack')&&p.attackCooldown<=0)this.startAttack();
-    if(this.pressed('heal'))this.tryHeal();
-    if(this.pressed('field'))this.startSpecial('field');
-    if(this.pressed('electricJab'))this.startSpecial('electricJab');
-    if(this.pressed('rest'))this.tryRest();
-    if(p.dashTime>0)p.dashTime-=dt; else {const target=axis*250;p.vx+=(target-p.vx)*Math.min(1,(p.onGround?13:6)*dt);p.vy+=1100*dt;}
+    const wall=this.wallSide(p)||p.onWall;
+    const climbingWall=p.abilities.wallClimb&&wall;
+    const wallJump=climbingWall&&((wall===-1&&this.pressed('right'))||(wall===1&&this.pressed('left')));
+    if(wallJump){p.vx=-wall*360;p.vy=-440;p.wallJumpTime=.18;p.onWall=0;p.jumps=p.abilities.doubleJump?1:0;this.burst(p.x+p.w/2,p.y+p.h/2,'#ffffff',8);}
+    if(this.pressed('jump')&&!wallJump&&p.jumps>0&&!climbingWall){p.vy=-PLAYER_JUMP_SPEED;p.jumps--;p.onGround=false;this.burst(p.x+19,p.y+40,'#d6ff3f',5);}
+    if(this.pressed('attack')&&p.attackCooldown<=0){this.cancelHeal();this.startAttack();}
+    if(this.pressed('heal'))this.startHeal();
+    if(this.pressed('field')){this.cancelHeal();this.startSpecial('field');}
+    if(this.pressed('electricJab')){this.cancelHeal();this.startSpecial('electricJab');}
+    if(this.pressed('rest'))this.tryInteract();
+    const climbing=climbingWall&&this.input.jump&&!wallJump&&p.wallJumpTime<=0;
+    if(p.dashTime>0)p.dashTime-=dt; else if(climbing){p.vx=wall*18;p.vy=-WALL_CLIMB_SPEED;}else {if(p.wallJumpTime<=0){const target=axis*250;p.vx+=(target-p.vx)*Math.min(1,(p.onGround?13:6)*dt);}p.vy+=1100*dt;}
     this.moveActor(p,dt,true);
     this.rememberSafePlatform();
     const hitSpike=this.traps.some(trap=>overlaps(p,trap));
@@ -63,24 +68,22 @@ export class Game {
     const colliders=isPlayer?[...this.platforms,...this.junkPiles.filter(pile=>!pile.dead),...this.bossGates(),...this.miniBossGates()]:this.platforms;
     a.x+=a.vx*dt;a.onWall=0;
     for(const b of colliders)if(overlaps(a,b)){
-      const direction=Math.sign(a.vx);
-      const obstacleHeight=a.y+a.h-b.y;
-      const landing={x:direction>0?b.x:b.x+b.w-a.w,y:b.y-a.h-1,w:a.w,h:a.h};
-      const canVault=isPlayer&&a.abilities.vault&&this.input.jump&&direction&&a.vy<=0&&obstacleHeight>0&&obstacleHeight<=VAULT_HEIGHT&&colliders.every(other=>other===b||!overlaps(landing,other));
-      if(canVault){a.x=direction>0?b.x-a.w:b.x+b.w;a.y=landing.y;a.vx=direction*280;a.vy=-260;a.vaultFlash=.25;continue;}
       if(a.vx>0){a.x=b.x-a.w;if(isPlayer)a.onWall=1;}else if(a.vx<0){a.x=b.x+b.w;if(isPlayer)a.onWall=-1;}a.vx=0;
     }
     a.y+=a.vy*dt;a.onGround=false;
     for(const b of colliders)if(overlaps(a,b)){
       if(a.vy>=0){a.y=b.y-a.h;a.vy=0;a.onGround=true;if(isPlayer)a.jumps=a.abilities.doubleJump?2:1;}else{a.y=b.y+b.h;a.vy=0;}
     }
-    if(isPlayer&&a.abilities.wallClimb&&a.onWall&&this.input.jump&&a.vy>50)a.vy=50;
   }
+  wallSide(actor){const inset=4,left={x:actor.x-3,y:actor.y+inset,w:3,h:actor.h-inset*2},right={x:actor.x+actor.w,y:actor.y+inset,w:3,h:actor.h-inset*2};if(this.platforms.some(block=>overlaps(left,block)))return-1;if(this.platforms.some(block=>overlaps(right,block)))return 1;return 0;}
   regionAt(x){return this.regions?.find(region=>x>=region.x&&x<region.x+region.w)??null;}
-  updateRegion(){const region=this.regionAt(this.player.x+this.player.w/2);if(!region||region.id===this.regionId)return;this.regionId=region.id;this.regionToast=region.name;this.regionToastTime=2.4;}
+  updateRegion(){if(this.merchantRoom.activeMerchant)return;const region=this.regionAt(this.player.x+this.player.w/2);if(!region||region.id===this.regionId)return;this.regionId=region.id;this.regionToast=region.name;this.regionToastTime=2.4;}
   pickupAvailable(pickup){return!pickup.collected&&(!pickup.requiresBossClear||this.bossArena.cleared);}
   updatePickups(){for(const pickup of this.pickups)if(this.pickupAvailable(pickup)&&overlaps(this.player,pickup)){pickup.collected=true;if(pickup.kind==='ability'){this.unlockAbility(pickup.ability);this.abilityPopup={ability:pickup.ability,name:pickup.name,key:pickup.key,description:pickup.description,color:pickup.color??'#ffffff',time:4.5,maxTime:4.5};}this.burst(pickup.x+pickup.w/2,pickup.y+pickup.h/2,pickup.color??'#ffffff',36);}}
-  nearbyMerchant(){const p=this.player;return this.merchants.find(merchant=>Math.hypot((p.x+p.w/2)-(merchant.x+merchant.w/2),(p.y+p.h/2)-(merchant.y+merchant.h/2))<=105)??null;}
+  nearbyMerchantDoor(){if(this.merchantRoom.activeMerchant)return null;const p=this.player;return this.merchants.find(merchant=>p.x+p.w/2>=merchant.x&&p.x+p.w/2<=merchant.x+merchant.w&&Math.abs(p.y+p.h-merchant.y-merchant.h)<=20)??null;}
+  merchantDoorUnlocked(merchant){const center=merchant.x+merchant.w/2;return this.enemies.every(enemy=>enemy.dead||enemy.isBoss||enemy.isMiniBoss||Math.abs(enemy.originX+enemy.w/2-center)>merchant.clearRadius);}
+  nearMerchantExit(){const exit=this.merchantRoom.exit,p=this.player;return Boolean(this.merchantRoom.activeMerchant&&p.x+p.w/2>=exit.x&&p.x+p.w/2<=exit.x+exit.w&&Math.abs(p.y+p.h-exit.y-exit.h)<=20);}
+  nearbyMerchant(){if(!this.merchantRoom.activeMerchant)return null;const merchant={...this.merchantRoom.activeMerchant,...this.merchantRoom.merchant};const p=this.player;return Math.hypot((p.x+p.w/2)-(merchant.x+merchant.w/2),(p.y+p.h/2)-(merchant.y+merchant.h/2))<=105?merchant:null;}
   rememberSafePlatform(){
     const p=this.player,floor=supportingPlatform(p,this.platforms,3);if(!p.onGround||!floor)return;
     const margin=Math.min(12,Math.max(0,(floor.w-p.w)/2));
@@ -145,9 +148,17 @@ export class Game {
     const p=this.player,cost=ABILITY_COSTS[type];if(!p.abilities[type]||p.specialTime>0||p.electricity<cost)return false;
     p.electricity-=cost;p.specialAimX=p.aimX;p.specialAimY=p.aimY;p.specialType=type;p.specialTime=ATTACK_TIMING[type];p.specialHits=new Set();return true;
   }
-  tryHeal(){const p=this.player;if(!p.abilities.heal||p.lives>=3||p.electricity<ABILITY_COSTS.heal)return false;p.electricity-=ABILITY_COSTS.heal;p.lives++;p.healFlash=.6;this.burst(p.x+p.w/2,p.y+p.h/2,'#75f5ff',24);return true;}
+  startHeal(){const p=this.player;if(p.healTime>0||p.invuln>0||!p.abilities.heal||p.lives>=3||p.electricity<ABILITY_COSTS.heal)return false;p.electricity-=ABILITY_COSTS.heal;p.healTime=HEAL_DURATION;return true;}
+  cancelHeal(){if(this.player.healTime<=0)return false;this.player.healTime=0;return true;}
+  completeHeal(){const p=this.player;if(p.lives>=3)return false;p.lives++;p.healFlash=.6;this.burst(p.x+p.w/2,p.y+p.h/2,'#75f5ff',24);return true;}
   canRest(){const p=this.player,station=this.restArea.station,dx=(p.x+p.w/2)-(station.x+station.w/2),dy=(p.y+p.h/2)-(station.y+station.h/2);return this.bossArena.cleared&&Math.hypot(dx,dy)<=station.interactionRadius;}
   tryRest(){if(!this.canRest())return false;const p=this.player,station=this.restArea.station;p.lives=3;p.invuln=0;p.vx=0;p.vy=0;p.restFlash=1;const checkpointX=clamp(station.x+station.w+24,this.restArea.x+16,this.restArea.x+this.restArea.w-p.w-16);this.safePosition={x:checkpointX,y:this.restArea.floorY-p.h};this.burst(station.x+station.w/2,station.y+station.h/2,'#d6ff3f',30);return true;}
+  tryInteract(){
+    if(this.nearMerchantExit()){const p=this.player,returnPosition=this.merchantRoom.returnPosition;p.x=returnPosition.x;p.y=returnPosition.y;p.vx=0;p.vy=0;this.safePosition={...returnPosition};this.merchantRoom.activeMerchant=null;this.merchantRoom.returnPosition=null;return true;}
+    const door=this.nearbyMerchantDoor();
+    if(door&&this.merchantDoorUnlocked(door)){const p=this.player;this.merchantRoom.returnPosition={x:p.x,y:p.y};this.merchantRoom.activeMerchant=door;p.x=this.merchantRoom.spawn.x;p.y=this.merchantRoom.spawn.y;p.vx=0;p.vy=0;this.safePosition={...this.merchantRoom.spawn};return true;}
+    return this.tryRest();
+  }
   unlockAbility(name){if(name in this.player.abilities){this.player.abilities[name]=true;if(name==='doubleJump'&&this.player.onGround)this.player.jumps=2;return true;}return false;}
   gainElectricity(amount=ELECTRICITY_PER_HIT){this.player.electricity=clamp(this.player.electricity+amount,0,ELECTRICITY_MAX);}
   hitTarget(target,damage,hitSet,electricity=ELECTRICITY_PER_HIT){
@@ -229,7 +240,7 @@ export class Game {
     this.bossProjectiles=this.bossProjectiles.filter(bolt=>!bolt.dead&&bolt.life>0);
     const wave=this.bossShockwave;if(!wave)return;wave.time=Math.max(0,wave.time-dt);wave.radius+=(wave.maxRadius-wave.radius)*Math.min(1,8*dt);const playerCenter=this.player.x+this.player.w/2;if(!wave.hit&&Math.abs(playerCenter-wave.x)<=wave.radius&&Math.abs(this.player.y+this.player.h-wave.y)<45){wave.hit=true;this.damagePlayer('enemy',wave.x);}if(wave.time===0)this.bossShockwave=null;
   }
-  damagePlayer(cause='enemy',sourceX=0){const p=this.player;if(p.invuln>0)return;p.lives--;this.shake=12;this.burst(p.x+20,p.y+20,'#ff493f',22);if(p.lives<=0){this.running=false;return;}if(cause==='spike'||cause==='fall'){const reset=cause==='spike'?this.safePosition:this.spawn;p.x=reset.x;p.y=reset.y;p.vx=0;p.vy=0;p.invuln=.6;}else{p.invuln=1.2;p.vx=(p.x<sourceX?-1:1)*360;p.vy=-300;}}
+  damagePlayer(cause='enemy',sourceX=0){const p=this.player;if(p.invuln>0)return;this.cancelHeal();p.lives--;this.shake=12;this.burst(p.x+20,p.y+20,'#ff493f',22);if(p.lives<=0){this.running=false;return;}if(cause==='spike'||cause==='fall'){const reset=cause==='spike'?this.safePosition:this.spawn;p.x=reset.x;p.y=reset.y;p.vx=0;p.vy=0;p.invuln=.6;}else{p.invuln=1.2;p.vx=(p.x<sourceX?-1:1)*360;p.vy=-300;}}
   burst(x,y,color,count){for(let i=0;i<count;i++)this.particles.push({x,y,vx:(Math.random()-.5)*260,vy:(Math.random()-.5)*260,life:.25+Math.random()*.35,color});}
   updateParticles(dt){for(const q of this.particles){q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=300*dt;q.life-=dt;}this.particles=this.particles.filter(q=>q.life>0);}
 }

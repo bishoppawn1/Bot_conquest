@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS,
   ENEMY_SPAWNS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
-  LOWER_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
+  LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
   PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_GATES, REGIONS,
   REST_AREA, TRAPS, WALL_BLOCKS, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
 } from '../src/level.js';
@@ -23,7 +23,8 @@ test('the map occupies a genuine two-dimensional playfield',()=>{
 
 test('suspended platforms vary in width and thickness',()=>{
   const suspended=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS];
-  assert.ok(FOUNDATION_BLOCKS.every(block=>block.h>=120));
+  assert.ok(FOUNDATION_BLOCKS.filter(block=>!block.id.startsWith('vault-')).every(block=>block.h>=120));
+  assert.ok(FOUNDATION_BLOCKS.filter(block=>block.id.startsWith('vault-')).every(block=>block.h===60));
   assert.ok(suspended.every(block=>block.h>=40&&block.h<=80));
   assert.ok(suspended.filter(block=>block.h>60).every(block=>['under-cache','under-threshold'].includes(block.id)));
   assert.ok(new Set(suspended.map(block=>block.w)).size>=15);
@@ -104,7 +105,7 @@ test('ability cores use the generic pickup format',()=>{
   assert.equal(PICKUP_SPAWNS.length,2);
   assert.ok(PICKUP_SPAWNS.every(pickup=>pickup.kind==='ability'&&pickup.name&&pickup.key&&pickup.color));
   const vault=PICKUP_SPAWNS.find(pickup=>pickup.id==='vault-core'),volt=PICKUP_SPAWNS.find(pickup=>pickup.id==='volt-core');
-  assert.equal(vault.ability,'vault');assert.equal(vault.requiresBossClear,true);assert.ok(vault.x>7190&&vault.x<REST_AREA.x+REST_AREA.w);
+  assert.equal(vault.ability,'wallClimb');assert.equal(vault.requiresBossClear,true);assert.ok(vault.x>7190&&vault.x<REST_AREA.x+REST_AREA.w);
   assert.equal(volt.ability,'electricJab');assert.equal(volt.color,'#75f5ff');assert.ok(volt.x>=2360&&volt.x<3550);
   assert.ok(PICKUP_SPAWNS.every(pickup=>PLATFORMS.every(block=>!intersects(pickup,block))));
 });

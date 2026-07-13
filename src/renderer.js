@@ -66,7 +66,9 @@ export class Renderer {
     this.drawBossArena(game);
     this.drawMiniBossArenas(game);
     this.drawRestStation(game);
-    for(const merchant of game.merchants)this.drawMerchant(merchant,game.time);
+    for(const merchant of game.merchants)this.drawMerchantDoor(merchant,game.merchantDoorUnlocked(merchant),game.time);
+    if(game.merchantRoom.activeMerchant)this.drawMerchant({...game.merchantRoom.activeMerchant,...game.merchantRoom.merchant},game.time);
+    if(game.merchantRoom.activeMerchant)this.drawMerchantDoor({...game.merchantRoom.exit,color:game.merchantRoom.activeMerchant.color},true,game.time);
     for(const pickup of game.pickups)if(game.pickupAvailable(pickup))this.drawPickup(pickup,game.time);
     for(const pile of game.junkPiles)if(!pile.dead)this.drawJunkPile(pile);
     for(const conduit of game.conduits)this.drawConduit(conduit,game.time);
@@ -120,9 +122,9 @@ export class Renderer {
     ctx.fillStyle='#2b3940';ctx.beginPath();ctx.ellipse(-5,-4,17,11,0,0,Math.PI*2);ctx.fill();
     ctx.save();ctx.rotate(Math.atan2(player.aimY,player.aimX));ctx.shadowBlur=10;ctx.shadowColor='#ff3434';ctx.fillStyle='#ff3d3d';ctx.beginPath();ctx.arc(12,-6,4,0,Math.PI*2);ctx.arc(19,0,2.5,0,Math.PI*2);ctx.arc(10,5,2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.restore();
     ctx.fillStyle='#d6ff3f';ctx.fillRect(-8,-21,16,3);ctx.restore();
+    if(player.healTime>0)this.drawRepairChannel(player);
     if(player.healFlash>0)this.drawHeal(player);
     if(player.restFlash>0){ctx.save();ctx.strokeStyle='#d6ff3f';ctx.globalAlpha=player.restFlash;ctx.lineWidth=5;ctx.beginPath();ctx.arc(player.x+player.w/2,player.y+player.h/2,34+(1-player.restFlash)*45,0,Math.PI*2);ctx.stroke();ctx.restore();}
-    if(player.vaultFlash>0){ctx.save();ctx.strokeStyle='#ffffff';ctx.globalAlpha=player.vaultFlash*4;ctx.lineWidth=3;ctx.beginPath();ctx.arc(player.x+player.w/2,player.y+player.h,34,Math.PI,Math.PI*2);ctx.stroke();ctx.restore();}
     if(player.attackTime>0)this.drawPrimarySlash(player);
     if(player.specialTime>0){if(player.specialType==='field')this.drawElectricField(player);else this.drawElectricJab(player);}
   }
@@ -156,6 +158,10 @@ export class Renderer {
     const {ctx}=this;ctx.save();ctx.translate(merchant.x,merchant.y);ctx.fillStyle='#11191e';ctx.fillRect(2,18,merchant.w-4,merchant.h-18);ctx.fillStyle='#293940';ctx.fillRect(6,24,merchant.w-12,merchant.h-30);ctx.strokeStyle=merchant.color;ctx.lineWidth=3;ctx.strokeRect(3,19,merchant.w-6,merchant.h-21);ctx.fillStyle=merchant.color;ctx.fillRect(-4,10,merchant.w+8,9);ctx.fillStyle='#0a1014';ctx.fillRect(9,30,merchant.w-18,10);ctx.shadowBlur=10;ctx.shadowColor=merchant.color;ctx.fillStyle=merchant.color;ctx.beginPath();ctx.arc(merchant.w/2+Math.sin(time*2+merchant.x)*2,35,3,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#75878d';ctx.fillRect(8,merchant.h-3,8,3);ctx.fillRect(merchant.w-16,merchant.h-3,8,3);ctx.restore();
   }
 
+  drawMerchantDoor(door,unlocked,time) {
+    const {ctx}=this,color=unlocked?door.color:'#4c5559';ctx.save();ctx.translate(door.x,door.y);ctx.fillStyle='#0b1115';ctx.fillRect(0,0,door.w,door.h);ctx.strokeStyle=color;ctx.lineWidth=4;ctx.strokeRect(2,2,door.w-4,door.h-4);ctx.fillStyle='#1b282f';ctx.fillRect(12,14,door.w-24,door.h-28);for(let y=24;y<door.h-18;y+=20){ctx.fillStyle=unlocked?'#263b43':'#252b2e';ctx.fillRect(17,y,door.w-34,7);}ctx.shadowBlur=unlocked?14:0;ctx.shadowColor=color;ctx.fillStyle=color;ctx.beginPath();ctx.arc(door.w/2,18,4+(unlocked?Math.sin(time*4)*1.2:0),0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+
   drawBossArena(game) {
     const {ctx}=this;
     for(const gate of game.bossGates()){ctx.save();ctx.fillStyle='#283038';ctx.fillRect(gate.x,gate.y,gate.w,gate.h);ctx.fillStyle='#ff493f';ctx.fillRect(gate.x,gate.y,4,gate.h);ctx.fillRect(gate.x+gate.w-4,gate.y,4,gate.h);for(let y=gate.y+16;y<gate.y+gate.h;y+=28){ctx.fillStyle='#11181d';ctx.fillRect(gate.x+7,y,gate.w-14,10);ctx.fillStyle='#6d3535';ctx.fillRect(gate.x+9,y+2,gate.w-18,2);}ctx.restore();}
@@ -184,6 +190,10 @@ export class Renderer {
 
   drawHeal(player) {
     const {ctx}=this;ctx.save();ctx.strokeStyle='#75f5ff';ctx.lineWidth=4;ctx.globalAlpha=player.healFlash/.6;ctx.beginPath();ctx.arc(player.x+player.w/2,player.y+player.h/2,28+(1-player.healFlash/.6)*25,0,Math.PI*2);ctx.stroke();ctx.restore();
+  }
+
+  drawRepairChannel(player) {
+    const {ctx}=this,progress=1-player.healTime/.7,cx=player.x+player.w/2,cy=player.y+player.h/2;ctx.save();ctx.shadowBlur=12;ctx.shadowColor='#75f5ff';ctx.strokeStyle='#28434d';ctx.lineWidth=5;ctx.beginPath();ctx.arc(cx,cy,31,-Math.PI/2,Math.PI*1.5);ctx.stroke();ctx.strokeStyle='#75f5ff';ctx.beginPath();ctx.arc(cx,cy,31,-Math.PI/2,-Math.PI/2+Math.PI*2*progress);ctx.stroke();ctx.restore();
   }
 
   drawConduit(conduit,time) {
@@ -215,8 +225,11 @@ export class Renderer {
     ctx.textAlign='right';ctx.fillStyle='#708086';ctx.font='9px Space Mono';ctx.fillText(`X ${Math.round(game.player.x).toString().padStart(4,'0')}  Y ${Math.round(game.player.y).toString().padStart(4,'0')}`,1238,42);ctx.fillStyle='#d6ff3f';ctx.fillText('LOCAL GRID // OPEN',1238,60);ctx.fillStyle='#657278';ctx.fillText('CORE KIT // JUMP + SLASH + HEAL',1238,82);ctx.textAlign='left';
     const boss=game.boss();if(game.bossArena.active&&boss&&!boss.dead){const width=480,ratio=Math.max(0,boss.health/boss.maxHealth),x=(VIEW_WIDTH-width)/2,y=25;ctx.fillStyle='rgba(7,11,16,.92)';ctx.fillRect(x-12,y-12,width+24,42);ctx.strokeStyle='#5a2e31';ctx.lineWidth=2;ctx.strokeRect(x-12,y-12,width+24,42);ctx.fillStyle='#242c32';ctx.fillRect(x,y,width,12);ctx.fillStyle='#ff493f';ctx.fillRect(x,y,width*ratio,12);ctx.fillStyle='#d4dcde';ctx.font='700 10px Space Mono';ctx.textAlign='center';ctx.fillText('HEAVY CORE',VIEW_WIDTH/2,y+27);ctx.textAlign='left';}
     const miniArena=game.miniBossArenas.find(arena=>arena.active&&!arena.cleared),miniBoss=miniArena?game.miniBoss(miniArena.id):null;if(miniBoss&&!miniBoss.dead){const width=360,ratio=Math.max(0,miniBoss.health/miniBoss.maxHealth),x=(VIEW_WIDTH-width)/2,y=26;ctx.fillStyle='rgba(4,10,15,.94)';ctx.fillRect(x-10,y-10,width+20,38);ctx.strokeStyle='#315d68';ctx.strokeRect(x-10,y-10,width+20,38);ctx.fillStyle='#1a2a31';ctx.fillRect(x,y,width,9);ctx.fillStyle='#75f5ff';ctx.fillRect(x,y,width*ratio,9);ctx.fillStyle='#d8faff';ctx.font='700 10px Space Mono';ctx.textAlign='center';ctx.fillText(miniArena.name,VIEW_WIDTH/2,y+24);ctx.textAlign='left';}
-    if(game.canRest()){ctx.fillStyle='rgba(7,11,16,.9)';ctx.fillRect(475,632,330,42);ctx.strokeStyle='#d6ff3f';ctx.lineWidth=2;ctx.strokeRect(475,632,330,42);ctx.fillStyle='#d6ff3f';ctx.font='700 12px Space Mono';ctx.textAlign='center';ctx.fillText('O  //  REST AND RECOVER',640,658);ctx.textAlign='left';}
-    const merchant=game.nearbyMerchant();if(merchant){ctx.fillStyle='rgba(7,11,16,.92)';ctx.fillRect(430,626,420,48);ctx.strokeStyle=merchant.color;ctx.lineWidth=2;ctx.strokeRect(430,626,420,48);ctx.fillStyle='#ffffff';ctx.font='700 11px Space Mono';ctx.textAlign='center';ctx.fillText('MERCHANT UPLINK // SERVICES OFFLINE',640,647);ctx.fillStyle='#72838a';ctx.font='9px Space Mono';ctx.fillText('Trading and inventory are not installed yet.',640,663);ctx.textAlign='left';}
+    if(game.player.healTime>0){const progress=Math.round((1-game.player.healTime/.7)*100);ctx.fillStyle='rgba(7,11,16,.92)';ctx.fillRect(500,628,280,42);ctx.strokeStyle='#75f5ff';ctx.lineWidth=2;ctx.strokeRect(500,628,280,42);ctx.fillStyle='#75f5ff';ctx.font='700 11px Space Mono';ctx.textAlign='center';ctx.fillText(`REPAIRING // ${progress}%`,640,654);ctx.textAlign='left';}
+    else if(game.canRest()){ctx.fillStyle='rgba(7,11,16,.9)';ctx.fillRect(475,632,330,42);ctx.strokeStyle='#d6ff3f';ctx.lineWidth=2;ctx.strokeRect(475,632,330,42);ctx.fillStyle='#d6ff3f';ctx.font='700 12px Space Mono';ctx.textAlign='center';ctx.fillText('O  //  REST AND RECOVER',640,658);ctx.textAlign='left';}
+    const door=game.nearbyMerchantDoor();if(door){const unlocked=game.merchantDoorUnlocked(door);ctx.fillStyle='rgba(7,11,16,.92)';ctx.fillRect(430,626,420,48);ctx.strokeStyle=unlocked?door.color:'#ff493f';ctx.lineWidth=2;ctx.strokeRect(430,626,420,48);ctx.fillStyle='#ffffff';ctx.font='700 11px Space Mono';ctx.textAlign='center';ctx.fillText(unlocked?`O  //  ENTER ${door.name}`:'ACCESS SEALED // HOSTILES REMAIN',640,654);ctx.textAlign='left';}
+    if(game.nearMerchantExit()){const merchant=game.merchantRoom.activeMerchant;ctx.fillStyle='rgba(7,11,16,.92)';ctx.fillRect(470,632,340,42);ctx.strokeStyle=merchant.color;ctx.strokeRect(470,632,340,42);ctx.fillStyle='#ffffff';ctx.font='700 11px Space Mono';ctx.textAlign='center';ctx.fillText('O  //  RETURN TO OVERWORLD',640,658);ctx.textAlign='left';}
+    const merchant=game.nearbyMerchant();if(merchant){ctx.fillStyle='rgba(7,11,16,.92)';ctx.fillRect(430,626,420,48);ctx.strokeStyle=merchant.color;ctx.lineWidth=2;ctx.strokeRect(430,626,420,48);ctx.fillStyle='#ffffff';ctx.font='700 11px Space Mono';ctx.textAlign='center';ctx.fillText(`${merchant.name} // SERVICES OFFLINE`,640,647);ctx.fillStyle='#72838a';ctx.font='9px Space Mono';ctx.fillText('Trading and inventory are not installed yet.',640,663);ctx.textAlign='left';}
     if(game.regionToastTime>0&&game.regionToast){const alpha=Math.min(1,game.regionToastTime*2,(2.4-game.regionToastTime)*5);ctx.save();ctx.globalAlpha=Math.max(0,alpha);ctx.fillStyle='rgba(7,11,16,.92)';ctx.fillRect(24,608,360,58);ctx.strokeStyle='#75f5ff';ctx.lineWidth=2;ctx.strokeRect(24,608,360,58);ctx.fillStyle='#71838a';ctx.font='9px Space Mono';ctx.fillText('REGION LINK // NEW LOCAL GRID',42,630);ctx.fillStyle='#ffffff';ctx.font='700 17px Space Mono';ctx.fillText(game.regionToast,42,654);ctx.restore();}
     if(game.rewardToast?.time>0){const alpha=Math.min(1,game.rewardToast.time*2);ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle='rgba(7,11,16,.94)';ctx.fillRect(480,116,320,64);ctx.strokeStyle='#d6ff3f';ctx.lineWidth=2;ctx.strokeRect(480,116,320,64);ctx.textAlign='center';ctx.fillStyle='#d6ff3f';ctx.font='700 20px Space Mono';ctx.fillText(game.rewardToast.text,640,143);ctx.fillStyle='#9caaae';ctx.font='9px Space Mono';ctx.fillText(game.rewardToast.detail,640,162);ctx.textAlign='left';ctx.restore();}
     if(game.abilityPopup?.time>0){const popup=game.abilityPopup,fade=Math.min(1,popup.time*2,(popup.maxTime-popup.time)*4);ctx.save();ctx.globalAlpha=Math.max(0,fade);ctx.fillStyle='rgba(2,7,12,.96)';ctx.fillRect(320,225,640,250);ctx.strokeStyle=popup.color;ctx.lineWidth=3;ctx.strokeRect(320,225,640,250);ctx.fillStyle=popup.color;ctx.fillRect(320,225,640,7);ctx.textAlign='center';ctx.fillStyle='#76888f';ctx.font='700 10px Space Mono';ctx.fillText('ABILITY CORE INTEGRATED',640,264);ctx.fillStyle='#ffffff';ctx.font='700 34px Space Mono';ctx.fillText(popup.name,640,310);ctx.fillStyle='#0b151b';ctx.fillRect(520,334,240,60);ctx.strokeStyle=popup.color;ctx.lineWidth=2;ctx.strokeRect(520,334,240,60);ctx.fillStyle=popup.color;ctx.font='700 25px Space Mono';ctx.fillText(popup.key,640,373);ctx.fillStyle='#afbec2';ctx.font='11px Space Mono';ctx.fillText(popup.description,640,425);if(popup.ability==='electricJab'){ctx.fillStyle='#72848a';ctx.font='9px Space Mono';ctx.fillText('Harvest the conduit ahead, then use F on the powered seal.',640,449);}ctx.textAlign='left';ctx.restore();}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Game } from '../src/game.js';
+import { Game, HEAL_DURATION } from '../src/game.js';
 import { ABILITY_COSTS, ATTACK_RANGE, ATTACK_TIMING, circleIntersectsRect, fieldCircle, SCRAP_VALUES } from '../src/combat.js';
 
 const tick=(game,count=1)=>{for(let i=0;i<count;i++)game.update(1/60);};
@@ -33,9 +33,19 @@ test('conduit runs dry and cannot generate unlimited electricity',()=>{
   assert.equal(conduit.charge,0);assert.equal(game.player.electricity,8);
 });
 
-test('electricity can repair one missing core shell',()=>{
+test('repair spends electricity immediately but restores a shell after a short channel',()=>{
   const game=settled();game.player.lives=2;game.player.electricity=ABILITY_COSTS.heal;press(game,'heal');
-  assert.equal(game.player.lives,3);assert.equal(game.player.electricity,0);assert.ok(game.player.healFlash>0);
+  assert.equal(HEAL_DURATION,.7);assert.equal(game.player.lives,2);assert.equal(game.player.electricity,0);assert.ok(game.player.healTime>0);
+  tick(game,45);assert.equal(game.player.lives,3);assert.equal(game.player.healTime,0);assert.ok(game.player.healFlash>0);
+});
+
+test('taking damage interrupts repair without refunding its electricity',()=>{
+  const game=settled();game.player.lives=2;game.player.electricity=ABILITY_COSTS.heal;press(game,'heal');game.damagePlayer('enemy',game.player.x+100);
+  assert.equal(game.player.lives,1);assert.equal(game.player.healTime,0);assert.equal(game.player.electricity,0);tick(game,50);assert.equal(game.player.lives,1);
+});
+
+test('repair cannot be hidden inside post-hit invulnerability',()=>{
+  const game=settled();game.player.lives=2;game.player.electricity=ABILITY_COSTS.heal;game.player.invuln=.5;press(game,'heal');assert.equal(game.player.healTime,0);assert.equal(game.player.electricity,ABILITY_COSTS.heal);
 });
 
 test('electric field spends energy and damages enemies around the player',()=>{

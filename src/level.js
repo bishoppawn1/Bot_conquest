@@ -10,11 +10,11 @@ export const SPAWN = { x:180, y:624 };
 export const FOUNDATION_BLOCKS = [
   {id:'west-floor',x:0,y:660,w:1200,h:140,kind:'foundation'},
   {id:'assembly-floor',x:1290,y:620,w:980,h:180,kind:'foundation'},
-  {id:'vault-entry',x:2360,y:680,w:200,h:120,kind:'foundation'},
-  {id:'vault-shelf',x:2720,y:750,w:220,h:120,kind:'foundation'},
-  {id:'vault-depth',x:2940,y:820,w:220,h:120,kind:'foundation'},
-  {id:'vault-rise',x:3160,y:750,w:100,h:120,kind:'foundation'},
-  {id:'vault-exit',x:3420,y:680,w:130,h:120,kind:'foundation'},
+  {id:'vault-entry',x:2360,y:680,w:200,h:60,kind:'foundation'},
+  {id:'vault-shelf',x:2720,y:750,w:220,h:60,kind:'foundation'},
+  {id:'vault-depth',x:2940,y:820,w:220,h:60,kind:'foundation'},
+  {id:'vault-rise',x:3160,y:750,w:100,h:60,kind:'foundation'},
+  {id:'vault-exit',x:3420,y:680,w:130,h:60,kind:'foundation'},
   {id:'foundry-floor',x:3550,y:610,w:1300,h:190,kind:'foundation'},
   {id:'prearena-floor',x:4950,y:670,w:840,h:130,kind:'foundation'},
   {id:'boss-floor',x:5890,y:600,w:1300,h:200,kind:'foundation'},
@@ -168,17 +168,30 @@ export const REGION_GATES = [
 // can use the same contact collection flow.
 export const PICKUP_SPAWNS = [
   {id:'volt-core',kind:'ability',ability:'electricJab',x:3410,y:980,w:24,h:24,color:'#75f5ff',name:'VOLT JAB',key:'F',description:'Spend electricity to fire a long powered jab.'},
-  {id:'vault-core',kind:'ability',ability:'vault',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'VAULT',key:'W + MOVE',description:'Run into low obstacles while holding jump.',requiresBossClear:true}
+  {id:'vault-core',kind:'ability',ability:'wallClimb',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'WALL CLIMB',key:'W + A / D',description:'Hold W on a wall; press away to jump at any height.',requiresBossClear:true}
 ];
 
-// Merchants are presentation-only until the trading system is designed. Most
-// live in the concourse, while a few remain scattered through other regions.
+// Merchant terminals lead to one sealed, enemy-free interior. A terminal
+// remains locked until its explicitly local enemy group is defeated.
 export const MERCHANT_SPAWNS = [
-  {id:'merchant-parts',x:8080,y:606,w:38,h:54,region:'concourse',hub:true,color:'#75f5ff'},
-  {id:'merchant-shells',x:8170,y:606,w:38,h:54,region:'concourse',hub:true,color:'#d6ff3f'},
-  {id:'merchant-salvage',x:8260,y:606,w:38,h:54,region:'concourse',hub:true,color:'#ffb85c'},
-  {id:'merchant-verge',x:2180,y:566,w:38,h:54,region:'verge',hub:false,color:'#75f5ff'},
-  {id:'merchant-foundry',x:4780,y:556,w:38,h:54,region:'foundry',hub:false,color:'#ffb85c'}
+  {id:'merchant-parts',name:'PARTS BROKER',x:7800,y:540,w:80,h:120,region:'concourse',hub:true,color:'#75f5ff',clearRadius:260},
+  {id:'merchant-shells',name:'SHELL ARCHIVE',x:7930,y:540,w:80,h:120,region:'concourse',hub:true,color:'#d6ff3f',clearRadius:260},
+  {id:'merchant-salvage',name:'SALVAGE EXCHANGE',x:8060,y:540,w:80,h:120,region:'concourse',hub:true,color:'#ffb85c',clearRadius:260},
+  {id:'merchant-verge',name:'VERGE TINKER',x:2070,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:260},
+  {id:'merchant-foundry',name:'FOUNDRY FACTOR',x:4630,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:300}
+];
+
+export const MERCHANT_ROOM = {
+  x:2600,y:-930,w:700,h:330,floorY:-600,
+  spawn:{x:2700,y:-636},exit:{x:3160,y:-720,w:80,h:120},
+  merchant:{x:2910,y:-654,w:38,h:54}
+};
+
+export const MERCHANT_ROOM_BLOCKS = [
+  {id:'merchant-room-ceiling',x:2600,y:-1000,w:700,h:70,kind:'merchant-room'},
+  {id:'merchant-room-left',x:2600,y:-930,w:60,h:330,kind:'merchant-room'},
+  {id:'merchant-room-right',x:3240,y:-930,w:60,h:330,kind:'merchant-room'},
+  {id:'merchant-room-floor',x:2600,y:-600,w:700,h:200,kind:'merchant-room'}
 ];
 
 export const RECESSES = [
@@ -191,7 +204,8 @@ export const RECESSES = [
   {x:7440,y:450,w:800,h:210,floorY:660,ceilingY:450,openSide:'right'},
   {x:8500,y:-790,w:980,h:1380,floorY:590,ceilingY:-790,openSide:'left'},
   {x:100,y:500,w:240,h:160,floorY:660,ceilingY:500,openSide:'right',pocket:true},
-  {x:9300,y:450,w:240,h:140,floorY:590,ceilingY:450,openSide:'left',pocket:true}
+  {x:9300,y:450,w:240,h:140,floorY:590,ceilingY:450,openSide:'left',pocket:true},
+  {x:2660,y:-930,w:580,h:330,floorY:-600,ceilingY:-930,merchantRoom:true}
 ];
 
 export const PLATFORMS = [
@@ -202,7 +216,8 @@ export const PLATFORMS = [
   ...LOWER_BLOCKS,
   ...POCKET_BLOCKS,
   ...WALL_BLOCKS,
-  ...ABILITY_GATED_BLOCKS
+  ...ABILITY_GATED_BLOCKS,
+  ...MERCHANT_ROOM_BLOCKS
 ];
 
 export const TRAPS = [
