@@ -25,11 +25,11 @@ test('the active mini-boss gate prevents leaving the room',()=>{
   game.moveActor(game.player,.1,true);assert.ok(game.player.x+game.player.w<=gate.x);
 });
 
-test('defeating the mini boss awards scrap and retracts its gate',()=>{
+test('defeating the mini boss awards titanium and retracts its gate',()=>{
   const game=new Game(),arena=game.miniBossArenas[0],miniBoss=game.miniBoss(arena.id);arena.active=true;arena.gateProgress=1;miniBoss.health=1;
   game.hitTarget(miniBoss,1,new Set(),0);
-  assert.equal(miniBoss.dead,true);assert.equal(arena.cleared,true);assert.equal(game.player.scrap,arena.rewardScrap);
-  assert.equal(game.rewardToast.text,`+${arena.rewardScrap} SCRAP`);
+  assert.equal(miniBoss.dead,true);assert.equal(arena.cleared,true);assert.equal(game.player.scrap,0);assert.equal(game.player.materials.titanium,arena.rewardMaterial.amount);
+  assert.equal(game.rewardToast.text,`+${arena.rewardMaterial.amount} TITANIUM`);
   for(let frame=0;frame<20;frame++)game.updateMiniBossArenas(1/60);
   assert.equal(game.miniBossGates().length,0);
 });

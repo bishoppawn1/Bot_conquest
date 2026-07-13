@@ -171,7 +171,7 @@ export const MINI_BOSS_ARENAS = [
   {
     id:'drift-scrapper',name:'CACHE SCRAPPER',region:'drift',
     x:11800,y:170,w:560,h:170,floorY:340,triggerY:205,
-    gateX:12320,gateY:170,gateWidth:40,gateHeight:170,rewardScrap:80,
+    gateX:12320,gateY:170,gateWidth:40,gateHeight:170,rewardScrap:0,rewardMaterial:{type:'titanium',amount:3},
     enemy:{type:'miniBoss',x:12080,y:268,w:82,h:72,health:6}
   }
 ];
@@ -210,8 +210,13 @@ export const REGION_GATES = [
 // can use the same contact collection flow.
 export const PICKUP_SPAWNS = [
   {id:'volt-core',kind:'ability',ability:'electricJab',x:3260,y:1080,w:24,h:24,color:'#75f5ff',name:'VOLT JAB',key:'F',description:'Spend electricity to fire a long powered jab.',requiresVaultBossClear:true},
-  {id:'vault-core',kind:'ability',ability:'wallClimb',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'WALL CLIMB',key:'W + A / D',description:'Hold W on a wall; press away to jump at any height.',requiresBossClear:true}
+  {id:'vault-core',kind:'ability',ability:'wallClimb',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'WALL CLIMB',key:'W + A / D',description:'Hold W on a wall; press away to jump at any height.',requiresBossClear:true},
+  {id:'map-west',kind:'map',x:1080,y:256,w:24,h:24,color:'#d6ff3f',name:'WESTERN SURVEY',regions:['verge','vault']},
+  {id:'map-central',kind:'map',x:4740,y:356,w:24,h:24,color:'#d6ff3f',name:'CENTRAL SURVEY',regions:['foundry','bastion','concourse']},
+  {id:'map-east',kind:'map',x:11020,y:326,w:24,h:24,color:'#d6ff3f',name:'EASTERN SURVEY',regions:['crown','gauntlet','drift','exchange']}
 ];
+
+export const FORGE_UPGRADE_COSTS = Object.freeze([500,900,1500,2400]);
 
 // Merchant terminals lead to one sealed, enemy-free interior. A terminal
 // remains locked until its explicitly local enemy group is defeated.
@@ -221,7 +226,7 @@ export const MERCHANT_SPAWNS = [
   {id:'merchant-salvage',name:'SALVAGE EXCHANGE',x:8060,y:540,w:80,h:120,region:'concourse',hub:true,color:'#ffb85c',clearRadius:260},
   {id:'merchant-verge',name:'VERGE TINKER',x:2070,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:260},
   {id:'merchant-foundry',name:'FOUNDRY FACTOR',x:4630,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:300},
-  {id:'merchant-forge',name:'EDGE FORGE',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:260,service:'damageUpgrade',cost:100}
+  {id:'merchant-forge',name:'EDGE FORGE',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:260,service:'damageUpgrade',upgradeCosts:FORGE_UPGRADE_COSTS}
 ];
 
 export const MERCHANT_ROOM = {
@@ -332,14 +337,14 @@ export const JUNK_PILES = [
   {x:2960,y:994,w:84,h:46,health:6,scrapValue:32},
   {x:2800,y:884,w:88,h:46,health:6,scrapValue:34},
   {x:3820,y:-46,w:86,h:46,health:6,scrapValue:36},
-  {x:4500,y:-276,w:90,h:46,health:6,scrapValue:38},
+  {x:4500,y:-276,w:90,h:46,health:6,scrapValue:0,material:{type:'titanium',amount:1}},
   {x:5600,y:264,w:80,h:46,health:5,scrapValue:28},
   {x:8940,y:54,w:78,h:46,health:5,scrapValue:30},
-  {x:9040,y:-696,w:92,h:46,health:7,scrapValue:44},
+  {x:9040,y:-696,w:92,h:46,health:7,scrapValue:0,material:{type:'uranium',amount:1}},
   {id:'vault-volt-seal',x:3370,y:740,w:50,h:80,health:2,scrapValue:20,minimumDamage:2,gate:true,requires:'electricJab'},
   {x:9300,y:500,w:120,h:90,health:8,scrapValue:60,minimumDamage:2,gate:true},
   {x:10280,y:344,w:82,h:46,health:6,scrapValue:38},
   {x:12160,y:294,w:82,h:46,health:6,scrapValue:45},
-  {x:13560,y:274,w:88,h:46,health:7,scrapValue:48},
-  {x:14000,y:384,w:90,h:46,health:7,scrapValue:50}
+  {x:13560,y:274,w:88,h:46,health:7,scrapValue:0,material:{type:'titanium',amount:2}},
+  {x:14000,y:384,w:90,h:46,health:7,scrapValue:0,material:{type:'uranium',amount:1}}
 ];

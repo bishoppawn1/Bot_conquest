@@ -20,3 +20,8 @@ test('a destroyed bot rebuilds at the activated recovery station',()=>{
 test('spike recovery uses the rest station checkpoint after resting',()=>{
   const game=new Game(),station=game.restArea.station;game.enemies=[];game.bossArena.cleared=true;game.player.x=station.x+station.w+20;game.player.y=game.restArea.floorY-game.player.h;press(game,'rest');const checkpoint={...game.safePosition};game.player.x=7200;game.player.y=710;game.player.vx=0;game.player.vy=0;tick(game);assert.equal(game.player.lives,2);assert.equal(game.player.x,checkpoint.x);assert.equal(game.player.y,checkpoint.y);
 });
+
+test('saving and full death respawn ordinary enemies but not defeated bosses',()=>{
+  const game=new Game(),station=game.restArea.station,boss=game.boss();for(const enemy of game.enemies)if(!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isMiniBoss)enemy.dead=true;boss.dead=true;game.bossArena.cleared=true;game.player.x=station.x+station.w+20;game.player.y=game.restArea.floorY-game.player.h;press(game,'rest');assert.equal(game.enemies.filter(enemy=>!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isMiniBoss&&enemy.dead).length,0);assert.equal(boss.dead,true);
+  for(const enemy of game.enemies)if(!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isMiniBoss)enemy.dead=true;Object.assign(game.player,{lives:1,invuln:0});game.damagePlayer('enemy',game.player.x+100);assert.equal(game.enemies.filter(enemy=>!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isMiniBoss&&enemy.dead).length,0);assert.equal(boss.dead,true);
+});

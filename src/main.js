@@ -6,6 +6,7 @@ const canvas = document.querySelector('#game');
 const startScreen = document.querySelector('#start');
 const renderer = new Renderer(canvas);
 const debugSpawn = new URLSearchParams(location.search).get('debug');
+const debugPanel = new URLSearchParams(location.search).get('panel');
 const abilityControls = [...document.querySelectorAll('[data-ability]')];
 
 let game = new Game();
@@ -42,6 +43,9 @@ function begin() {
   } else if (debugSpawn === 'recovery') {
     Object.assign(game.player,{x:500,y:624,lives:1,scrap:73,electricity:48,invuln:0});
     game.damagePlayer('enemy',600);
+  } else if (debugSpawn === 'inventory') {
+    Object.assign(game.player,{scrap:860,electricity:67,primaryDamage:3,damageUpgrades:2,materials:{titanium:4,uranium:1},purchasedItems:[{id:'edge-coil-1',name:'EDGE COIL MK 1',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'edge-coil-2',name:'EDGE COIL MK 2',detail:'+1 PRIMARY SLASH DAMAGE'}]});
+    for(const region of ['verge','vault','foundry','bastion','concourse'])game.mappedRegions.add(region);game.inventoryOpen=true;if(debugPanel==='map')game.inventoryPage=0;
   } else if (debugSpawn === 'explore') {
     game.player.x=1660;
     game.player.y=140-game.player.h;
@@ -87,7 +91,7 @@ function begin() {
   } else if (debugSpawn === 'exchange') {
     game.player.x=14295;
     game.player.y=660-game.player.h;
-    game.player.scrap=120;
+    game.player.scrap=6000;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'forge-room') {
     const forge=game.merchants.find(merchant=>merchant.id==='merchant-forge');
@@ -95,7 +99,7 @@ function begin() {
     game.merchantRoom.returnPosition={x:14295,y:660-game.player.h};
     game.player.x=game.merchantRoom.merchant.x-80;
     game.player.y=game.merchantRoom.merchant.y;
-    game.player.scrap=120;
+    game.player.scrap=6000;
     game.safePosition={x:game.player.x,y:game.player.y};
   }
   playing = true;

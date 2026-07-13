@@ -28,7 +28,7 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 | Electric field | `Q` | Locked initially; spend 40 electricity after unlock |
 | Electric jab | `F` | Locked initially; spend 24 electricity after collecting the blue Volt Jab core |
 | Interact | `O` | Rest at the recovery station or enter/leave an unlocked merchant room |
-| Inventory / map | `I` | Reserved for a later system; deliberately does nothing now |
+| Inventory / map | `I` | Toggle a simulation-pausing overlay; use `A`/`D` for pages and `W`/`S` for entries |
 
 There is no restart key or persistent restart control. Losing all three shells rebuilds the bot at the last activated save point, or at the initial spawn before any station has been activated.
 
@@ -50,21 +50,23 @@ Shell swapping is planned but not implemented in this prototype. Shells will cha
 - A large, heavy shell with substantially more maximum health but slower movement.
 - A reach-focused shell with a longer primary slash.
 
-Acquisition, inventory presentation, swapping locations, exact bonuses, and balance costs remain for a later design pass.
+Acquisition, swapping locations, exact bonuses, and balance costs remain for a later design pass. The current inventory can list acquired special items, but shell swapping is not yet part of it.
 
 ## Resource loop
 
-Enemies award scrap when killed: crawler 6, roller 8, hopper 10, drone 12, and brute 25. The Grand Exchange Edge Forge is the first scrap sink: one purchase costs 100 scrap and increases primary-slash damage from 1 to 2 for the remainder of the run. It cannot be purchased twice.
+Enemies award scrap when killed: crawler 6, roller 8, hopper 10, drone 12, and brute 25. The Grand Exchange Edge Forge offers four increasingly expensive, run-persistent `+1` primary-slash upgrades at 500, 900, 1,500, and 2,400 scrap. Purchased edge coils appear in the inventory and a completed forge cannot be purchased again.
+
+Titanium and uranium are persistent special materials for future merchant recipes. Selected salvage piles award their configured material instead of scrap, and the Cache Scrapper awards three titanium. Ordinary merchants display the carried material totals, but actual material recipes and prices remain intentionally undesigned.
 
 The player has an electricity meter capped at 100. A standard slash against an enemy adds 12 electricity. Three conduits each contain 24 electricity, yield 4 per slash, and stay permanently empty after six successful harvests. A target hit by a special attack returns 4 electricity.
 
-Ten ordinary junk piles have configured health and burst into scrap payouts when destroyed. Two powered seals have minimum damage 2 and require electric jab: the two-health Sunken Vault tutorial seal and a later armored cache wall. Hitting junk does not generate electricity.
+Ordinary junk piles have configured health and burst into scrap or special-material payouts when destroyed. Two powered seals have minimum damage 2 and require electric jab: the two-health Sunken Vault tutorial seal and a later armored cache wall. Hitting junk does not generate electricity.
 
 The electric field lasts 0.9 seconds and uses a true 112-unit-radius circular collision test. The electric jab lasts 0.5 seconds, reaches 170 units in its locked direction, and deals two damage.
 
 ## Lives and failure
 
-The player starts with three core shells. Enemy contact removes one shell and briefly grants invulnerability. Touching a spike immediately removes one shell and returns the player to the last safe position recorded on the most recently supported platform; the player never continues falling through the spike pit. Falling completely out of the world still returns to the initial spawn. Losing the third shell rebuilds the bot with three shells at its last activated save point. Carried electricity and scrap drop to zero, and a three-health wreck remains at the death location holding the lost scrap. Destroying that wreck returns all stored scrap but no electricity. A newer death replaces any unrecovered wreck.
+The player starts with three core shells. Enemy contact removes one shell and briefly grants invulnerability. Touching a spike immediately removes one shell and returns the player to the last safe position recorded on the most recently supported platform; the player never continues falling through the spike pit. Falling completely out of the world still returns to the initial spawn. Losing the third shell rebuilds the bot with three shells at its last activated save point. Carried electricity and scrap drop to zero, while titanium, uranium, upgrades, and special items persist. A three-health wreck remains at the death location holding the lost scrap. Destroying that wreck returns all stored scrap but no electricity. A newer death replaces any unrecovered wreck. Full death reconstructs all ordinary enemies; defeated full bosses and mini bosses stay defeated.
 
 ## Enemies
 
@@ -94,11 +96,17 @@ The Sunken Vault contains the twelve-health Abyss Warden, a full boss with its o
 
 Defeating the Abyss Warden awards 110 scrap, removes its hazards, opens both sides, and releases the blue Volt Jab core inside the chamber. The opened escape leads to the tutorial conduit and powered seal.
 
-Quiet Drift contains the reusable six-health Cache Scrapper mini-boss on an optional upper route. Its gate controls only an 80-scrap cache path; the normal foundation route remains open and it never protects an ability.
+Quiet Drift contains the reusable six-health Cache Scrapper mini-boss on an optional upper route. It awards three titanium; the normal foundation route remains open and it never protects an ability.
 
 ### Recovery room
 
-The foundation immediately beyond the boss arena is a calm recovery room with no ordinary enemies, junk, conduits, or floor obstacles. Its station powers on only after the Heavy Core is defeated. While within 115 units, the HUD displays the `O // REST AND RECOVER` prompt. Resting restores all three core shells, clears current knockback, plays a recovery pulse, and moves both the spike-reset checkpoint and full-death respawn point beside the station. It does not refill electricity or unlock abilities.
+The foundation immediately beyond the boss arena is a calm recovery room with no ordinary enemies, junk, conduits, or floor obstacles. Its station powers on only after the Heavy Core is defeated. While within 115 units, the HUD displays the `O // REST AND RECOVER` prompt. Resting restores all three core shells, clears current knockback, plays a recovery pulse, moves both the spike-reset checkpoint and full-death respawn point beside the station, and reconstructs all ordinary enemies. It does not refill electricity, revive defeated bosses or mini bosses, or unlock abilities.
+
+## Inventory and map
+
+Pressing `I` opens the combined overlay and pauses world simulation. It starts on STATUS; `A` and `D` cycle between MAP, STATUS, MATERIALS, and ITEMS, while `W` and `S` move the selection within the active page. STATUS reports shells, electricity, primary damage, scrap, and the active save link. MATERIALS reports titanium and uranium. ITEMS lists merchant purchases such as Edge Forge coils.
+
+MAP sits to the left of STATUS and begins obscured. Three world survey cores reveal configured west, central, and east groups that together cover all nine current regions. Unmapped regions remain labeled `NO DATA`; revealed regions show their names and the player's location marker is drawn over the overview.
 
 ## Current map fragment
 
@@ -110,7 +118,7 @@ The starting kit cannot reach the whole map. Twelve platforms form three substan
 
 Nine named regions cover the current world and meet at eight visible mechanical gates. The Shard Gauntlet concentrates four spike gaps and red hazard atmosphere; Quiet Drift is a more conventional exploration chamber with an optional scrap mini-boss; the 1,800-unit Grand Exchange is a broad multi-height district with the Edge Forge in its far corner. Region gates remain non-blocking navigation thresholds rather than stage exits.
 
-Three merchant doors cluster in the Relay Concourse, with additional doors in the Rusted Verge, Ember Foundry, and Grand Exchange. A door in a safe pocket can open immediately; otherwise it remains sealed until nearby ordinary enemies are defeated. Pressing `O` beneath an unlocked door moves the bot into a separate enemy-free merchant room, and its interior exit returns to the saved overworld position. Ordinary merchants remain offline; the Edge Forge offers the configured 100-scrap slash upgrade.
+Three merchant doors cluster in the Relay Concourse, with additional doors in the Rusted Verge, Ember Foundry, and Grand Exchange. A door in a safe pocket can open immediately; otherwise it remains sealed until nearby ordinary enemies are defeated. Pressing `O` beneath an unlocked door moves the bot into a separate enemy-free merchant room, and its interior exit returns to the saved overworld position. Ordinary merchants preview carried special materials while recipes remain pending; the Edge Forge offers its four configured slash-upgrade tiers.
 
 Enemies, junk, and secrets occupy the upper networks, the deep vault, and the ability-gated regions—not only the lower left-to-right floor. The map contains ten spike gaps, three exhaustible conduits, fourteen ordinary junk piles, two powered seals, one optional mini-boss encounter, two full boss encounters, and two end alcoves. The Sunken Vault uses a darker blue-black background, Shard Gauntlet uses red hazard silhouettes, and Grand Exchange uses warm industrial accents.
 

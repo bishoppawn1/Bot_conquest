@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS,
-  ENEMY_SPAWNS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
+  ENEMY_SPAWNS, FORGE_UPGRADE_COSTS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
   LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
   PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_GATES, REGIONS,
   REST_AREA, TRAPS, VAULT_BOSS_ARENA, WALL_BLOCKS, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
@@ -99,12 +99,12 @@ test('merchant doors cluster in the concourse while the Grand Exchange has a dam
   assert.ok(hubMerchants.length>=3);
   assert.ok(MERCHANT_SPAWNS.filter(merchant=>!merchant.hub).length>=2);
   assert.ok(new Set(MERCHANT_SPAWNS.map(merchant=>merchant.region)).size>=4);
-  const forge=MERCHANT_SPAWNS.find(merchant=>merchant.service==='damageUpgrade');assert.equal(forge.region,'exchange');assert.equal(forge.cost,100);
+  const forge=MERCHANT_SPAWNS.find(merchant=>merchant.service==='damageUpgrade');assert.equal(forge.region,'exchange');assert.deepEqual(forge.upgradeCosts,FORGE_UPGRADE_COSTS);assert.ok(FORGE_UPGRADE_COSTS.length>=3&&FORGE_UPGRADE_COSTS[0]>=500);
 });
 
-test('ability cores use the generic pickup format',()=>{
-  assert.equal(PICKUP_SPAWNS.length,2);
-  assert.ok(PICKUP_SPAWNS.every(pickup=>pickup.kind==='ability'&&pickup.name&&pickup.key&&pickup.color));
+test('ability and map cores use the generic pickup format',()=>{
+  const abilities=PICKUP_SPAWNS.filter(pickup=>pickup.kind==='ability'),maps=PICKUP_SPAWNS.filter(pickup=>pickup.kind==='map');assert.equal(abilities.length,2);assert.equal(maps.length,3);
+  assert.ok(abilities.every(pickup=>pickup.name&&pickup.key&&pickup.color));assert.deepEqual(new Set(maps.flatMap(pickup=>pickup.regions)),new Set(REGIONS.map(region=>region.id)));
   const vault=PICKUP_SPAWNS.find(pickup=>pickup.id==='vault-core'),volt=PICKUP_SPAWNS.find(pickup=>pickup.id==='volt-core');
   assert.equal(vault.ability,'wallClimb');assert.equal(vault.requiresBossClear,true);assert.ok(vault.x>7190&&vault.x<REST_AREA.x+REST_AREA.w);
   assert.equal(volt.ability,'electricJab');assert.equal(volt.color,'#75f5ff');assert.equal(volt.requiresVaultBossClear,true);assert.ok(volt.x>VAULT_BOSS_ARENA.x&&volt.x<VAULT_BOSS_ARENA.rightGateX);

@@ -21,7 +21,8 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - There is no restart key, persistent restart control, or game-over reboot. Losing the final shell rebuilds the bot at its last activated save point, or at the initial spawn if no station has been activated.
 - A destroyed bot loses all carried scrap and electricity. Its old shell remains at the death location as a three-health wreck containing the lost scrap; destroying the wreck restores that scrap but no electricity. A newer death replaces any unrecovered wreck.
 - After the boss is cleared, `O` interacts with the recovery station. Resting restores all three shells and moves both the spike-reset checkpoint and full-death respawn point beside the station.
-- `I` is reserved for the future combined inventory/map interface. It must remain unbound and have no behavior until that system is designed.
+- `I` opens and closes the combined inventory/map overlay and pauses simulation while open. `A`/`D` move between MAP, STATUS, MATERIALS, and ITEMS; `W`/`S` move through the entries on the current page. MAP sits immediately left of STATUS.
+- The inventory shows current shells, electricity, primary damage, scrap, activated save point, titanium, uranium, and merchant purchases. The map starts obscured; the three map survey cores reveal configured groups of regions.
 - The player starts with three lives and loses one to enemy contact, spikes, or falling.
 - Touching a spike immediately removes one life and returns the bot to its last safe position on the most recently supported platform. It must not continue falling through the spike pit or return all the way to the initial spawn.
 
@@ -31,8 +32,9 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Only three conduits exist. Each holds 24 total electricity, yields 4 per primary hit, visibly drains, and generates nothing once empty.
 - The Sunken Vault tutorial conduit must remain between the Volt Jab pickup and its powered seal. Electric jab costs 24 electricity so one fresh conduit always funds the required tutorial shot.
 - Special-attack hits return 4 electricity per target.
-- Killing enemies awards scrap based on archetype. The one currently authorized sink is the Grand Exchange `EDGE FORGE`: 100 scrap buys one run-persistent `+1` primary-slash damage upgrade. Do not add other spending behavior without a new design decision.
-- Ordinary junk piles are solid destructible obstacles. Destroying one awards its configured scrap value but no electricity.
+- Killing enemies awards scrap based on archetype. The Grand Exchange `EDGE FORGE` offers four run-persistent `+1` primary-slash damage upgrades costing 500, 900, 1500, and 2400 scrap. Do not add other scrap spending behavior without a new design decision.
+- Titanium and uranium are persistent special materials reserved for future merchant recipes. Selected salvage piles award their configured material instead of scrap; the Cache Scrapper awards three titanium. Do not invent material prices or merchant recipes without a new design decision.
+- Ordinary junk piles are solid destructible obstacles. Destroying one awards its configured scrap or special material but no electricity.
 
 ## Enemy rules
 
@@ -45,7 +47,8 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Ground enemies must probe for supporting floor before moving. They stop at platform and spike-gap edges.
 - Hoppers commit to a high leap toward the player, then remain grounded for 0.7 seconds after landing so the player has a reliable attack window.
 - The Abyss Warden is a twelve-health full boss protecting Volt Jab. Its full-height right exit seal exists before activation, so the reward can never be reached backward from the escape route. Dropping into the chamber activates a second entry seal. It cycles through a telegraphed charge, a leaping shockwave, and a five-bolt volley.
-- The Cache Scrapper is an optional six-health mini boss in Quiet Drift. It protects only an 80-scrap upper cache route and never grants an ability.
+- The Cache Scrapper is an optional six-health mini boss in Quiet Drift. It awards three titanium, remains outside the required foundation route, and never grants an ability.
+- Activating a save station or losing the final shell reconstructs every ordinary enemy from `ENEMY_SPAWNS`. Defeated full bosses and mini bosses remain defeated for the run.
 - Enemy types should continue to vary in size, silhouette, health, speed, and movement style.
 
 ## Architecture
@@ -87,9 +90,9 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Quiet Drift is the conventional exploration region from X 11400–12700. Its lower foundation route must stay open regardless of the optional Cache Scrapper encounter above it.
 - Grand Exchange is the expansive region from X 12700–14500. Preserve broad floor space, multiple height layers, the far-corner Edge Forge door, and an enemy-free interaction pocket around that door.
 - `MERCHANT_SPAWNS` defines overworld doors, not exposed NPCs. Three cluster in the Relay Concourse and scattered doors appear elsewhere, including the Grand Exchange damage forge.
-- Each door is either already in an enemy-free pocket or stays sealed until every ordinary enemy within its `clearRadius` is dead. Pressing `O` beneath an unlocked door teleports into the isolated `MERCHANT_ROOM`; its exit returns to the saved overworld position. Only the merchant inside shows the explicit services-offline notice until trading is designed.
-- A merchant with `service: 'damageUpgrade'` is interactive inside the room. It charges its configured 100 scrap once, increments `player.primaryDamage`, and then reports the edge coil as installed.
-- `PICKUP_SPAWNS` is the shared data format for future ability, combat, and shell pickups. It owns pickup color, name, input hint, tutorial copy, and progression requirements rather than placing those decisions in renderer conditionals.
+- Each door is either already in an enemy-free pocket or stays sealed until every ordinary enemy within its `clearRadius` is dead. Pressing `O` beneath an unlocked door teleports into the isolated `MERCHANT_ROOM`; its exit returns to the saved overworld position. Ordinary merchants may preview the titanium and uranium inventory but have no material recipes until those purchases are designed.
+- A merchant with `service: 'damageUpgrade'` is interactive inside the room. It uses its `upgradeCosts` table, increments `player.primaryDamage` once per purchased tier, and records each edge coil in the ITEMS inventory page.
+- `PICKUP_SPAWNS` is the shared data format for ability and map pickups and remains extensible to combat and shell pickups. It owns pickup color, name, input hint, tutorial copy, progression requirements, and map-region reveal data rather than placing those decisions in renderer conditionals.
 - Ordinary junk must leave at least one bot-width bypass on its supporting platform. Only the explicitly ability-gated junk wall may seal an optional pocket.
 - True vertical walls use `kind: 'wall'` and the dedicated red-braced wall rendering. Do not render walls with the green top-edge treatment used by floors.
 - `RECESSES` contain no `label` field.
@@ -116,7 +119,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - `MINI_BOSS_ARENAS` is the reusable data format for optional contained elite fights. The current entry is `drift-scrapper` in Quiet Drift.
 - Entering a configured trigger volume activates the encounter and closes its exit gate. The entrance may be a deliberate one-way drop only when the exit is tested and guaranteed after victory.
 - A mini boss is not targetable before its arena activates; attacks from approach platforms must never pre-clear the encounter.
-- Killing the configured mini boss awards its arena's scrap reward, shows a temporary reward notice, marks the arena cleared, and retracts its gate permanently for that run.
+- Killing the configured mini boss awards its configured scrap or material reward, shows a temporary reward notice, marks the arena cleared, and retracts its gate permanently for that run.
 - Mini-boss arenas use a smaller health bar and one focused combat pattern. They must not duplicate the full Heavy Core presentation or attack cycle.
 - Mini bosses may guard optional scrap, benches, caches, or shortcuts. They must never guard a required movement/combat ability or block the region's required foundation route.
 
@@ -125,6 +128,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - `REST_AREA` occupies the foundation immediately after the boss arena. Keep its floor clear of ordinary enemies, conduits, junk, and interior obstacles.
 - The recovery station remains offline until `bossArena.cleared` is true.
 - Pressing `O` within the configured interaction radius restores the player to three lives, clears knockback/invulnerability motion, plays the recovery effect, and records the station-side spike and full-death checkpoints.
+- Resting reconstructs all ordinary enemies while preserving defeated boss and mini-boss state.
 - Resting does not refill electricity or unlock abilities.
 - The post-boss wall-climb pickup may occupy the entrance side of this region. Merchant doors remain beyond the configured `REST_AREA` boundary so the immediate recovery pocket stays calm.
 
@@ -172,3 +176,5 @@ Use `http://127.0.0.1:4173/?debug=gauntlet` for the trap-heavy Shard Gauntlet an
 Use `http://127.0.0.1:4173/?debug=forge-room` for the Edge Forge purchase prompt and `http://127.0.0.1:4173/?debug=postboss` to inspect the opened roof after the Heavy Core bulkheads are destroyed.
 
 Use `http://127.0.0.1:4173/?debug=recovery` to inspect a rebuilt bot and its nearby scrap-bearing wreckage.
+
+Use `http://127.0.0.1:4173/?debug=inventory` to inspect the inventory and add `&panel=map` to open its partially revealed map page directly.

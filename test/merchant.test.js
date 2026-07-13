@@ -22,9 +22,9 @@ test('O teleports into an enemy-free merchant room and its exit returns outside'
   assert.deepEqual({x:game.player.x,y:game.player.y},outside);assert.equal(game.merchantRoom.activeMerchant,null);
 });
 
-test('the Grand Exchange forge sells one permanent slash-damage upgrade for scrap',()=>{
+test('the Grand Exchange forge sells four increasingly expensive slash upgrades',()=>{
   const game=new Game(),door=game.merchants.find(merchant=>merchant.id==='merchant-forge');standUnder(game,door);assert.equal(game.merchantDoorUnlocked(door),true);assert.equal(game.tryInteract(),true);
-  Object.assign(game.player,{x:game.merchantRoom.merchant.x-10,y:game.merchantRoom.merchant.y,scrap:door.cost});assert.equal(game.tryInteract(),true);
-  assert.equal(game.player.scrap,0);assert.equal(game.player.primaryDamage,2);assert.equal(game.player.damageUpgrades,1);assert.equal(game.tryInteract(),false);
-  const enemy=game.enemy({type:'brute',x:game.player.x+60,y:game.player.y,w:58,h:63,health:3});game.enemies=[enemy];game.player.aimX=1;game.player.aimY=0;game.player.attackHits=new Set();game.resolvePrimaryAttack();assert.equal(enemy.health,1);
+  Object.assign(game.player,{x:game.merchantRoom.merchant.x-10,y:game.merchantRoom.merchant.y,scrap:door.upgradeCosts.reduce((sum,cost)=>sum+cost,0)});for(const cost of door.upgradeCosts){assert.equal(game.nextDamageUpgradeCost(door),cost);assert.equal(game.tryInteract(),true);}
+  assert.equal(game.player.scrap,0);assert.equal(game.player.primaryDamage,5);assert.equal(game.player.damageUpgrades,4);assert.equal(game.player.purchasedItems.length,4);assert.equal(game.tryInteract(),false);
+  const enemy=game.enemy({type:'brute',x:game.player.x+60,y:game.player.y,w:58,h:63,health:6});game.enemies=[enemy];game.player.aimX=1;game.player.aimY=0;game.player.attackHits=new Set();game.resolvePrimaryAttack();assert.equal(enemy.health,1);
 });
