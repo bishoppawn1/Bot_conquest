@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "node build.mjs",
     "start": "node server.js",
     "test": "node --test",
-    "check": "node --check server.js && for file in src/*.js; do node --check \"$file\" || exit 1; done && npm test"
+    "check": "node --check server.js && node --check build.mjs && node --check worker.mjs && for file in src/*.js; do node --check \"$file\" || exit 1; done && npm test"
   }
 }
