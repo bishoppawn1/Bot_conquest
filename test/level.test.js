@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS,
   ENEMY_SPAWNS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
-  LOWER_BLOCKS, MERCHANT_SPAWNS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
+  LOWER_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
   PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_GATES, REGIONS,
   REST_AREA, TRAPS, WALL_BLOCKS, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
 } from '../src/level.js';
@@ -24,25 +24,25 @@ test('the map occupies a genuine two-dimensional playfield',()=>{
 test('suspended platforms vary in width and thickness',()=>{
   const suspended=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS];
   assert.ok(FOUNDATION_BLOCKS.every(block=>block.h>=120));
-  assert.ok(suspended.every(block=>block.h>=40&&block.h<=60));
+  assert.ok(suspended.every(block=>block.h>=40&&block.h<=80));
+  assert.ok(suspended.filter(block=>block.h>60).every(block=>['under-cache','under-threshold'].includes(block.id)));
   assert.ok(new Set(suspended.map(block=>block.w)).size>=15);
   assert.ok(new Set(suspended.map(block=>block.h)).size>=5);
   assert.ok(suspended.filter(block=>block.h<=45).length>=15,'many platforms should leave more open space beneath them');
   assert.ok([...FOUNDATION_BLOCKS,...OVERHEAD_BLOCKS].filter(block=>block.w>=800&&block.h>=70).length>=14,'the thin platforms still need massive structural framing');
 });
 
-test('the main floor stays reversible while two vault openings lead downward',()=>{
+test('the main floor stays reversible while the Sunken Vault descends and rises',()=>{
   for(let index=1;index<FOUNDATION_BLOCKS.length;index++){
     const previous=FOUNDATION_BLOCKS[index-1],next=FOUNDATION_BLOCKS[index];
     assert.ok(previous.y-next.y<=70,`foundation ${index} rises too high`);
     assert.ok(next.x-(previous.x+previous.w)<=160,`foundation gap ${index} is too wide`);
   }
-  const safeOpenings=[{x:2640,w:160},{x:3100,w:160}];
-  for(const opening of safeOpenings){
-    assert.ok(TRAPS.every(trap=>!intersects({...opening,y:680,h:520},trap)),`safe opening at ${opening.x} contains spikes`);
-    assert.ok(LOWER_BLOCKS.some(block=>block.x>=opening.x&&block.x+block.w<=opening.x+opening.w),`safe opening at ${opening.x} has no lower landing`);
-  }
-  assert.deepEqual(TRAPS.map(trap=>[trap.x,trap.w]),[[1200,90],[2270,90],[3460,90],[4850,100],[5790,100],[7190,160],[8330,70]]);
+  const vaultFoundations=FOUNDATION_BLOCKS.filter(block=>block.id?.startsWith('vault-'));
+  assert.deepEqual(vaultFoundations.map(block=>block.y),[680,750,820,750,680]);
+  assert.ok(Math.max(...vaultFoundations.map(block=>block.y))-Math.min(...vaultFoundations.map(block=>block.y))>=140);
+  assert.ok(TRAPS.every(trap=>trap.x+trap.w<=2360||trap.x>=3550),'the vault descent must not hide spike softlocks');
+  assert.deepEqual(TRAPS.map(trap=>[trap.x,trap.w]),[[1200,90],[2270,90],[4850,100],[5790,100],[7190,160],[8330,70]]);
 });
 
 test('recesses are unlabeled rooms framed by ceilings and mostly solid floors',()=>{
@@ -50,6 +50,7 @@ test('recesses are unlabeled rooms framed by ceilings and mostly solid floors',(
   assert.ok(RECESSES.every(recess=>!('label' in recess)));
   for(const recess of RECESSES.slice(0,8)){
     assert.ok(OVERHEAD_BLOCKS.some(block=>block.y+block.h===recess.ceilingY&&block.x<=recess.x&&block.x+block.w>=recess.x+recess.w),`recess at ${recess.x} is missing its ceiling`);
+    if(recess.steppedFloor){const steps=FOUNDATION_BLOCKS.filter(block=>block.x<recess.x+recess.w&&block.x+block.w>recess.x);assert.ok(new Set(steps.map(block=>block.y)).size>=3);continue;}
     const intervals=FOUNDATION_BLOCKS.filter(block=>block.y===recess.floorY&&block.x<recess.x+recess.w&&block.x+block.w>recess.x)
       .map(block=>[Math.max(recess.x,block.x),Math.min(recess.x+recess.w,block.x+block.w)]).sort((a,b)=>a[0]-b[0]);
     let covered=0,cursor=-Infinity;
@@ -99,12 +100,13 @@ test('the concourse is the merchant hub while scattered merchants remain',()=>{
   assert.ok(new Set(MERCHANT_SPAWNS.map(merchant=>merchant.region)).size>=3);
 });
 
-test('the post-boss pickup uses the generic pickup format',()=>{
-  assert.equal(PICKUP_SPAWNS.length,1);
-  const pickup=PICKUP_SPAWNS[0];
-  assert.equal(pickup.kind,'ability');assert.equal(pickup.ability,'vault');assert.equal(pickup.requiresBossClear,true);
-  assert.ok(pickup.x>7190&&pickup.x<REST_AREA.x+REST_AREA.w);
-  assert.ok(PLATFORMS.every(block=>!intersects(pickup,block)));
+test('ability cores use the generic pickup format',()=>{
+  assert.equal(PICKUP_SPAWNS.length,2);
+  assert.ok(PICKUP_SPAWNS.every(pickup=>pickup.kind==='ability'&&pickup.name&&pickup.key&&pickup.color));
+  const vault=PICKUP_SPAWNS.find(pickup=>pickup.id==='vault-core'),volt=PICKUP_SPAWNS.find(pickup=>pickup.id==='volt-core');
+  assert.equal(vault.ability,'vault');assert.equal(vault.requiresBossClear,true);assert.ok(vault.x>7190&&vault.x<REST_AREA.x+REST_AREA.w);
+  assert.equal(volt.ability,'electricJab');assert.equal(volt.color,'#75f5ff');assert.ok(volt.x>=2360&&volt.x<3550);
+  assert.ok(PICKUP_SPAWNS.every(pickup=>PLATFORMS.every(block=>!intersects(pickup,block))));
 });
 
 test('the boss arena remains a large uncluttered chamber',()=>{
@@ -123,16 +125,17 @@ test('starting-kit platforms form varied room networks with combat',()=>{
   assert.ok(BRANCH_BLOCKS.every(block=>!('step' in block)&&!('branch' in block)&&!block.requires));
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.w)).size>=12);
   const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS];
-  const supportedEnemies=ENEMY_SPAWNS.filter(enemy=>enemy.type!=='drone'&&combatSurfaces.some(block=>enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w&&enemy.y+enemy.h===block.y));
+  const combatants=[...ENEMY_SPAWNS,...MINI_BOSS_ARENAS.map(arena=>arena.enemy)];
+  const supportedEnemies=combatants.filter(enemy=>enemy.type!=='drone'&&combatSurfaces.some(block=>enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w&&enemy.y+enemy.h===block.y));
   assert.ok(supportedEnemies.length>=12,'upper and lower exploration spaces need their own encounters');
 });
 
-test('the undercroft is a safe lower loop with separate entrance and exit',()=>{
-  assert.equal(LOWER_BLOCKS.length,4);
-  assert.ok(LOWER_BLOCKS.every(block=>block.y>=820));
-  assert.deepEqual(new Set(LOWER_BLOCKS.map(block=>block.w)),new Set([160,260,300]));
-  assert.equal(LOWER_BLOCKS.find(block=>block.id==='under-entry').x,2640);
-  assert.equal(LOWER_BLOCKS.find(block=>block.id==='under-exit').x,3100);
+test('the lower vault has a contained mini-boss floor and a staged escape',()=>{
+  assert.equal(LOWER_BLOCKS.length,5);
+  const floor=LOWER_BLOCKS.find(block=>block.id==='under-cache'),threshold=LOWER_BLOCKS.find(block=>block.id==='under-threshold');
+  assert.equal(floor.y,1120);assert.equal(floor.x+floor.w,MINI_BOSS_ARENAS[0].gateX);
+  assert.equal(threshold.x,MINI_BOSS_ARENAS[0].gateX+MINI_BOSS_ARENAS[0].gateWidth);
+  assert.deepEqual(LOWER_BLOCKS.filter(block=>block.id.startsWith('under-exit-')).map(block=>block.y),[1020,920,820]);
 });
 
 test('walkable surfaces leave enough headroom for the bot',()=>{
@@ -158,8 +161,8 @@ test('ordinary junk never seals the platform supporting it',()=>{
 });
 
 test('true walls use dedicated vertical geometry',()=>{
-  assert.equal(WALL_BLOCKS.length,5);
-  assert.ok(WALL_BLOCKS.every(wall=>wall.kind==='wall'&&wall.h>=140&&wall.h>wall.w*2));
+  assert.equal(WALL_BLOCKS.length,6);
+  assert.ok(WALL_BLOCKS.every(wall=>wall.kind==='wall'&&wall.h>=135&&wall.h>wall.w*2));
 });
 
 test('full-height bulkheads seal both approaches to the boss arena roof',()=>{
@@ -190,7 +193,8 @@ test('interior obstacles preserve reversible recovery floor',()=>{
 });
 
 test('placed gameplay objects are not embedded inside solid geometry',()=>{
-  for(const object of [...ENEMY_SPAWNS,...CONDUITS,...JUNK_PILES,BOSS_ARENA.boss,REST_AREA.station])assert.ok(PLATFORMS.every(block=>!intersects(object,block)),`object at ${object.x},${object.y} is embedded in a block`);
+  const miniBosses=MINI_BOSS_ARENAS.map(arena=>arena.enemy);
+  for(const object of [...ENEMY_SPAWNS,...miniBosses,...CONDUITS,...JUNK_PILES,...PICKUP_SPAWNS,BOSS_ARENA.boss,REST_AREA.station])assert.ok(PLATFORMS.every(block=>!intersects(object,block)),`object at ${object.x},${object.y} is embedded in a block`);
 });
 
 test('the limited electricity economy remains intact',()=>{

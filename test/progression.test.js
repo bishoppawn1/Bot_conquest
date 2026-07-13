@@ -13,6 +13,13 @@ test('the post-boss white core unlocks vault on contact',()=>{
   assert.ok(game.particles.length>=30);
 });
 
+test('the blue Sunken Vault core unlocks Volt Jab and opens its tutorial popup',()=>{
+  const game=new Game();game.enemies=[];const pickup=game.pickups.find(item=>item.id==='volt-core');
+  game.player.x=pickup.x;game.player.y=pickup.y;tick(game);
+  assert.equal(pickup.collected,true);assert.equal(game.player.abilities.electricJab,true);
+  assert.equal(game.abilityPopup.name,'VOLT JAB');assert.equal(game.abilityPopup.key,'F');assert.ok(game.abilityPopup.time>4);
+});
+
 test('vault hops the bot onto a low obstacle while jump is held',()=>{
   const game=new Game();game.enemies=[];game.junkPiles=[];game.traps=[];
   game.platforms=[{id:'floor',x:0,y:200,w:500,h:100,kind:'foundation'},{id:'obstacle',x:200,y:100,w:90,h:100,kind:'interior'}];

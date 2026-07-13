@@ -15,7 +15,8 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - `Space` performs an instantaneous 105-unit directional slash locked to the current aim. Damage resolves across the full area on the press frame only. Its visual is a brief, static white forward slash—no extension, retraction, arrow, pointer, or circular arc.
 - New runs start with the basic jump, slash, and repair. `E` repairs one missing shell when the bot has at least 30 electricity.
 - Vault, double jump, dash, wall movement, electric field, and electric jab remain implemented but locked for pickups. Use `game.unlockAbility(name)` when progression grants one.
-- The post-boss `vault-core` is the first generic contact pickup. It appears only after the boss is cleared; touching it unlocks `vault`. Holding jump while running into a reachable low obstacle then hops the bot onto it.
+- The blue `volt-core` in the Sunken Vault unlocks electric jab and opens a large temporary tutorial popup showing `F`. The nearby tutorial conduit contains exactly the 24 electricity required for one jab, and the following `vault-volt-seal` requires that attack.
+- The white post-boss `vault-core` appears only after the Heavy Core is cleared; touching it unlocks `vault`. Holding jump while running into a reachable low obstacle then hops the bot onto it.
 - Once unlocked, `Q` creates the circular field, `F` uses electric jab, and `Shift` dashes.
 - There is no restart key or persistent restart control. A destroyed run may still use the game-over reboot button.
 - After the boss is cleared, `O` interacts with the recovery station. Resting restores all three shells and moves the spike-reset checkpoint beside the station.
@@ -27,6 +28,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 
 - A standard enemy hit generates 12 electricity, capped at 100.
 - Only three conduits exist. Each holds 24 total electricity, yields 4 per primary hit, visibly drains, and generates nothing once empty.
+- The Sunken Vault tutorial conduit must remain between the Volt Jab pickup and its powered seal. Electric jab costs 24 electricity so one fresh conduit always funds the required tutorial shot.
 - Special-attack hits return 4 electricity per target.
 - Killing enemies awards scrap based on archetype. Scrap is persistent run currency reserved for later systems; do not add spending behavior without a new design decision.
 - Ordinary junk piles are solid destructible obstacles. Destroying one awards its configured scrap value but no electricity.
@@ -40,6 +42,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Drones use a 340-unit detection radius and pursue the player's position in both axes. They may hover near their spawn height only while inactive.
 - Drones use axis-separated collision against all solid platform blocks. Flying movement never permits them to pass through floors, ceilings, or walls.
 - Ground enemies must probe for supporting floor before moving. They stop at platform and spike-gap edges.
+- The Vault Sentinel is a six-health mini boss. Its room activates only after the player falls inside, closes a single exit gate, and awards 60 scrap when defeated. It uses a telegraphed leaping charge rather than the Heavy Core's three-move boss cycle.
 - Enemy types should continue to vary in size, silhouette, health, speed, and movement style.
 
 ## Architecture
@@ -65,10 +68,10 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Favor loops, alternate entrances, optional rooms, hidden caches, and ability-gated shortcuts as the map grows.
 - Never add a glowing finish gate or other terminal marker at a map boundary.
 - `FOUNDATION_BLOCKS` form the tested basic-jump lower network. Upward transitions may rise by at most 70 units and gaps may be no wider than 160 units. Simulation tests must physically cross every gap in both directions.
-- Two safe 160-unit openings in the vault foundations lead to `LOWER_BLOCKS`. They contain no spikes and must form a recoverable undercroft loop with a separate entrance and exit.
-- `OVERHEAD_BLOCKS` and the first eight `RECESSES` form real hollow rooms. The vault recess intentionally has floor openings; all others retain continuous foundation framing.
-- `POCKET_BLOCKS` form the two end-alcove ceilings. `WALL_BLOCKS` contains their two back walls plus the relay-crown climbing wall.
-- Suspended platforms may be 40–60 units thick to preserve air and visibility beneath them. Foundations stay 120+ units thick and ceilings remain massive structural forms.
+- The five `vault-*` foundations descend from Y 680 to Y 820 and rise again in 70-unit increments. The optional branch continues down to the mini-boss floor at Y 1120. Every pre-arena drop must remain reversible with the basic jump; only the clearly framed mini-boss drop is one-way.
+- `OVERHEAD_BLOCKS` and the first eight `RECESSES` form real hollow rooms. The vault recess uses a stepped floor and extends to the deep mini-boss room; all others retain continuous foundation framing.
+- `POCKET_BLOCKS` form the two end-alcove ceilings. `WALL_BLOCKS` also includes the relay-crown climbing wall, boss-roof bulkheads, and the left wall of the Vault Sentinel room.
+- Suspended platforms are normally 40–60 units thick to preserve air and visibility. The two mini-boss room floor masses may be 80 units thick. Foundations stay 120+ units thick and ceilings remain massive structural forms.
 - No two entries in `PLATFORMS` may geometrically overlap. Touching faces are allowed; intersecting rectangles, buried surfaces, and objects spawned inside solids are forbidden.
 - Every `INTERIOR_BLOCKS` obstacle is exactly 70 units high, sits flush on one foundation, and leaves at least 80 units of exposed recovery floor on both sides and between neighbors. Preserve these invariants to prevent one-way drops and softlocks.
 - `ABILITY_GATED_BLOCKS` contains twelve surfaces across three substantial optional regions: upper assembly (`doubleJump`), high foundry (`dash`), and relay crown (`wallClimb`). Their entrances must remain impossible with the starting jump while never interrupting the boss route.
@@ -77,7 +80,8 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Place ordinary encounters on upper platforms, lower platforms, and gated regions so exploration space is gameplay space rather than empty decoration.
 - `REGIONS` must cover the full world without gaps. `REGION_GATES` connects each neighboring pair as a visible, non-blocking threshold.
 - `MERCHANT_SPAWNS` is presentation-only until trading is designed. A strict majority belongs to the `concourse` merchant hub, with at least two merchants scattered in other regions.
-- `PICKUP_SPAWNS` is the shared data format for future ability, combat, and shell pickups. Boss or progression requirements belong in pickup data rather than renderer conditionals.
+- Merchant placeholders show `MERCHANT UPLINK // SERVICES OFFLINE` when approached. They must not silently imply that a working shop or interaction exists.
+- `PICKUP_SPAWNS` is the shared data format for future ability, combat, and shell pickups. It owns pickup color, name, input hint, tutorial copy, and progression requirements rather than placing those decisions in renderer conditionals.
 - Ordinary junk must leave at least one bot-width bypass on its supporting platform. Only the explicitly ability-gated junk wall may seal an optional pocket.
 - True vertical walls use `kind: 'wall'` and the dedicated red-braced wall rendering. Do not render walls with the green top-edge treatment used by floors.
 - `RECESSES` contain no `label` field.
@@ -89,6 +93,14 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - The arena trigger requires the player to be vertically inside the chamber. The two full-height `boss-roof-*` bulkheads seal both ends of the arena ceiling so the player cannot bypass the fight or become trapped above a closed gate.
 - The boss has 18 health and cycles deterministically through three moves: telegraphed horizontal charge, aerial slam with a ground shockwave, and a three-projectile volley.
 - Killing the boss awards 150 scrap, deletes its active hazards, marks the arena cleared, and retracts both gates. The boss never respawns during that run.
+
+## Mini-boss arenas
+
+- `MINI_BOSS_ARENAS` is the reusable data format for contained elite fights. The first entry is `vault-sentinel` in the Sunken Vault.
+- Entering a configured trigger volume activates the encounter and closes its exit gate. The entrance may be a deliberate one-way drop only when the exit is tested and guaranteed after victory.
+- A mini boss is not targetable before its arena activates; attacks from approach platforms must never pre-clear the encounter.
+- Killing the configured mini boss awards its arena's scrap reward, shows a temporary reward notice, marks the arena cleared, and retracts its gate permanently for that run.
+- Mini-boss arenas use a smaller health bar and one focused combat pattern. They must not duplicate the full Heavy Core presentation or attack cycle.
 
 ## Rest and recovery
 
@@ -128,3 +140,7 @@ Use `http://127.0.0.1:4173/?debug=rest` for visual recovery-area QA. It previews
 Use `http://127.0.0.1:4173/?debug=explore` for visual QA of the assembly platform network and ability-gated upper space.
 
 Use `http://127.0.0.1:4173/?debug=lower` for visual QA of the vault undercroft.
+
+Use `http://127.0.0.1:4173/?debug=mini` for visual QA of the active Vault Sentinel room and `http://127.0.0.1:4173/?debug=volt` for the Volt Jab pickup tutorial.
+
+Use `http://127.0.0.1:4173/?debug=merchant` to verify the merchant-services-offline proximity notice.

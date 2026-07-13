@@ -7,10 +7,18 @@ const startScreen = document.querySelector('#start');
 const gameOverScreen = document.querySelector('#gameover');
 const renderer = new Renderer(canvas);
 const debugSpawn = new URLSearchParams(location.search).get('debug');
+const abilityControls = [...document.querySelectorAll('[data-ability]')];
 
 let game = new Game();
 let playing = false;
 let lastFrame = 0;
+
+function syncAbilityControls() {
+  for (const control of abilityControls) {
+    const unlocked=Boolean(game.player.abilities[control.dataset.ability]);
+    control.textContent=`${control.dataset.label}${unlocked?'':' [LOCKED]'}`;
+  }
+}
 
 function begin() {
   game = new Game();
@@ -29,11 +37,26 @@ function begin() {
     game.player.y=140-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'lower') {
-    game.player.x=3020;
-    game.player.y=950-game.player.h;
+    game.player.x=2720;
+    game.player.y=930-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'mini') {
+    game.player.x=2940;
+    game.player.y=1120-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'volt') {
+    const arena=game.miniBossArenas[0],miniBoss=game.miniBoss(arena.id);arena.cleared=true;miniBoss.dead=true;miniBoss.health=0;
+    const pickup=game.pickups.find(item=>item.id==='volt-core');
+    game.player.x=pickup.x;
+    game.player.y=pickup.y;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'merchant') {
+    game.player.x=8025;
+    game.player.y=660-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   }
   playing = true;
+  syncAbilityControls();
   renderer.resetLegs();
   startScreen.classList.add('hidden');
   gameOverScreen.classList.add('hidden');
@@ -48,6 +71,7 @@ function frame(timestamp) {
   lastFrame = timestamp;
   if (playing) {
     game.update(dt);
+    syncAbilityControls();
     if (!game.running) { playing=false; gameOverScreen.classList.remove('hidden'); }
   }
   renderer.draw(game);

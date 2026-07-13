@@ -1,6 +1,6 @@
 export const ELECTRICITY_MAX = 100;
 export const ELECTRICITY_PER_HIT = 12;
-export const ABILITY_COSTS = Object.freeze({ heal:30, field:40, electricJab:25 });
+export const ABILITY_COSTS = Object.freeze({ heal:30, field:40, electricJab:24 });
 export const ATTACK_TIMING = Object.freeze({ primary:.09, field:.9, electricJab:.5 });
 export const ATTACK_RANGE = Object.freeze({ primary:105, field:112, electricJab:170 });
 

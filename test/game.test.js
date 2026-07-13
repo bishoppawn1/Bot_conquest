@@ -6,16 +6,35 @@ import { supportingPlatform } from '../src/geometry.js';
 
 const tick=(g,n=1)=>{for(let i=0;i<n;i++)g.update(1/60);};
 const press=(g,key)=>{g.setInput({[key]:true});tick(g);g.setInput({[key]:false});tick(g);};
-const canTraverse=(sourceId,targetId,{jump=true}={})=>{
+const canTraverse=(sourceId,targetId,{jump=true,clearMini=false}={})=>{
   const source=PLATFORMS.find(block=>block.id===sourceId),target=PLATFORMS.find(block=>block.id===targetId);
   const direction=Math.sign((target.x+target.w/2)-(source.x+source.w/2))||1,move=direction>0?'right':'left';
   for(const inset of[5,15,30,50,70,90,110,130,150]){
-    const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];
+    const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];if(clearMini)for(const arena of g.miniBossArenas)arena.cleared=true;
     const player=g.player;player.x=direction>0?source.x+source.w-player.w-inset:source.x+inset;
     player.y=source.y-player.h;player.vx=direction*250;player.vy=0;player.onGround=true;player.jumps=1;
     g.setInput({[move]:true,jump});g.update(1/60);g.setInput({jump:false});
     const destination=g.platforms.find(block=>block.id===targetId);
     for(let frame=0;frame<180;frame++){g.update(1/60);if(supportingPlatform(player,g.platforms,3)===destination)return true;}
+  }
+  return false;
+};
+const canControlledDrop=(sourceId,targetId)=>{
+  const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];
+  const source=g.platforms.find(block=>block.id===sourceId),target=g.platforms.find(block=>block.id===targetId),player=g.player;
+  const direction=Math.sign((target.x+target.w/2)-(source.x+source.w/2))||1,move=direction>0?'right':'left',brake=direction>0?'left':'right';let braking=false;
+  Object.assign(player,{x:direction>0?source.x+source.w-player.w-4:source.x+4,y:source.y-player.h,vx:0,vy:0,onGround:true,jumps:1});g.setInput({[move]:true});
+  for(let frame=0;frame<180;frame++){g.update(1/60);if(!braking&&(direction>0?player.x>=source.x+source.w+2:player.x+player.w<=source.x-2)){g.setInput({[move]:false,[brake]:true});braking=true;}if(supportingPlatform(player,g.platforms,3)===target)return true;}
+  return false;
+};
+const canStagedJump=(sourceId,targetId)=>{
+  for(const delay of[0,6,10,14,18]){
+    const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];for(const arena of g.miniBossArenas)arena.cleared=true;
+    const source=g.platforms.find(block=>block.id===sourceId),target=g.platforms.find(block=>block.id===targetId),player=g.player;
+    const direction=Math.sign((target.x+target.w/2)-(source.x+source.w/2))||1,move=direction>0?'right':'left';
+    Object.assign(player,{x:direction>0?source.x:source.x+source.w-player.w,y:source.y-player.h,vx:0,vy:0,onGround:true,jumps:1});
+    g.setInput({jump:true});g.update(1/60);g.setInput({jump:false});for(let frame=0;frame<delay;frame++)g.update(1/60);g.setInput({[move]:true});
+    for(let frame=0;frame<180;frame++){g.update(1/60);if(supportingPlatform(player,g.platforms,3)===target)return true;}
   }
   return false;
 };
@@ -28,21 +47,31 @@ test('the starting jump physically connects the scattered exploration platforms'
   const reversibleLinks=[
     ['west-step','start-loft'],['start-loft','west-bridge'],
     ['assembly-step','assembly-entry'],['assembly-entry','assembly-perch'],['assembly-perch','assembly-cross'],
-    ['vault-ledge','vault-span'],['vault-span','vault-high'],
+    ['vault-span','vault-high'],
     ['foundry-step','foundry-platform'],['foundry-platform','foundry-mid'],['foundry-mid','foundry-east'],['foundry-west','foundry-high'],
     ['prearena-step','prearena-low'],['prearena-low','prearena-wide'],['prearena-wide','prearena-high'],
-    ['relay-step','relay-entry'],['relay-entry','relay-east'],['relay-east','relay-center'],['relay-center','relay-west'],
-    ['under-bridge','under-cache'],['under-bridge','under-exit']
+    ['relay-step','relay-entry'],['relay-entry','relay-east'],['relay-east','relay-center'],['relay-center','relay-west']
   ];
   for(const [first,second] of reversibleLinks){
     assert.ok(canTraverse(first,second),`${first} cannot reach ${second}`);
     assert.ok(canTraverse(second,first),`${second} cannot return to ${first}`);
   }
-  assert.ok(canTraverse('vault-step','vault-ledge'));
-  assert.ok(canTraverse('vault-ledge','vault-left'));
+  assert.ok(canControlledDrop('vault-entry','vault-ledge'));
+  assert.ok(canTraverse('vault-ledge','vault-shelf'));
+  assert.ok(canTraverse('vault-shelf','vault-ledge',{jump:false}));
+  assert.ok(canControlledDrop('vault-ledge','vault-span'));
+  assert.ok(canTraverse('vault-span','vault-ledge'));
   assert.ok(canTraverse('foundry-mid','foundry-west'));
   assert.ok(canTraverse('foundry-west','foundry-step'));
-  assert.ok(canTraverse('under-entry','under-bridge',{jump:false}),'the undercroft entrance does not drop safely to its bridge');
+  assert.ok(canTraverse('vault-high','under-cache',{jump:false}),'the mini-boss entrance does not drop safely into its room');
+  assert.ok(canTraverse('under-cache','under-threshold',{clearMini:true}),'the cleared mini-boss room has no exit');
+  assert.ok(canStagedJump('under-threshold','under-exit-low'),'the exit ascent cannot reach its first platform');
+  assert.ok(canControlledDrop('under-exit-low','under-threshold'),'the first exit platform has no safe return drop');
+  assert.ok(canStagedJump('under-exit-low','under-exit-mid'),'the exit ascent cannot reach its middle platform');
+  assert.ok(canControlledDrop('under-exit-mid','under-exit-low'),'the middle exit platform has no safe return drop');
+  assert.ok(canStagedJump('under-exit-mid','under-exit-high'),'the exit ascent cannot reach its upper platform');
+  assert.ok(canControlledDrop('under-exit-high','under-exit-mid'),'the upper exit platform has no safe return drop');
+  assert.ok(canStagedJump('under-exit-high','vault-exit'),'the mini-boss escape cannot rejoin the main route');
 });
 test('every main-floor gap is physically jumpable in both directions',()=>{
   for(let index=0;index<FOUNDATION_BLOCKS.length-1;index++)for(const direction of[1,-1]){

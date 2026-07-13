@@ -1,6 +1,6 @@
 import { clamp, hasFloorAhead, overlaps, shareSupportingPlatform, supportingPlatform } from './geometry.js';
 import { ABILITY_COSTS, ATTACK_RANGE, ATTACK_TIMING, circleIntersectsRect, directionalBox, ELECTRICITY_MAX, ELECTRICITY_PER_HIT, fieldCircle, SCRAP_VALUES } from './combat.js';
-import { BOSS_ARENA, CONDUITS, ENEMY_SPAWNS, JUNK_PILES, MERCHANT_SPAWNS, PICKUP_SPAWNS, PLATFORMS, RECESSES, REGION_GATES, REGIONS, REST_AREA, SPAWN, TRAPS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
+import { BOSS_ARENA, CONDUITS, ENEMY_SPAWNS, JUNK_PILES, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, PICKUP_SPAWNS, PLATFORMS, RECESSES, REGION_GATES, REGIONS, REST_AREA, SPAWN, TRAPS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
 
 export { WORLD_WIDTH as WIDTH, WORLD_HEIGHT as HEIGHT } from './level.js';
 export const PLAYER_JUMP_SPEED = 600;
@@ -11,7 +11,7 @@ export class Game {
   reset() {
     this.time=0; this.running=true; this.cameraX=0; this.cameraY=0; this.shake=0;
     this.input={left:false,right:false,jump:false,down:false,dash:false,attack:false,heal:false,field:false,electricJab:false,rest:false};
-    this.prev={...this.input}; this.particles=[];this.bossProjectiles=[];this.bossShockwave=null;
+    this.prev={...this.input}; this.particles=[];this.bossProjectiles=[];this.bossShockwave=null;this.abilityPopup=null;this.rewardToast=null;
     this.spawn={...SPAWN};
     this.safePosition={...this.spawn};
     this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:1,lives:3,scrap:0,electricity:0,abilities:{doubleJump:false,dash:false,wallClimb:false,vault:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healFlash:0,restFlash:0,vaultFlash:0};
@@ -19,22 +19,24 @@ export class Game {
     this.traps=TRAPS.map(trap=>({...trap}));
     this.recesses=RECESSES.map(recess=>({...recess}));
     this.bossArena={...BOSS_ARENA,boss:{...BOSS_ARENA.boss},active:false,cleared:false,gateProgress:0};
+    this.miniBossArenas=MINI_BOSS_ARENAS.map(arena=>({...arena,enemy:{...arena.enemy},active:false,cleared:false,gateProgress:0}));
     this.restArea={...REST_AREA,station:{...REST_AREA.station}};
     this.regions=REGIONS.map(region=>({...region}));this.regionGates=REGION_GATES.map(gate=>({...gate}));
     this.regionId=this.regionAt(this.spawn.x)?.id??null;this.regionToast=null;this.regionToastTime=0;
     this.pickups=PICKUP_SPAWNS.map(pickup=>({...pickup,collected:false}));
     this.merchants=MERCHANT_SPAWNS.map(merchant=>({...merchant}));
     const boss=this.enemy(BOSS_ARENA.boss);Object.assign(boss,{isBoss:true,maxHealth:BOSS_ARENA.boss.health,bossMove:'dormant',bossTimer:0,bossMoveIndex:0});
-    this.enemies=[...ENEMY_SPAWNS.map(spawn=>this.enemy(spawn)),boss];
+    const miniBosses=this.miniBossArenas.map(arena=>{const enemy=this.enemy(arena.enemy);return Object.assign(enemy,{isMiniBoss:true,arenaId:arena.id,name:arena.name,maxHealth:arena.enemy.health,rewardScrap:arena.rewardScrap});});
+    this.enemies=[...ENEMY_SPAWNS.map(spawn=>this.enemy(spawn)),...miniBosses,boss];
     this.conduits=CONDUITS.map((conduit,index)=>({...conduit,kind:'conduit',id:`conduit-${index}`,maxCharge:conduit.charge,hitFlash:0}));
-    this.junkPiles=JUNK_PILES.map((pile,index)=>({...pile,kind:'junk',id:`junk-${index}`,maxHealth:pile.health,dead:false,hitFlash:0}));
+    this.junkPiles=JUNK_PILES.map((pile,index)=>({...pile,kind:'junk',id:pile.id??`junk-${index}`,maxHealth:pile.health,dead:false,hitFlash:0}));
   }
   enemy({type,x,y,w,h,health,patrol=false,patrolRange=80,patrolDirection=1}){return{type,x,y,w,h,originX:x,originY:y,vx:0,vy:0,health:health??(type==='boss'?18:type==='brute'?3:1),onGround:false,phase:x*.01,dead:false,active:false,aggroRadius:type==='drone'?340:type==='brute'?240:210,patrol,patrolRange,patrolDirection,windup:0,chargeTime:0,chargeCooldown:0,chargeDirection:patrolDirection};}
   setInput(input){Object.assign(this.input,input);}
   pressed(key){return this.input[key]&&!this.prev[key];}
   update(dt=1/60){
     if(!this.running)return; dt=Math.min(dt,.034); this.time+=dt; const p=this.player;
-    p.invuln=Math.max(0,p.invuln-dt);p.dashCooldown=Math.max(0,p.dashCooldown-dt);p.attackCooldown=Math.max(0,p.attackCooldown-dt);p.attackTime=Math.max(0,p.attackTime-dt);p.specialTime=Math.max(0,p.specialTime-dt);p.healFlash=Math.max(0,p.healFlash-dt);p.restFlash=Math.max(0,p.restFlash-dt);p.vaultFlash=Math.max(0,p.vaultFlash-dt);this.regionToastTime=Math.max(0,this.regionToastTime-dt);for(const c of this.conduits)c.hitFlash=Math.max(0,c.hitFlash-dt);
+    p.invuln=Math.max(0,p.invuln-dt);p.dashCooldown=Math.max(0,p.dashCooldown-dt);p.attackCooldown=Math.max(0,p.attackCooldown-dt);p.attackTime=Math.max(0,p.attackTime-dt);p.specialTime=Math.max(0,p.specialTime-dt);p.healFlash=Math.max(0,p.healFlash-dt);p.restFlash=Math.max(0,p.restFlash-dt);p.vaultFlash=Math.max(0,p.vaultFlash-dt);this.regionToastTime=Math.max(0,this.regionToastTime-dt);if(this.abilityPopup)this.abilityPopup.time=Math.max(0,this.abilityPopup.time-dt);if(this.rewardToast)this.rewardToast.time=Math.max(0,this.rewardToast.time-dt);for(const c of this.conduits)c.hitFlash=Math.max(0,c.hitFlash-dt);
     const axis=(this.input.right?1:0)-(this.input.left?1:0);
     if(this.input.down){p.aimX=0;p.aimY=1;}else if(this.input.jump){p.aimX=0;p.aimY=-1;}else if(axis){p.facing=axis;p.aimX=axis;p.aimY=0;}
     if(this.pressed('dash')&&p.abilities.dash&&p.dashCooldown<=0){p.dashTime=.14;p.dashCooldown=.55;p.vx=p.facing*700;p.vy=0;this.burst(p.x+19,p.y+22,'#d6ff3f',10);}
@@ -53,12 +55,12 @@ export class Game {
     const hitSpike=this.traps.some(trap=>overlaps(p,trap));
     if(hitSpike)this.damagePlayer('spike');else if(p.y>WORLD_BOTTOM+100)this.damagePlayer('fall');
     p.x=clamp(p.x,0,WORLD_WIDTH-p.w);this.updateRegion();this.updatePickups();
-    this.updateBossArena(dt);this.updateCombat();this.updateEnemies(dt);this.updateBossHazards(dt);this.updateParticles(dt);
+    this.updateBossArena(dt);this.updateMiniBossArenas(dt);this.updateCombat();this.updateEnemies(dt);this.updateBossHazards(dt);this.updateParticles(dt);
     this.cameraX=clamp(p.x-350,0,WORLD_WIDTH-1280);this.cameraY=clamp(p.y-360,WORLD_TOP,WORLD_BOTTOM-720);this.shake=Math.max(0,this.shake-dt*20);
     this.prev={...this.input};
   }
   moveActor(a,dt,isPlayer=false){
-    const colliders=isPlayer?[...this.platforms,...this.junkPiles.filter(pile=>!pile.dead),...this.bossGates()]:this.platforms;
+    const colliders=isPlayer?[...this.platforms,...this.junkPiles.filter(pile=>!pile.dead),...this.bossGates(),...this.miniBossGates()]:this.platforms;
     a.x+=a.vx*dt;a.onWall=0;
     for(const b of colliders)if(overlaps(a,b)){
       const direction=Math.sign(a.vx);
@@ -77,7 +79,8 @@ export class Game {
   regionAt(x){return this.regions?.find(region=>x>=region.x&&x<region.x+region.w)??null;}
   updateRegion(){const region=this.regionAt(this.player.x+this.player.w/2);if(!region||region.id===this.regionId)return;this.regionId=region.id;this.regionToast=region.name;this.regionToastTime=2.4;}
   pickupAvailable(pickup){return!pickup.collected&&(!pickup.requiresBossClear||this.bossArena.cleared);}
-  updatePickups(){for(const pickup of this.pickups)if(this.pickupAvailable(pickup)&&overlaps(this.player,pickup)){pickup.collected=true;if(pickup.kind==='ability')this.unlockAbility(pickup.ability);this.burst(pickup.x+pickup.w/2,pickup.y+pickup.h/2,'#ffffff',36);}}
+  updatePickups(){for(const pickup of this.pickups)if(this.pickupAvailable(pickup)&&overlaps(this.player,pickup)){pickup.collected=true;if(pickup.kind==='ability'){this.unlockAbility(pickup.ability);this.abilityPopup={ability:pickup.ability,name:pickup.name,key:pickup.key,description:pickup.description,color:pickup.color??'#ffffff',time:4.5,maxTime:4.5};}this.burst(pickup.x+pickup.w/2,pickup.y+pickup.h/2,pickup.color??'#ffffff',36);}}
+  nearbyMerchant(){const p=this.player;return this.merchants.find(merchant=>Math.hypot((p.x+p.w/2)-(merchant.x+merchant.w/2),(p.y+p.h/2)-(merchant.y+merchant.h/2))<=105)??null;}
   rememberSafePlatform(){
     const p=this.player,floor=supportingPlatform(p,this.platforms,3);if(!p.onGround||!floor)return;
     const margin=Math.min(12,Math.max(0,(floor.w-p.w)/2));
@@ -99,6 +102,21 @@ export class Game {
     const y=arena.gateStartY+(arena.gateClosedY-arena.gateStartY)*arena.gateProgress;
     return[{x:arena.leftGateX,y,w:arena.gateWidth,h:arena.gateHeight,kind:'boss-gate'},{x:arena.rightGateX,y,w:arena.gateWidth,h:arena.gateHeight,kind:'boss-gate'}];
   }
+  miniBoss(arenaId){return this.enemies.find(enemy=>enemy.isMiniBoss&&enemy.arenaId===arenaId)??null;}
+  miniBossGates(){
+    const gates=[];
+    for(const arena of this.miniBossArenas)if(arena.gateProgress>0){const y=arena.gateY-arena.gateHeight*(1-arena.gateProgress);gates.push({x:arena.gateX,y,w:arena.gateWidth,h:arena.gateHeight,kind:'mini-boss-gate',arenaId:arena.id});}
+    return gates;
+  }
+  updateMiniBossArenas(dt){
+    const p=this.player,centerX=p.x+p.w/2,centerY=p.y+p.h/2;
+    for(const arena of this.miniBossArenas){
+      const enemy=this.miniBoss(arena.id);
+      if(!arena.active&&!arena.cleared&&centerX>=arena.x&&centerX<arena.gateX&&centerY>=arena.triggerY&&centerY<arena.floorY){arena.active=true;if(enemy)enemy.active=true;}
+      const target=arena.active&&!arena.cleared&&enemy&&!enemy.dead?1:0;
+      arena.gateProgress+=Math.sign(target-arena.gateProgress)*Math.min(Math.abs(target-arena.gateProgress),dt*4);
+    }
+  }
   updateBossArena(dt){
     const arena=this.bossArena,boss=this.boss();if(!arena||!boss)return;
     const center=this.player.x+this.player.w/2,centerY=this.player.y+this.player.h/2;
@@ -107,7 +125,18 @@ export class Game {
     const target=arena.active&&!arena.cleared?1:0;
     arena.gateProgress+=Math.sign(target-arena.gateProgress)*Math.min(Math.abs(target-arena.gateProgress),dt*3.4);
   }
+  updateMiniBoss(enemy,dt){
+    const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);
+    if(!arena?.active||arena.cleared){enemy.active=false;enemy.vx=0;enemy.vy+=900*dt;this.moveActor(enemy,dt);return;}
+    enemy.active=true;enemy.chargeCooldown=Math.max(0,enemy.chargeCooldown-dt);
+    if(enemy.chargeTime>0){enemy.chargeTime=Math.max(0,enemy.chargeTime-dt);const safe=!enemy.onGround||hasFloorAhead(enemy,enemy.chargeDirection,this.platforms);enemy.vx=safe?enemy.chargeDirection*225:0;}
+    else if(enemy.windup>0){enemy.windup=Math.max(0,enemy.windup-dt);enemy.vx=0;if(enemy.windup===0){enemy.chargeTime=.52;enemy.chargeDirection=Math.sign(this.player.x-enemy.x)||enemy.chargeDirection;enemy.vy=-190;}}
+    else if(enemy.chargeCooldown<=0){enemy.windup=.42;enemy.chargeCooldown=1.5;enemy.vx=0;}
+    else enemy.vx=0;
+    enemy.vy+=900*dt;this.moveActor(enemy,dt);
+  }
   aim(){return{x:this.player.aimX,y:this.player.aimY};}
+  enemyTargetable(enemy){if(!enemy.isMiniBoss)return true;const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);return Boolean(arena?.active&&!arena.cleared);}
   attackDirection(){return{x:this.player.attackAimX,y:this.player.attackAimY};}
   specialDirection(){return{x:this.player.specialAimX,y:this.player.specialAimY};}
   attackBox(){return directionalBox(this.player,this.attackDirection(),ATTACK_RANGE.primary,30);}
@@ -127,15 +156,20 @@ export class Game {
     if(target.kind!=='junk')this.gainElectricity(electricity);
     if(target.kind==='junk'&&damage<(target.minimumDamage??1)){target.hitFlash=.18;this.burst(target.x+target.w/2,target.y+target.h/2,'#ffffff',5);return;}
     target.health-=damage;target.hitFlash=.18;this.burst(target.x+target.w/2,target.y+target.h/2,target.kind==='junk'?'#d9a441':'#ff493f',12);
-    if(target.health<=0&&!target.dead){target.dead=true;this.player.scrap+=target.kind==='junk'?target.scrapValue:(SCRAP_VALUES[target.type]??5);if(target.type==='boss'){this.bossArena.cleared=true;this.bossArena.active=false;this.bossProjectiles=[];this.bossShockwave=null;}this.burst(target.x+target.w/2,target.y+target.h/2,'#d6ff3f',target.kind==='junk'?36:target.type==='boss'?70:20);}
+    if(target.health<=0&&!target.dead){
+      target.dead=true;const reward=target.kind==='junk'?target.scrapValue:target.isMiniBoss?target.rewardScrap:(SCRAP_VALUES[target.type]??5);this.player.scrap+=reward;
+      if(target.type==='boss'){this.bossArena.cleared=true;this.bossArena.active=false;this.bossProjectiles=[];this.bossShockwave=null;}
+      if(target.isMiniBoss){const arena=this.miniBossArenas.find(item=>item.id===target.arenaId);if(arena){arena.cleared=true;arena.active=false;}this.rewardToast={text:`+${reward} SCRAP`,detail:`${target.name} DEFEATED`,time:3};}
+      this.burst(target.x+target.w/2,target.y+target.h/2,'#d6ff3f',target.kind==='junk'?36:target.type==='boss'?70:target.isMiniBoss?48:20);
+    }
   }
-  resolvePrimaryAttack(){const p=this.player,box=this.attackBox();for(const e of this.enemies)if(!e.dead&&overlaps(box,e))this.hitTarget(e,1,p.attackHits);for(const c of this.conduits)if(overlaps(box,c))this.hitTarget(c,0,p.attackHits);for(const pile of this.junkPiles)if(!pile.dead&&overlaps(box,pile))this.hitTarget(pile,1,p.attackHits,0);}
+  resolvePrimaryAttack(){const p=this.player,box=this.attackBox();for(const e of this.enemies)if(!e.dead&&this.enemyTargetable(e)&&overlaps(box,e))this.hitTarget(e,1,p.attackHits);for(const c of this.conduits)if(overlaps(box,c))this.hitTarget(c,0,p.attackHits);for(const pile of this.junkPiles)if(!pile.dead&&overlaps(box,pile))this.hitTarget(pile,1,p.attackHits,0);}
   updateCombat(){
     const p=this.player;
     if(p.specialTime<=0)return;
     const damage=p.specialType==='electricJab'?2:1;
     const hits=p.specialType==='field'?(target=>circleIntersectsRect(fieldCircle(p),target)):(target=>overlaps(directionalBox(p,this.specialDirection(),ATTACK_RANGE.electricJab,38),target));
-    for(const e of this.enemies)if(!e.dead&&hits(e))this.hitTarget(e,damage,p.specialHits,4);
+    for(const e of this.enemies)if(!e.dead&&this.enemyTargetable(e)&&hits(e))this.hitTarget(e,damage,p.specialHits,4);
     for(const c of this.conduits)if(hits(c))this.hitTarget(c,0,p.specialHits,4);
     for(const pile of this.junkPiles)if(!pile.dead&&hits(pile))this.hitTarget(pile,damage,p.specialHits,0);
   }
@@ -143,6 +177,7 @@ export class Game {
     const p=this.player;
     for(const e of this.enemies){if(e.dead)continue;e.phase+=dt;
       if(e.type==='boss'){this.updateBoss(e,dt);if(overlaps(p,e))this.damagePlayer('enemy',e.x+e.w/2);continue;}
+      if(e.isMiniBoss){this.updateMiniBoss(e,dt);if(overlaps(p,e))this.damagePlayer('enemy',e.x+e.w/2);continue;}
       const distance=Math.hypot((p.x+p.w/2)-(e.x+e.w/2),(p.y+p.h/2)-(e.y+e.h/2));
       if(e.type==='drone'){
         e.active=distance<=e.aggroRadius;

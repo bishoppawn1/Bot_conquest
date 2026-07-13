@@ -10,9 +10,11 @@ export const SPAWN = { x:180, y:624 };
 export const FOUNDATION_BLOCKS = [
   {id:'west-floor',x:0,y:660,w:1200,h:140,kind:'foundation'},
   {id:'assembly-floor',x:1290,y:620,w:980,h:180,kind:'foundation'},
-  {id:'vault-left',x:2360,y:680,w:280,h:120,kind:'foundation'},
-  {id:'vault-center',x:2800,y:680,w:300,h:120,kind:'foundation'},
-  {id:'vault-right',x:3260,y:680,w:200,h:120,kind:'foundation'},
+  {id:'vault-entry',x:2360,y:680,w:200,h:120,kind:'foundation'},
+  {id:'vault-shelf',x:2720,y:750,w:220,h:120,kind:'foundation'},
+  {id:'vault-depth',x:2940,y:820,w:220,h:120,kind:'foundation'},
+  {id:'vault-rise',x:3160,y:750,w:100,h:120,kind:'foundation'},
+  {id:'vault-exit',x:3420,y:680,w:130,h:120,kind:'foundation'},
   {id:'foundry-floor',x:3550,y:610,w:1300,h:190,kind:'foundation'},
   {id:'prearena-floor',x:4950,y:670,w:840,h:130,kind:'foundation'},
   {id:'boss-floor',x:5890,y:600,w:1300,h:200,kind:'foundation'},
@@ -38,7 +40,6 @@ export const INTERIOR_BLOCKS = [
   {x:800,y:590,w:260,h:70,kind:'interior'},
   {id:'assembly-step',x:1400,y:550,w:220,h:70,kind:'interior'},
   {x:1950,y:550,w:180,h:70,kind:'interior'},
-  {id:'vault-step',x:2440,y:610,w:120,h:70,kind:'interior'},
   {id:'foundry-step',x:3650,y:540,w:300,h:70,kind:'interior'},
   {x:4400,y:540,w:260,h:70,kind:'interior'},
   {id:'prearena-step',x:5100,y:600,w:200,h:70,kind:'interior'},
@@ -56,9 +57,9 @@ export const BRANCH_BLOCKS = [
   {id:'assembly-perch',x:1910,y:280,w:300,h:50,kind:'branch',zone:'assembly'},
   {id:'assembly-cross',x:1420,y:140,w:350,h:45,kind:'branch',zone:'assembly'},
 
-  {id:'vault-ledge',x:2570,y:470,w:180,h:40,kind:'branch',zone:'vault'},
-  {id:'vault-span',x:2850,y:350,w:380,h:55,kind:'branch',zone:'vault'},
-  {id:'vault-high',x:3270,y:210,w:180,h:40,kind:'branch',zone:'vault'},
+  {id:'vault-ledge',x:2500,y:870,w:160,h:40,kind:'branch',zone:'vault'},
+  {id:'vault-span',x:2600,y:930,w:290,h:55,kind:'branch',zone:'vault'},
+  {id:'vault-high',x:2860,y:1040,w:200,h:40,kind:'branch',zone:'vault'},
 
   {id:'foundry-platform',x:3960,y:400,w:310,h:60,kind:'branch',zone:'foundry'},
   {id:'foundry-mid',x:4350,y:280,w:220,h:40,kind:'branch',zone:'foundry'},
@@ -76,13 +77,15 @@ export const BRANCH_BLOCKS = [
   {id:'relay-west',x:8440,y:-40,w:310,h:50,kind:'branch',zone:'relay'}
 ];
 
-// The undercroft is entered through two safe openings in the vault floor. It
-// forms a lower loop rather than a fatal drop or one-way pit.
+// The Sunken Vault descends through a reversible upper route, then uses one
+// deliberate one-way drop into its mini-boss room. The right-hand platforms
+// form the guaranteed basic-jump escape after the arena gate opens.
 export const LOWER_BLOCKS = [
-  {id:'under-entry',x:2640,y:850,w:160,h:45,kind:'lower'},
-  {id:'under-bridge',x:2820,y:950,w:260,h:55,kind:'lower'},
-  {id:'under-cache',x:2500,y:1080,w:300,h:60,kind:'lower'},
-  {id:'under-exit',x:3100,y:840,w:160,h:40,kind:'lower'}
+  {id:'under-cache',x:2860,y:1120,w:470,h:80,kind:'lower'},
+  {id:'under-threshold',x:3370,y:1120,w:180,h:80,kind:'lower'},
+  {id:'under-exit-low',x:3390,y:1020,w:80,h:40,kind:'lower'},
+  {id:'under-exit-mid',x:3290,y:920,w:80,h:45,kind:'lower'},
+  {id:'under-exit-high',x:3340,y:820,w:80,h:40,kind:'lower'}
 ];
 
 // Small alcoves exist only at the outer ends of the world, where their back
@@ -97,7 +100,8 @@ export const WALL_BLOCKS = [
   {x:9540,y:450,w:60,h:140,kind:'wall'},
   {x:8340,y:-600,w:60,h:540,kind:'wall'},
   {id:'boss-roof-left',x:5790,y:-1000,w:100,h:1350,kind:'wall'},
-  {id:'boss-roof-right',x:7190,y:-1000,w:160,h:1350,kind:'wall'}
+  {id:'boss-roof-right',x:7190,y:-1000,w:160,h:1350,kind:'wall'},
+  {id:'vault-arena-left',x:2800,y:985,w:60,h:135,kind:'wall'}
 ];
 
 // Three substantial optional regions remain unreachable with the starting
@@ -127,6 +131,15 @@ export const BOSS_ARENA = {
   boss:{type:'boss',x:6500,y:500,w:120,h:100,health:18}
 };
 
+export const MINI_BOSS_ARENAS = [
+  {
+    id:'vault-sentinel',name:'VAULT SENTINEL',region:'vault',
+    x:2860,y:950,w:510,h:170,floorY:1120,triggerY:1000,
+    gateX:3330,gateY:950,gateWidth:40,gateHeight:170,rewardScrap:60,
+    enemy:{type:'miniBoss',x:3140,y:1048,w:82,h:72,health:6}
+  }
+];
+
 export const REST_AREA = {
   x:7420,y:450,w:650,h:210,floorY:660,
   station:{x:7520,y:594,w:64,h:66,interactionRadius:115}
@@ -154,7 +167,8 @@ export const REGION_GATES = [
 // Pickups share one data shape so future movement, combat, and shell pickups
 // can use the same contact collection flow.
 export const PICKUP_SPAWNS = [
-  {id:'vault-core',kind:'ability',ability:'vault',x:7448,y:608,w:24,h:24,requiresBossClear:true}
+  {id:'volt-core',kind:'ability',ability:'electricJab',x:3410,y:980,w:24,h:24,color:'#75f5ff',name:'VOLT JAB',key:'F',description:'Spend electricity to fire a long powered jab.'},
+  {id:'vault-core',kind:'ability',ability:'vault',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'VAULT',key:'W + MOVE',description:'Run into low obstacles while holding jump.',requiresBossClear:true}
 ];
 
 // Merchants are presentation-only until the trading system is designed. Most
@@ -170,7 +184,7 @@ export const MERCHANT_SPAWNS = [
 export const RECESSES = [
   {x:110,y:-120,w:980,h:780,floorY:660,ceilingY:-120,openSide:'right'},
   {x:1340,y:-800,w:780,h:1420,floorY:620,ceilingY:-800,openSide:'left'},
-  {x:2380,y:-330,w:1050,h:1010,floorY:680,ceilingY:-330,openSide:'right',floorOpenings:true},
+  {x:2380,y:-330,w:1050,h:1450,floorY:1120,ceilingY:-330,openSide:'right',floorOpenings:true,steppedFloor:true},
   {x:3650,y:-800,w:1040,h:1410,floorY:610,ceilingY:-800,openSide:'left'},
   {x:5030,y:-200,w:690,h:870,floorY:670,ceilingY:-200,openSide:'right'},
   {x:5980,y:350,w:1100,h:250,floorY:600,ceilingY:350,openSide:'left'},
@@ -194,7 +208,6 @@ export const PLATFORMS = [
 export const TRAPS = [
   {x:1200,y:690,w:90,h:110},
   {x:2270,y:710,w:90,h:90},
-  {x:3460,y:700,w:90,h:100},
   {x:4850,y:700,w:100,h:100},
   {x:5790,y:700,w:100,h:100},
   {x:7190,y:700,w:160,h:100},
@@ -211,10 +224,9 @@ export const ENEMY_SPAWNS = [
   {type:'hopper',x:1950,y:235,w:34,h:45},
   {type:'drone',x:1450,y:300,w:42,h:30},
   {type:'roller',x:2365,y:652,w:46,h:28,patrol:true,patrolRange:45},
-  {type:'crawler',x:2920,y:310,w:30,h:40,patrol:true,patrolRange:90},
-  {type:'crawler',x:2860,y:910,w:30,h:40,patrol:true,patrolRange:55},
-  {type:'brute',x:2600,y:1017,w:58,h:63},
-  {type:'drone',x:2850,y:850,w:42,h:30},
+  {type:'crawler',x:2760,y:890,w:30,h:40,patrol:true,patrolRange:60},
+  {type:'brute',x:3000,y:757,w:58,h:63},
+  {type:'drone',x:2860,y:650,w:42,h:30},
   {type:'crawler',x:3570,y:570,w:30,h:40},
   {type:'brute',x:4720,y:547,w:58,h:63},
   {type:'roller',x:4020,y:372,w:46,h:28,patrol:true,patrolRange:90},
@@ -234,7 +246,7 @@ export const ENEMY_SPAWNS = [
 
 export const CONDUITS = [
   {x:330,y:608,w:28,h:52,charge:24,energyPerHit:4},
-  {x:3770,y:488,w:28,h:52,charge:24,energyPerHit:4},
+  {x:3300,y:868,w:28,h:52,charge:24,energyPerHit:4,tutorial:'electricJab'},
   {x:8500,y:538,w:28,h:52,charge:24,energyPerHit:4}
 ];
 
@@ -242,12 +254,13 @@ export const JUNK_PILES = [
   {x:500,y:544,w:76,h:46,health:5,scrapValue:24},
   {x:740,y:404,w:76,h:46,health:5,scrapValue:26},
   {x:1500,y:94,w:82,h:46,health:5,scrapValue:28},
-  {x:2990,y:304,w:84,h:46,health:6,scrapValue:32},
-  {x:2630,y:1034,w:88,h:46,health:6,scrapValue:34},
+  {x:2960,y:994,w:84,h:46,health:6,scrapValue:32},
+  {x:2800,y:884,w:88,h:46,health:6,scrapValue:34},
   {x:3820,y:-46,w:86,h:46,health:6,scrapValue:36},
   {x:4500,y:-276,w:90,h:46,health:6,scrapValue:38},
   {x:5600,y:264,w:80,h:46,health:5,scrapValue:28},
   {x:8940,y:54,w:78,h:46,health:5,scrapValue:30},
   {x:9040,y:-696,w:92,h:46,health:7,scrapValue:44},
+  {id:'vault-volt-seal',x:3360,y:740,w:50,h:80,health:2,scrapValue:20,minimumDamage:2,gate:true,requires:'electricJab'},
   {x:9300,y:500,w:120,h:90,health:8,scrapValue:60,minimumDamage:2,gate:true}
 ];
