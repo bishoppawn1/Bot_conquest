@@ -74,6 +74,7 @@ export class Renderer {
     if(game.merchantRoom.activeMerchant)this.drawMerchantDoor({...game.merchantRoom.exit,color:game.merchantRoom.activeMerchant.color},true,game.time);
     for(const pickup of game.pickups)if(game.pickupAvailable(pickup))this.drawPickup(pickup,game.time);
     for(const pile of game.junkPiles)if(!pile.dead)this.drawJunkPile(pile);
+    if(game.recoveryCorpse&&!game.recoveryCorpse.dead)this.drawRecoveryCorpse(game.recoveryCorpse,game.time);
     for(const conduit of game.conduits)this.drawConduit(conduit,game.time);
     for(const enemy of game.enemies)if(!enemy.dead)this.drawEnemy(enemy,game.time);
     this.drawBot(game);
@@ -212,6 +213,15 @@ export class Renderer {
     const {ctx}=this,damage=1-pile.health/pile.maxHealth;ctx.save();ctx.translate(pile.x,pile.y);ctx.fillStyle='#3a3029';ctx.beginPath();ctx.moveTo(0,pile.h);ctx.lineTo(6,pile.h*.52);ctx.lineTo(pile.w*.25,pile.h*.25);ctx.lineTo(pile.w*.48,pile.h*.38);ctx.lineTo(pile.w*.68,3);ctx.lineTo(pile.w*.84,pile.h*.3);ctx.lineTo(pile.w,pile.h*.58);ctx.lineTo(pile.w,pile.h);ctx.closePath();ctx.fill();ctx.strokeStyle='#87705b';ctx.lineWidth=3;ctx.stroke();
     for(let i=0;i<7;i++){const x=7+(i*19)%Math.max(20,pile.w-15),y=10+(i*13)%Math.max(18,pile.h-14);ctx.save();ctx.translate(x,y);ctx.rotate((i*.83)%2);ctx.fillStyle=i%3===0?'#a8753d':i%3===1?'#59676a':'#6f4f43';ctx.fillRect(-7,-3,14,6);ctx.restore();}
     if(pile.minimumDamage>1){ctx.strokeStyle='#75f5ff';ctx.lineWidth=3;ctx.strokeRect(3,3,pile.w-6,pile.h-6);ctx.fillStyle='#75f5ff';ctx.font='700 9px Space Mono';ctx.fillText('VOLT',pile.w/2-13,pile.h/2+3);}if(damage>0){ctx.strokeStyle='#d6ff3f';ctx.globalAlpha=.35+damage*.5;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pile.w*.52,4);ctx.lineTo(pile.w*.45,pile.h*.42);ctx.lineTo(pile.w*.58,pile.h*.7);ctx.stroke();}ctx.restore();
+  }
+
+  drawRecoveryCorpse(corpse,time) {
+    const {ctx}=this,cx=corpse.x+corpse.w/2,cy=corpse.y+corpse.h/2,pulse=.5+Math.sin(time*5)*.18;ctx.save();ctx.translate(cx,cy);
+    ctx.globalAlpha=corpse.hitFlash>0?.65:1;ctx.strokeStyle='#6f7d82';ctx.lineWidth=4;ctx.lineCap='square';
+    for(const side of [-1,0,1]){ctx.beginPath();ctx.moveTo(side*10,2);ctx.lineTo(side*16+(side===0?7:0),10);ctx.lineTo(side*22+(side===0?10:0),9);ctx.stroke();}
+    ctx.fillStyle='#11191e';ctx.beginPath();ctx.ellipse(0,0,24,10,-.08,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a3afb2';ctx.lineWidth=3;ctx.stroke();
+    ctx.fillStyle='#402326';ctx.fillRect(-12,-3,5,3);ctx.fillRect(-2,-2,4,3);ctx.fillRect(8,-3,3,2);
+    ctx.globalAlpha=pulse;ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,31,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=.8;this.line(0,-16,0,-33,'#d6ff3f',2);this.polygon([[-4,-32],[0,-39],[4,-32]],'#d6ff3f');ctx.restore();
   }
 
   drawEnemyAppendages(enemy) {

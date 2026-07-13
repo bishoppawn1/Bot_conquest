@@ -4,7 +4,6 @@ import { Renderer } from './renderer.js';
 
 const canvas = document.querySelector('#game');
 const startScreen = document.querySelector('#start');
-const gameOverScreen = document.querySelector('#gameover');
 const renderer = new Renderer(canvas);
 const debugSpawn = new URLSearchParams(location.search).get('debug');
 const abilityControls = [...document.querySelectorAll('[data-ability]')];
@@ -40,6 +39,9 @@ function begin() {
     game.player.x=7100;
     game.player.y=250-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'recovery') {
+    Object.assign(game.player,{x:500,y:624,lives:1,scrap:73,electricity:48,invuln:0});
+    game.damagePlayer('enemy',600);
   } else if (debugSpawn === 'explore') {
     game.player.x=1660;
     game.player.y=140-game.player.h;
@@ -100,11 +102,9 @@ function begin() {
   syncAbilityControls();
   renderer.resetLegs();
   startScreen.classList.add('hidden');
-  gameOverScreen.classList.add('hidden');
 }
 
 document.querySelector('#play').addEventListener('click', begin);
-document.querySelector('#retry').addEventListener('click', begin);
 bindInput({ getGame: () => game, isPlaying: () => playing, begin });
 
 function frame(timestamp) {
@@ -113,7 +113,6 @@ function frame(timestamp) {
   if (playing) {
     game.update(dt);
     syncAbilityControls();
-    if (!game.running) { playing=false; gameOverScreen.classList.remove('hidden'); }
   }
   renderer.draw(game);
   requestAnimationFrame(frame);

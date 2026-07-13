@@ -18,8 +18,9 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - The blue `volt-core` in the Sunken Vault unlocks electric jab and opens a large temporary tutorial popup showing `F`. It remains unavailable inside the Abyss Warden arena until that full boss is dead. The nearby tutorial conduit contains exactly the 24 electricity required for one jab, and the following `vault-volt-seal` requires that attack.
 - The white post-boss `vault-core` appears only after the Heavy Core is cleared; touching it unlocks `wallClimb`. Hold `W` against a wall to climb continuously. Press `D` away from a left wall or `A` away from a right wall to jump off at the bot's current height. Never teleport the bot to a wall top.
 - Once unlocked, `Q` creates the circular field, `F` uses electric jab, and `Shift` dashes.
-- There is no restart key or persistent restart control. A destroyed run may still use the game-over reboot button.
-- After the boss is cleared, `O` interacts with the recovery station. Resting restores all three shells and moves the spike-reset checkpoint beside the station.
+- There is no restart key, persistent restart control, or game-over reboot. Losing the final shell rebuilds the bot at its last activated save point, or at the initial spawn if no station has been activated.
+- A destroyed bot loses all carried scrap and electricity. Its old shell remains at the death location as a three-health wreck containing the lost scrap; destroying the wreck restores that scrap but no electricity. A newer death replaces any unrecovered wreck.
+- After the boss is cleared, `O` interacts with the recovery station. Resting restores all three shells and moves both the spike-reset checkpoint and full-death respawn point beside the station.
 - `I` is reserved for the future combined inventory/map interface. It must remain unbound and have no behavior until that system is designed.
 - The player starts with three lives and loses one to enemy contact, spikes, or falling.
 - Touching a spike immediately removes one life and returns the bot to its last safe position on the most recently supported platform. It must not continue falling through the spike pit or return all the way to the initial spawn.
@@ -42,6 +43,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Drones use a 340-unit detection radius and pursue the player's position in both axes. They may hover near their spawn height only while inactive.
 - Drones use axis-separated collision against all solid platform blocks. Flying movement never permits them to pass through floors, ceilings, or walls.
 - Ground enemies must probe for supporting floor before moving. They stop at platform and spike-gap edges.
+- Hoppers commit to a high leap toward the player, then remain grounded for 0.7 seconds after landing so the player has a reliable attack window.
 - The Abyss Warden is a twelve-health full boss protecting Volt Jab. Its full-height right exit seal exists before activation, so the reward can never be reached backward from the escape route. Dropping into the chamber activates a second entry seal. It cycles through a telegraphed charge, a leaping shockwave, and a five-bolt volley.
 - The Cache Scrapper is an optional six-health mini boss in Quiet Drift. It protects only an 80-scrap upper cache route and never grants an ability.
 - Enemy types should continue to vary in size, silhouette, health, speed, and movement style.
@@ -122,7 +124,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 
 - `REST_AREA` occupies the foundation immediately after the boss arena. Keep its floor clear of ordinary enemies, conduits, junk, and interior obstacles.
 - The recovery station remains offline until `bossArena.cleared` is true.
-- Pressing `O` within the configured interaction radius restores the player to three lives, clears knockback/invulnerability motion, plays the recovery effect, and records the station-side checkpoint.
+- Pressing `O` within the configured interaction radius restores the player to three lives, clears knockback/invulnerability motion, plays the recovery effect, and records the station-side spike and full-death checkpoints.
 - Resting does not refill electricity or unlock abilities.
 - The post-boss wall-climb pickup may occupy the entrance side of this region. Merchant doors remain beyond the configured `REST_AREA` boundary so the immediate recovery pocket stays calm.
 
@@ -168,3 +170,5 @@ Use `http://127.0.0.1:4173/?debug=wall` to verify continuous wall climbing and j
 Use `http://127.0.0.1:4173/?debug=gauntlet` for the trap-heavy Shard Gauntlet and `http://127.0.0.1:4173/?debug=exchange` for the Grand Exchange damage forge.
 
 Use `http://127.0.0.1:4173/?debug=forge-room` for the Edge Forge purchase prompt and `http://127.0.0.1:4173/?debug=postboss` to inspect the opened roof after the Heavy Core bulkheads are destroyed.
+
+Use `http://127.0.0.1:4173/?debug=recovery` to inspect a rebuilt bot and its nearby scrap-bearing wreckage.

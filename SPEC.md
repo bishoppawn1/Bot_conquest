@@ -30,7 +30,7 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 | Interact | `O` | Rest at the recovery station or enter/leave an unlocked merchant room |
 | Inventory / map | `I` | Reserved for a later system; deliberately does nothing now |
 
-There is no restart key or persistent restart control. The game-over screen may offer a reboot after the player loses all three shells.
+There is no restart key or persistent restart control. Losing all three shells rebuilds the bot at the last activated save point, or at the initial spawn before any station has been activated.
 
 The basic slash supports left, right, up, and down. Its aim is captured when the attack begins. Pressing Space immediately evaluates the complete 105-unit directional hitbox once. Its only presentation is a 0.09-second straight white slash facing forward; it never extends, retracts, curves, or resembles a pointer.
 
@@ -64,13 +64,13 @@ The electric field lasts 0.9 seconds and uses a true 112-unit-radius circular co
 
 ## Lives and failure
 
-The player starts with three core shells. Enemy contact removes one shell and briefly grants invulnerability. Touching a spike immediately removes one shell and returns the player to the last safe position recorded on the most recently supported platform; the player never continues falling through the spike pit. Falling completely out of the world still returns to the initial spawn. Losing the third shell ends the run.
+The player starts with three core shells. Enemy contact removes one shell and briefly grants invulnerability. Touching a spike immediately removes one shell and returns the player to the last safe position recorded on the most recently supported platform; the player never continues falling through the spike pit. Falling completely out of the world still returns to the initial spawn. Losing the third shell rebuilds the bot with three shells at its last activated save point. Carried electricity and scrap drop to zero, and a three-health wreck remains at the death location holding the lost scrap. Destroying that wreck returns all stored scrap but no electricity. A newer death replaces any unrecovered wreck.
 
 ## Enemies
 
 Selected crawlers and rollers patrol passively within configured leashes. Basic ground enemies detect at 210 units and brutes at 240 units. Distance alone is insufficient: both the player and ground enemy must stand on the same supporting platform before pursuit begins. Ground enemies probe for walkable support before every step. Main-route ground encounters occupy usable combat floor rather than narrow pockets caught between a raised block and spikes.
 
-Crawlers change direction immediately and pursue at a steady 75 units per second. Oblong rollers accelerate gradually toward a 150-unit-per-second chase speed, preserving momentum rather than copying crawler motion. Square brutes stop for a visible 0.38-second warning, lock a direction, and charge at 190 units per second for 0.42 seconds before cooling down. Hoppers commit to a high, fast leap toward the player's horizontal position, then pause briefly before leaping again.
+Crawlers change direction immediately and pursue at a steady 75 units per second. Oblong rollers accelerate gradually toward a 150-unit-per-second chase speed, preserving momentum rather than copying crawler motion. Square brutes stop for a visible 0.38-second warning, lock a direction, and charge at 190 units per second for 0.42 seconds before cooling down. Hoppers commit to a high, fast leap toward the player's horizontal position, then remain grounded for 0.7 seconds after landing so the player has a reliable attack window.
 
 Drones detect at 340 units. When inactive they hover around their spawn height. Once active they steer toward the player's actual two-dimensional position at 105 units per second. Drone movement resolves horizontal and vertical collision against solid blocks, so drones cannot fly through floors, ceilings, or walls.
 
@@ -98,7 +98,7 @@ Quiet Drift contains the reusable six-health Cache Scrapper mini-boss on an opti
 
 ### Recovery room
 
-The foundation immediately beyond the boss arena is a calm recovery room with no ordinary enemies, junk, conduits, or floor obstacles. Its station powers on only after the Heavy Core is defeated. While within 115 units, the HUD displays the `O // REST AND RECOVER` prompt. Resting restores all three core shells, clears current knockback, plays a recovery pulse, and moves the spike-reset checkpoint beside the station. It does not refill electricity or unlock abilities.
+The foundation immediately beyond the boss arena is a calm recovery room with no ordinary enemies, junk, conduits, or floor obstacles. Its station powers on only after the Heavy Core is defeated. While within 115 units, the HUD displays the `O // REST AND RECOVER` prompt. Resting restores all three core shells, clears current knockback, plays a recovery pulse, and moves both the spike-reset checkpoint and full-death respawn point beside the station. It does not refill electricity or unlock abilities.
 
 ## Current map fragment
 
