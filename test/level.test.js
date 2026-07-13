@@ -95,13 +95,14 @@ test('named regions are contiguous and connected by visible gates',()=>{
   }
 });
 
-test('merchant doors cluster in the concourse while the Grand Exchange has a damage forge',()=>{
-  const hubMerchants=MERCHANT_SPAWNS.filter(merchant=>merchant.region==='concourse'&&merchant.hub);
-  assert.ok(hubMerchants.length>=3);
-  assert.ok(MERCHANT_SPAWNS.filter(merchant=>!merchant.hub).length>=2);
+test('major upgrade merchants are discoveries beyond the post-boss concourse',()=>{
+  const discoveryIds=['merchant-parts','merchant-shells','merchant-salvage'],discoveries=discoveryIds.map(id=>MERCHANT_SPAWNS.find(merchant=>merchant.id===id));
+  assert.ok(discoveries.every(Boolean));assert.ok(discoveries.every(merchant=>merchant.region!=='concourse'&&!merchant.hub));
+  assert.ok(discoveries.some(merchant=>merchant.y<0),'one major merchant should require upper exploration');
+  assert.ok(discoveries.filter(merchant=>merchant.x>=9600).length>=2,'major merchants should be spread into later eastern regions');
   assert.ok(new Set(MERCHANT_SPAWNS.map(merchant=>merchant.region)).size>=4);
   const forge=MERCHANT_SPAWNS.find(merchant=>merchant.service==='damageUpgrade');assert.equal(forge.region,'exchange');assert.deepEqual(forge.upgradeCosts,FORGE_UPGRADE_COSTS);assert.ok(FORGE_UPGRADE_COSTS.length>=3&&FORGE_UPGRADE_COSTS[0]>=500);
-  for(const merchant of MERCHANT_SPAWNS)assert.ok(PLATFORMS.every(block=>!intersects(merchant,block)),`${merchant.id} overlaps a solid block`);
+  for(const merchant of MERCHANT_SPAWNS){assert.ok(PLATFORMS.every(block=>!intersects(merchant,block)),`${merchant.id} overlaps a solid block`);assert.ok(PLATFORMS.some(block=>block.y===merchant.y+merchant.h&&block.x<=merchant.x&&block.x+block.w>=merchant.x+merchant.w),`${merchant.id} has no supporting surface`);}
 });
 
 test('ability and map cores use the generic pickup format',()=>{

@@ -44,8 +44,8 @@ function begin() {
     Object.assign(game.player,{x:500,y:624,lives:1,scrap:73,electricity:48,invuln:0});
     game.damagePlayer('enemy',600);
   } else if (debugSpawn === 'inventory') {
-    Object.assign(game.player,{scrap:860,primaryDamage:5,damageUpgrades:2,healthUpgrades:1,energyUpgrades:1,internalSlotUpgrades:1,materials:{titanium:4,uranium:1},purchasedItems:[{id:'edge-coil-1',kind:'upgrade',name:'EDGE COIL MK 1',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'edge-coil-2',kind:'upgrade',name:'EDGE COIL MK 2',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'shell-capacity-1',kind:'upgrade',name:'SHELL CAPACITY MK 1',detail:'+1 MAX SHELL'},{id:'capacitor-bank-1',kind:'upgrade',name:'CAPACITOR BANK MK 1',detail:'+25 MAX ELECTRICITY'},{id:'internal-bay-1',kind:'upgrade',name:'INTERNAL BAY 1',detail:'REDUCED-EFFECT MODIFIER SLOT'},{id:'modifier-adaptive-lattice',modifierId:'adaptive-lattice',kind:'modifier',name:'ADAPTIVE LATTICE',equippedSlot:'shell'},{id:'modifier-dense-matrix',modifierId:'dense-matrix',kind:'modifier',name:'DENSE MATRIX',equippedSlot:'core'}]});
-    game.player.body.internalSlots.push({id:'internal-1',part:'internal',label:'INTERNAL BAY 1',efficiency:.3});game.recomputeBodyStats();game.player.lives=5;game.player.electricity=140;
+    Object.assign(game.player,{scrap:860,primaryDamage:5,damageUpgrades:2,healthUpgrades:1,energyUpgrades:1,internalSlotUpgrades:1,materials:{titanium:4,uranium:1},purchasedItems:[{id:'edge-coil-1',kind:'upgrade',name:'EDGE COIL MK 1',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'edge-coil-2',kind:'upgrade',name:'EDGE COIL MK 2',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'shell-capacity-1',kind:'upgrade',name:'SHELL CAPACITY MK 1',detail:'+1 MAX SHELL'},{id:'capacitor-bank-1',kind:'upgrade',name:'CAPACITOR BANK MK 1',detail:'+25 MAX ELECTRICITY'},{id:'internal-bay-1',kind:'upgrade',name:'INTERNAL BAY 1',detail:'REDUCED-EFFECT MODIFIER SLOT'},{id:'modifier-aegis-filament',modifierId:'aegis-filament',kind:'modifier',name:'AEGIS FILAMENT',equippedSlot:'internal-1'},{id:'modifier-reactive-governor',modifierId:'reactive-governor',kind:'modifier',name:'REACTIVE GOVERNOR',equippedSlot:'legs'},{id:'modifier-extender-arm',modifierId:'extender-arm',kind:'modifier',name:'EXTENDER ARM',equippedSlot:'weapon'}]});
+    game.player.body.internalSlots.push({id:'internal-1',part:'internal',label:'INTERNAL BAY 1',efficiency:.3});game.recomputeBodyStats();game.player.lives=4;game.player.electricity=125;game.player.shield=1;
     for(const region of ['verge','vault','foundry','bastion','concourse'])game.mappedRegions.add(region);game.inventoryOpen=true;
     if(debugPanel==='map'||debugPanel==='overview'||debugPanel==='nomap'){game.inventoryPage=0;game.mapOverview=debugPanel==='overview';if(debugPanel==='nomap')game.mapRegionIndex=5;}
     else if(debugPanel==='materials')game.inventoryPage=2;else if(debugPanel==='items')game.inventoryPage=3;
@@ -97,8 +97,10 @@ function begin() {
     game.player.y=pickup.y;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'merchant') {
-    game.player.x=7815;
-    game.player.y=660-game.player.h;
+    const door=game.merchants.find(merchant=>merchant.id==='merchant-parts');
+    game.unlockAbility('wallClimb');game.player.x=door.x+15;
+    game.player.y=door.y+door.h-game.player.h;
+    for(const enemy of game.enemies)if(!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isDepthBoss&&!enemy.isMiniBoss&&Math.hypot(enemy.originX+enemy.w/2-(door.x+door.w/2),enemy.originY+enemy.h/2-(door.y+door.h/2))<=door.clearRadius)enemy.dead=true;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'verge-merchant') {
     const door=game.merchants.find(merchant=>merchant.id==='merchant-verge');
@@ -108,7 +110,7 @@ function begin() {
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'merchant-room') {
     const serviceIds={health:'merchant-shells',energy:'merchant-salvage',internal:'merchant-foundry',modifier:'merchant-parts'},merchantId=serviceIds[debugPanel]??'merchant-parts';game.merchantRoom.activeMerchant=game.merchants.find(merchant=>merchant.id===merchantId);
-    game.merchantRoom.returnPosition={x:7815,y:660-game.player.h};
+    game.merchantRoom.returnPosition={x:game.merchantRoom.activeMerchant.x+15,y:game.merchantRoom.activeMerchant.y+game.merchantRoom.activeMerchant.h-game.player.h};
     game.player.x=game.merchantRoom.merchant.x-80;
     game.player.y=game.merchantRoom.merchant.y;
     game.player.scrap=6000;

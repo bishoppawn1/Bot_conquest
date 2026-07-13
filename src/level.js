@@ -271,16 +271,17 @@ export const ENERGY_UPGRADE_COSTS = Object.freeze([400,800,1400]);
 export const INTERNAL_SLOT_COSTS = Object.freeze([800,1600,2800]);
 
 export const BODY_MODIFIERS = Object.freeze([
-  {id:'adaptive-lattice',name:'ADAPTIVE LATTICE',cost:500,effects:{shell:{maxLives:2,label:'+2 MAX SHELLS'},core:{maxElectricity:40,label:'+40 CAPACITY'},legs:{moveSpeed:45,label:'+45 MOVE SPEED'},internal:{maxLives:1,maxElectricity:15,moveSpeed:12,label:'+1 SHELL / +15 CAP / +12 SPEED'}}},
-  {id:'dense-matrix',name:'DENSE MATRIX',cost:850,effects:{shell:{maxLives:3,label:'+3 MAX SHELLS'},core:{maxElectricity:60,label:'+60 CAPACITY'},legs:{moveSpeed:65,label:'+65 MOVE SPEED'},internal:{maxLives:1,maxElectricity:20,moveSpeed:18,label:'+1 SHELL / +20 CAP / +18 SPEED'}}}
+  {id:'aegis-filament',name:'AEGIS FILAMENT',cost:650,effects:{shell:{maxLives:1,label:'+1 MAX SHELL'},core:{maxElectricity:10,label:'+10 CAPACITY'},legs:{moveSpeed:18,label:'+18 MOVE SPEED'},internal:{healShield:1,label:'REPAIR GRANTS 1-HIT SHIELD'}}},
+  {id:'reactive-governor',name:'REACTIVE GOVERNOR',cost:800,effects:{shell:{postHitInvulnerability:.35,label:'+0.35S POST-HIT WINDOW'},core:{damageEnergy:8,label:'DAMAGE RETURNS 8 ENERGY'},legs:{damageSpeedBonus:85,damageSpeedDuration:3,label:'+85 SPEED FOR 3S AFTER DAMAGE'},internal:{damageSpeedBonus:30,damageSpeedDuration:2,label:'+30 SPEED FOR 2S AFTER DAMAGE'}}},
+  {id:'extender-arm',name:'EXTENDER ARM',cost:950,effects:{core:{maxElectricity:8,label:'+8 CAPACITY'},legs:{moveSpeed:30,label:'+30 MOVE SPEED'},weapon:{attackRange:40,label:'+40 CUTTER RANGE'},internal:{attackRange:12,label:'+12 CUTTER RANGE'}}}
 ]);
 
 // Merchant terminals lead to one sealed, enemy-free interior. A terminal
 // remains locked until its explicitly local enemy group is defeated.
 export const MERCHANT_SPAWNS = [
-  {id:'merchant-parts',name:'PARTS BROKER',x:7800,y:540,w:80,h:120,region:'concourse',hub:true,color:'#75f5ff',clearRadius:210,service:'modifierShop',stock:['adaptive-lattice','dense-matrix']},
-  {id:'merchant-shells',name:'SHELL ARCHIVE',x:7930,y:540,w:80,h:120,region:'concourse',hub:true,color:'#d6ff3f',clearRadius:210,service:'healthUpgrade',upgradeCosts:HEALTH_UPGRADE_COSTS},
-  {id:'merchant-salvage',name:'CAPACITOR EXCHANGE',x:8060,y:540,w:80,h:120,region:'concourse',hub:true,color:'#ffb85c',clearRadius:210,service:'energyUpgrade',upgradeCosts:ENERGY_UPGRADE_COSTS},
+  {id:'merchant-parts',name:'PARTS BROKER',x:9010,y:-770,w:80,h:120,region:'crown',hub:false,color:'#75f5ff',clearRadius:210,service:'modifierShop',stock:['aegis-filament','reactive-governor','extender-arm']},
+  {id:'merchant-shells',name:'SHELL ARCHIVE',x:13700,y:60,w:80,h:120,region:'exchange',hub:false,color:'#d6ff3f',clearRadius:210,service:'healthUpgrade',upgradeCosts:HEALTH_UPGRADE_COSTS},
+  {id:'merchant-salvage',name:'CAPACITOR EXCHANGE',x:11120,y:250,w:80,h:120,region:'gauntlet',hub:false,color:'#ffb85c',clearRadius:210,service:'energyUpgrade',upgradeCosts:ENERGY_UPGRADE_COSTS},
   {id:'merchant-verge',name:'VERGE TINKER',x:2160,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:210},
   {id:'merchant-foundry',name:'INNER FOUNDRY',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:210,service:'internalSlot',upgradeCosts:INTERNAL_SLOT_COSTS},
   {id:'merchant-forge',name:'EDGE FORGE',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:210,service:'damageUpgrade',upgradeCosts:FORGE_UPGRADE_COSTS}

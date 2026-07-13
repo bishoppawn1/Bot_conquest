@@ -8,6 +8,7 @@ const press=(game,key)=>{game.setInput({[key]:true});game.update(1/60);game.setI
 test('merchant doors only check a small circular field around themselves',()=>{
   const game=new Game(),door=game.merchants.find(merchant=>merchant.id==='merchant-salvage');
   assert.ok(game.merchants.every(merchant=>merchant.clearRadius<=210));
+  const localEnemy=game.enemy({type:'crawler',x:door.x+20,y:door.y+door.h-40,w:30,h:40});game.enemies.push(localEnemy);
   standUnder(game,door);assert.equal(game.nearbyMerchantDoor(),door);assert.equal(game.merchantDoorUnlocked(door),false);assert.equal(game.tryInteract(),false);
   for(const enemy of game.enemies)if(!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isDepthBoss&&!enemy.isMiniBoss&&Math.hypot(enemy.originX+enemy.w/2-(door.x+door.w/2),enemy.originY+enemy.h/2-(door.y+door.h/2))<=door.clearRadius)enemy.dead=true;
   game.enemies.push(game.enemy({type:'crawler',x:door.x,y:door.y-900,w:44,h:34}));
@@ -33,6 +34,6 @@ test('the Grand Exchange forge sells four increasingly expensive slash upgrades'
 });
 
 test('merchant catalogs show every item, effect, price, and ownership state',()=>{
-  const game=new Game(),merchant=game.merchants.find(item=>item.service==='modifierShop');game.merchantRoom.activeMerchant=merchant;game.player.scrap=1000;game.openMerchantMenu(merchant);const rows=game.merchantCatalog();assert.equal(rows.length,2);assert.deepEqual(rows.map(row=>row.cost),[500,850]);assert.match(rows[0].detail,/SHELL.*CORE.*LEGS.*INTERNAL/);assert.ok(rows.every(row=>row.state==='available'));
-  press(game,'down');assert.equal(game.merchantMenuSelection,1);press(game,'rest');assert.equal(game.player.purchasedItems[0].modifierId,'dense-matrix');assert.equal(game.merchantCatalog()[1].state,'owned');press(game,'inventory');assert.equal(game.merchantMenuOpen,false);assert.equal(game.inventoryOpen,false);
+  const game=new Game(),merchant=game.merchants.find(item=>item.service==='modifierShop');game.merchantRoom.activeMerchant=merchant;game.player.scrap=1000;game.openMerchantMenu(merchant);const rows=game.merchantCatalog();assert.equal(rows.length,3);assert.deepEqual(rows.map(row=>row.cost),[650,800,950]);assert.match(rows[0].detail,/SHELL.*CORE.*LEGS.*INTERNAL/);assert.doesNotMatch(rows[0].detail,/CUTTER/);assert.match(rows[2].detail,/CUTTER.*40 CUTTER RANGE/);assert.ok(rows.every(row=>row.state==='available'));
+  press(game,'down');assert.equal(game.merchantMenuSelection,1);press(game,'rest');assert.equal(game.player.purchasedItems[0].modifierId,'reactive-governor');assert.equal(game.merchantCatalog()[1].state,'owned');press(game,'inventory');assert.equal(game.merchantMenuOpen,false);assert.equal(game.inventoryOpen,false);
 });
