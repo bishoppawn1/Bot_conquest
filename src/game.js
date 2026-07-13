@@ -15,8 +15,8 @@ export class Game {
     this.prev={...this.input}; this.particles=[];this.bossProjectiles=[];this.bossShockwave=null;this.abilityPopup=null;this.rewardToast=null;
     this.spawn={...SPAWN};
     this.safePosition={...this.spawn};
-    this.respawnPoint={...this.spawn};this.recoveryCorpse=null;this.inventoryOpen=false;this.inventoryPage=1;this.inventorySelection=0;this.inventoryPages=['map','status','materials','items'];this.mappedRegions=new Set();
-    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:0,lives:3,scrap:0,electricity:0,materials:{titanium:0,uranium:0},purchasedItems:[],primaryDamage:1,damageUpgrades:0,abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
+    this.respawnPoint={...this.spawn};this.recoveryCorpse=null;this.inventoryOpen=false;this.inventoryPage=1;this.inventorySelection=0;this.inventoryPages=['map','status','materials','items'];this.mappedRegions=new Set();this.mapOverview=false;this.mapRegionIndex=0;
+    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:0,lives:3,scrap:0,electricity:0,materials:{titanium:0,uranium:0},purchasedItems:[],primaryDamage:3,damageUpgrades:0,abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
     this.platforms=PLATFORMS.map(platform=>({...platform}));
     this.traps=TRAPS.map(trap=>({...trap}));
     this.recesses=RECESSES.map(recess=>({...recess}));
@@ -25,7 +25,7 @@ export class Game {
     this.miniBossArenas=MINI_BOSS_ARENAS.map(arena=>({...arena,enemy:{...arena.enemy},active:false,cleared:false,gateProgress:0}));
     this.restArea={...REST_AREA,station:{...REST_AREA.station}};
     this.regions=REGIONS.map(region=>({...region}));this.regionGates=REGION_GATES.map(gate=>({...gate}));
-    this.regionId=this.regionAt(this.spawn.x)?.id??null;this.regionToast=null;this.regionToastTime=0;
+    this.regionId=this.regionAt(this.spawn.x)?.id??null;this.mapRegionIndex=Math.max(0,this.regions.findIndex(region=>region.id===this.regionId));this.regionToast=null;this.regionToastTime=0;
     this.pickups=PICKUP_SPAWNS.map(pickup=>({...pickup,collected:false}));
     this.merchants=MERCHANT_SPAWNS.map(merchant=>({...merchant}));
     this.merchantRoom={...MERCHANT_ROOM,spawn:{...MERCHANT_ROOM.spawn},exit:{...MERCHANT_ROOM.exit},merchant:{...MERCHANT_ROOM.merchant},activeMerchant:null,returnPosition:null};
@@ -36,14 +36,16 @@ export class Game {
     this.conduits=CONDUITS.map((conduit,index)=>({...conduit,kind:'conduit',id:`conduit-${index}`,maxCharge:conduit.charge,hitFlash:0}));
     this.junkPiles=JUNK_PILES.map((pile,index)=>({...pile,kind:'junk',id:pile.id??`junk-${index}`,maxHealth:pile.health,dead:false,hitFlash:0}));
   }
-  enemy({type,x,y,w,h,health,patrol=false,patrolRange=80,patrolDirection=1}){return{type,x,y,w,h,originX:x,originY:y,vx:0,vy:0,health:health??(type==='boss'?18:type==='brute'?3:1),onGround:false,phase:x*.01,dead:false,active:false,aggroRadius:type==='drone'?340:type==='brute'?240:210,patrol,patrolRange,patrolDirection,windup:0,chargeTime:0,chargeCooldown:0,jumpCooldown:0,jumping:false,chargeDirection:patrolDirection};}
-  inventoryEntryCount(){const page=this.inventoryPages[this.inventoryPage];if(page==='status')return 5;if(page==='materials')return 3;if(page==='items')return Math.max(1,this.player.purchasedItems.length);return 1;}
+  enemy({type,x,y,w,h,health,patrol=false,patrolRange=80,patrolDirection=1}){return{type,x,y,w,h,originX:x,originY:y,vx:0,vy:0,health:health??(type==='boss'?18:3),onGround:false,phase:x*.01,dead:false,active:false,aggroRadius:type==='drone'?340:type==='brute'?240:210,patrol,patrolRange,patrolDirection,windup:0,chargeTime:0,chargeCooldown:0,jumpCooldown:0,jumping:false,chargeDirection:patrolDirection};}
+  inventoryEntryCount(){const page=this.inventoryPages[this.inventoryPage];if(page==='status')return 4;if(page==='materials')return 2;if(page==='items')return Math.max(1,this.player.purchasedItems.length);return 1;}
+  selectCurrentMapRegion(){const index=this.regions.findIndex(region=>region.id===this.regionId);this.mapRegionIndex=index<0?0:index;}
+  moveMapSelection(dx,dy){const columns=3,index=this.mapRegionIndex,row=Math.floor(index/columns),column=index%columns,nextRow=clamp(row+dy,0,Math.ceil(this.regions.length/columns)-1),nextColumn=clamp(column+dx,0,columns-1),next=nextRow*columns+nextColumn;if(next<this.regions.length)this.mapRegionIndex=next;}
   setInput(input){Object.assign(this.input,input);}
   pressed(key){return this.input[key]&&!this.prev[key];}
   update(dt=1/60){
     if(!this.running)return; dt=Math.min(dt,.034); const p=this.player;
-    const toggledInventory=this.pressed('inventory');if(toggledInventory){this.inventoryOpen=!this.inventoryOpen;p.vx=0;p.vy=0;}
-    if(this.inventoryOpen){if(!toggledInventory){if(this.pressed('left')){this.inventoryPage=Math.max(0,this.inventoryPage-1);this.inventorySelection=0;}if(this.pressed('right')){this.inventoryPage=Math.min(this.inventoryPages.length-1,this.inventoryPage+1);this.inventorySelection=0;}if(this.pressed('jump'))this.inventorySelection=Math.max(0,this.inventorySelection-1);if(this.pressed('down'))this.inventorySelection=Math.min(this.inventoryEntryCount()-1,this.inventorySelection+1);}this.prev={...this.input};return;}
+    const toggledInventory=this.pressed('inventory');if(toggledInventory){this.inventoryOpen=!this.inventoryOpen;p.vx=0;p.vy=0;if(this.inventoryOpen){this.mapOverview=false;this.selectCurrentMapRegion();}}
+    if(this.inventoryOpen){if(!toggledInventory){const page=this.inventoryPages[this.inventoryPage];if(page==='map'){if(this.pressed('field'))this.mapOverview=!this.mapOverview;else if(this.mapOverview){if(this.pressed('left'))this.moveMapSelection(-1,0);if(this.pressed('right'))this.moveMapSelection(1,0);if(this.pressed('jump'))this.moveMapSelection(0,-1);if(this.pressed('down'))this.moveMapSelection(0,1);}else if(this.pressed('right')){this.inventoryPage=1;this.inventorySelection=0;}}else{if(this.pressed('left')){this.inventoryPage=Math.max(0,this.inventoryPage-1);this.inventorySelection=0;if(this.inventoryPages[this.inventoryPage]==='map'){this.mapOverview=false;this.selectCurrentMapRegion();}}if(this.pressed('right')){this.inventoryPage=Math.min(this.inventoryPages.length-1,this.inventoryPage+1);this.inventorySelection=0;}if(this.pressed('jump'))this.inventorySelection=Math.max(0,this.inventorySelection-1);if(this.pressed('down'))this.inventorySelection=Math.min(this.inventoryEntryCount()-1,this.inventorySelection+1);}}this.prev={...this.input};return;}
     this.time+=dt;
     p.invuln=Math.max(0,p.invuln-dt);p.dashCooldown=Math.max(0,p.dashCooldown-dt);p.wallJumpTime=Math.max(0,p.wallJumpTime-dt);p.attackCooldown=Math.max(0,p.attackCooldown-dt);p.attackTime=Math.max(0,p.attackTime-dt);p.specialTime=Math.max(0,p.specialTime-dt);p.healFlash=Math.max(0,p.healFlash-dt);p.restFlash=Math.max(0,p.restFlash-dt);this.regionToastTime=Math.max(0,this.regionToastTime-dt);if(this.abilityPopup)this.abilityPopup.time=Math.max(0,this.abilityPopup.time-dt);if(this.rewardToast)this.rewardToast.time=Math.max(0,this.rewardToast.time-dt);for(const c of this.conduits)c.hitFlash=Math.max(0,c.hitFlash-dt);if(this.recoveryCorpse)this.recoveryCorpse.hitFlash=Math.max(0,this.recoveryCorpse.hitFlash-dt);
     if(p.healTime>0){p.healTime=Math.max(0,p.healTime-dt);if(p.healTime===0)this.completeHeal();}

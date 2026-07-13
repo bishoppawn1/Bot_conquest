@@ -16,7 +16,7 @@ test('the cache mini boss cannot be damaged before its optional room activates',
   const game=new Game(),arena=game.miniBossArenas[0],miniBoss=game.miniBoss(arena.id);game.enemies=[miniBoss];
   Object.assign(game.player,{x:miniBoss.x-50,y:miniBoss.y,aimX:1,aimY:0,attackHits:new Set()});game.resolvePrimaryAttack();
   assert.equal(miniBoss.health,miniBoss.maxHealth);
-  arena.active=true;game.player.attackHits=new Set();game.resolvePrimaryAttack();assert.equal(miniBoss.health,miniBoss.maxHealth-1);
+  arena.active=true;game.player.attackHits=new Set();game.resolvePrimaryAttack();assert.equal(miniBoss.health,miniBoss.maxHealth-3);
 });
 
 test('the active mini-boss gate prevents leaving the room',()=>{

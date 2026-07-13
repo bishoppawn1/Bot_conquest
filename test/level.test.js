@@ -100,6 +100,7 @@ test('merchant doors cluster in the concourse while the Grand Exchange has a dam
   assert.ok(MERCHANT_SPAWNS.filter(merchant=>!merchant.hub).length>=2);
   assert.ok(new Set(MERCHANT_SPAWNS.map(merchant=>merchant.region)).size>=4);
   const forge=MERCHANT_SPAWNS.find(merchant=>merchant.service==='damageUpgrade');assert.equal(forge.region,'exchange');assert.deepEqual(forge.upgradeCosts,FORGE_UPGRADE_COSTS);assert.ok(FORGE_UPGRADE_COSTS.length>=3&&FORGE_UPGRADE_COSTS[0]>=500);
+  for(const merchant of MERCHANT_SPAWNS)assert.ok(PLATFORMS.every(block=>!intersects(merchant,block)),`${merchant.id} overlaps a solid block`);
 });
 
 test('ability and map cores use the generic pickup format',()=>{

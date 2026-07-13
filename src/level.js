@@ -224,8 +224,8 @@ export const MERCHANT_SPAWNS = [
   {id:'merchant-parts',name:'PARTS BROKER',x:7800,y:540,w:80,h:120,region:'concourse',hub:true,color:'#75f5ff',clearRadius:260},
   {id:'merchant-shells',name:'SHELL ARCHIVE',x:7930,y:540,w:80,h:120,region:'concourse',hub:true,color:'#d6ff3f',clearRadius:260},
   {id:'merchant-salvage',name:'SALVAGE EXCHANGE',x:8060,y:540,w:80,h:120,region:'concourse',hub:true,color:'#ffb85c',clearRadius:260},
-  {id:'merchant-verge',name:'VERGE TINKER',x:2070,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:260},
-  {id:'merchant-foundry',name:'FOUNDRY FACTOR',x:4630,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:300},
+  {id:'merchant-verge',name:'VERGE TINKER',x:2160,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:260},
+  {id:'merchant-foundry',name:'FOUNDRY FACTOR',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:300},
   {id:'merchant-forge',name:'EDGE FORGE',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:260,service:'damageUpgrade',upgradeCosts:FORGE_UPGRADE_COSTS}
 ];
 

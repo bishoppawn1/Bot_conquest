@@ -58,7 +58,7 @@ test('attacks are ignored without cancelling an active repair channel',()=>{
 
 test('electric field spends energy and damages enemies around the player',()=>{
   const game=settled(),enemy=game.enemy({type:'crawler',x:game.player.x-35,y:game.player.y,w:30,h:40});game.enemies=[enemy];game.unlockAbility('field');game.player.electricity=ABILITY_COSTS.field;press(game,'field');
-  assert.equal(game.player.specialType,'field');assert.equal(enemy.dead,true);assert.equal(game.player.electricity,4);
+  assert.equal(game.player.specialType,'field');assert.equal(enemy.health,2);assert.equal(enemy.dead,false);assert.equal(game.player.electricity,4);
 });
 
 test('electric field uses a true circle rather than its square bounds',()=>{
@@ -75,7 +75,11 @@ test('electric field remains active for its extended duration',()=>{
 
 test('electric jab reaches farther in the locked aim direction',()=>{
   const game=settled(),enemy=game.enemy({type:'crawler',x:game.player.x+180,y:game.player.y,w:30,h:40});game.enemies=[enemy];game.unlockAbility('electricJab');game.player.electricity=ABILITY_COSTS.electricJab;press(game,'electricJab');
-  assert.equal(game.player.specialType,'electricJab');assert.equal(enemy.dead,true);assert.equal(game.player.electricity,4);
+  assert.equal(game.player.specialType,'electricJab');assert.equal(enemy.health,1);assert.equal(enemy.dead,false);assert.equal(game.player.electricity,4);
+});
+
+test('the starting slash and ordinary enemies share a three-point baseline',()=>{
+  const game=new Game(),ordinary=game.enemies.filter(enemy=>!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isMiniBoss);assert.equal(game.player.primaryDamage,3);assert.ok(ordinary.length>0);assert.ok(ordinary.every(enemy=>enemy.health===3));
 });
 
 test('basic slash retains the full 105-unit range',()=>{

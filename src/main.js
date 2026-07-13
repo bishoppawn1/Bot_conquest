@@ -44,8 +44,10 @@ function begin() {
     Object.assign(game.player,{x:500,y:624,lives:1,scrap:73,electricity:48,invuln:0});
     game.damagePlayer('enemy',600);
   } else if (debugSpawn === 'inventory') {
-    Object.assign(game.player,{scrap:860,electricity:67,primaryDamage:3,damageUpgrades:2,materials:{titanium:4,uranium:1},purchasedItems:[{id:'edge-coil-1',name:'EDGE COIL MK 1',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'edge-coil-2',name:'EDGE COIL MK 2',detail:'+1 PRIMARY SLASH DAMAGE'}]});
-    for(const region of ['verge','vault','foundry','bastion','concourse'])game.mappedRegions.add(region);game.inventoryOpen=true;if(debugPanel==='map')game.inventoryPage=0;
+    Object.assign(game.player,{scrap:860,electricity:67,primaryDamage:5,damageUpgrades:2,materials:{titanium:4,uranium:1},purchasedItems:[{id:'edge-coil-1',name:'EDGE COIL MK 1',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'edge-coil-2',name:'EDGE COIL MK 2',detail:'+1 PRIMARY SLASH DAMAGE'}]});
+    for(const region of ['verge','vault','foundry','bastion','concourse'])game.mappedRegions.add(region);game.inventoryOpen=true;
+    if(debugPanel==='map'||debugPanel==='overview'||debugPanel==='nomap'){game.inventoryPage=0;game.mapOverview=debugPanel==='overview';if(debugPanel==='nomap')game.mapRegionIndex=5;}
+    else if(debugPanel==='materials')game.inventoryPage=2;else if(debugPanel==='items')game.inventoryPage=3;
   } else if (debugSpawn === 'explore') {
     game.player.x=1660;
     game.player.y=140-game.player.h;
@@ -72,6 +74,12 @@ function begin() {
   } else if (debugSpawn === 'merchant') {
     game.player.x=7815;
     game.player.y=660-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'verge-merchant') {
+    const door=game.merchants.find(merchant=>merchant.id==='merchant-verge');
+    game.player.x=door.x+15;
+    game.player.y=door.y+door.h-game.player.h;
+    for(const enemy of game.enemies)if(!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isMiniBoss&&Math.abs(enemy.originX+enemy.w/2-(door.x+door.w/2))<=door.clearRadius)enemy.dead=true;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'merchant-room') {
     game.merchantRoom.activeMerchant=game.merchants[0];

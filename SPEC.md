@@ -28,7 +28,7 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 | Electric field | `Q` | Locked initially; spend 40 electricity after unlock |
 | Electric jab | `F` | Locked initially; spend 24 electricity after collecting the blue Volt Jab core |
 | Interact | `O` | Rest at the recovery station or enter/leave an unlocked merchant room |
-| Inventory / map | `I` | Toggle a simulation-pausing overlay; use `A`/`D` for pages and `W`/`S` for entries |
+| Inventory / map | `I` | Toggle a simulation-pausing overlay; use `A`/`D` for pages, or use `Q` and `WASD` to zoom and select local maps |
 
 There is no restart key or persistent restart control. Losing all three shells rebuilds the bot at the last activated save point, or at the initial spawn before any station has been activated.
 
@@ -56,7 +56,7 @@ Acquisition, swapping locations, exact bonuses, and balance costs remain for a l
 
 ## Resource loop
 
-Enemies award scrap when killed: crawler 6, roller 8, hopper 10, drone 12, and brute 25. The Grand Exchange Edge Forge offers four increasingly expensive, run-persistent `+1` primary-slash upgrades at 500, 900, 1,500, and 2,400 scrap. Purchased edge coils appear in the inventory and a completed forge cannot be purchased again.
+The starting primary slash deals three damage, and every ordinary enemy begins with three health. Enemies award scrap when killed: crawler 6, roller 8, hopper 10, drone 12, and brute 25. The Grand Exchange Edge Forge offers four increasingly expensive, run-persistent `+1` primary-slash upgrades at 500, 900, 1,500, and 2,400 scrap. Each first-tier increase is therefore one third of the starting output rather than a damage doubling. Purchased edge coils appear in the inventory and a completed forge cannot be purchased again.
 
 Titanium and uranium are persistent special materials for future merchant recipes. Selected salvage piles award their configured material instead of scrap, and the Cache Scrapper awards three titanium. Ordinary merchants display the carried material totals, but actual material recipes and prices remain intentionally undesigned.
 
@@ -78,7 +78,7 @@ Crawlers change direction immediately and pursue at a steady 75 units per second
 
 Drones detect at 340 units. When inactive they hover around their spawn height. Once active they steer toward the player's actual two-dimensional position at 105 units per second. Drone movement resolves horizontal and vertical collision against solid blocks, so drones cannot fly through floors, ceilings, or walls.
 
-Current archetypes are crawler, roller, hopper, drone, and brute. Their silhouettes use hard industrial chassis, pistons, claws, spikes, and needle-like feet rather than soft creature shapes. The brute takes three basic-slash hits; basic enemies take one.
+Current archetypes are crawler, roller, hopper, drone, and brute. Their silhouettes use hard industrial chassis, pistons, claws, spikes, and needle-like feet rather than soft creature shapes. All ordinary archetypes use the same three-health baseline and are defeated by one unmodified three-damage slash; bosses and mini bosses retain their larger explicit health pools.
 
 ### Boss encounter
 
@@ -106,9 +106,9 @@ The foundation immediately beyond the boss arena is a calm recovery room with no
 
 ## Inventory and map
 
-Pressing `I` opens the combined overlay and pauses world simulation. It starts on STATUS; `A` and `D` cycle between MAP, STATUS, MATERIALS, and ITEMS, while `W` and `S` move the selection within the active page. STATUS reports shells, electricity, primary damage, scrap, and the active save link. MATERIALS reports titanium and uranium. ITEMS lists merchant purchases such as Edge Forge coils.
+Pressing `I` opens the combined overlay and pauses world simulation. It starts on STATUS; outside the world overview, `A` and `D` move between MAP, STATUS, MATERIALS, and ITEMS while `W` and `S` move the selection within the active page. STATUS reports only shells, electricity, primary damage, and scrap. MATERIALS reports only titanium and uranium. ITEMS lists merchant purchases such as Edge Forge coils.
 
-MAP sits to the left of STATUS and begins obscured. Three world survey cores reveal configured west, central, and east groups that together cover all nine current regions. Unmapped regions remain labeled `NO DATA`; revealed regions show their names and the player's location marker is drawn over the overview.
+MAP sits to the left of STATUS and opens on the player's current region. A revealed local map diagrams that region's foundations, routes, hazards, merchant links, and current-player marker; an unrevealed local map displays `NO MAP`. Pressing `Q` zooms out to a three-by-three overview of all nine regions. While zoomed out, `W`, `A`, `S`, and `D` select a region and never change inventory pages; pressing `Q` again zooms into the selected region. Three survey cores reveal configured west, central, and east groups that together cover the world.
 
 ## Current map fragment
 
@@ -120,7 +120,7 @@ The starting kit cannot reach the whole map. Twelve platforms form three substan
 
 Nine named regions cover the current world and meet at eight visible mechanical gates. The Shard Gauntlet concentrates four spike gaps and red hazard atmosphere; Quiet Drift is a more conventional exploration chamber with an optional scrap mini-boss; the 1,800-unit Grand Exchange is a broad multi-height district with the Edge Forge in its far corner. Region gates remain non-blocking navigation thresholds rather than stage exits.
 
-Three merchant doors cluster in the Relay Concourse, with additional doors in the Rusted Verge, Ember Foundry, and Grand Exchange. A door in a safe pocket can open immediately; otherwise it remains sealed until nearby ordinary enemies are defeated. Pressing `O` beneath an unlocked door moves the bot into a separate enemy-free merchant room, and its interior exit returns to the saved overworld position. Ordinary merchants preview carried special materials while recipes remain pending; the Edge Forge offers its four configured slash-upgrade tiers.
+Three merchant doors cluster in the Relay Concourse, with additional doors in the Rusted Verge, Ember Foundry, and Grand Exchange. Every doorway rectangle and its standing pocket remain outside solid platforms and walls. A door in a safe pocket can open immediately; otherwise it remains sealed until nearby ordinary enemies are defeated. Pressing `O` beneath an unlocked door moves the bot into a separate enemy-free merchant room, and its interior exit returns to the saved overworld position. Ordinary merchants preview carried special materials while recipes remain pending; the Edge Forge offers its four configured slash-upgrade tiers.
 
 Enemies, junk, and secrets occupy the upper networks, the deep vault, and the ability-gated regions—not only the lower left-to-right floor. The map contains ten spike gaps, three exhaustible conduits, fourteen ordinary junk piles, two powered seals, one optional mini-boss encounter, two full boss encounters, and two end alcoves. The Sunken Vault uses a darker blue-black background, Shard Gauntlet uses red hazard silhouettes, and Grand Exchange uses warm industrial accents.
 

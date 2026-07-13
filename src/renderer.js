@@ -270,14 +270,45 @@ export class Renderer {
 
   drawInventory(game) {
     const {ctx}=this,page=game.inventoryPages[game.inventoryPage],tabs=game.inventoryPages,x=110,y=70,w=1060,h=580;ctx.save();ctx.fillStyle='rgba(2,7,11,.97)';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#75f5ff';ctx.lineWidth=3;ctx.strokeRect(x,y,w,h);ctx.fillStyle='#d6ff3f';ctx.fillRect(x,y,w,6);
-    ctx.fillStyle='#71838a';ctx.font='700 10px Space Mono';ctx.fillText('BOT SYSTEM ARCHIVE // I TO CLOSE // A D PAGES // W S ENTRIES',140,105);
+    const instructions=page==='map'?(game.mapOverview?'BOT SYSTEM ARCHIVE // I TO CLOSE // W A S D SELECT // Q OPEN MAP':'BOT SYSTEM ARCHIVE // I TO CLOSE // Q WORLD OVERVIEW // D STATUS'):'BOT SYSTEM ARCHIVE // I TO CLOSE // A D PAGES // W S ENTRIES';
+    ctx.fillStyle='#71838a';ctx.font='700 10px Space Mono';ctx.fillText(instructions,140,105);
     for(let i=0;i<tabs.length;i++){const tx=140+i*210,active=i===game.inventoryPage;ctx.fillStyle=active?'#d6ff3f':'#26343b';ctx.fillRect(tx,124,190,38);ctx.strokeStyle=active?'#ffffff':'#44545a';ctx.strokeRect(tx,124,190,38);ctx.fillStyle=active?'#071015':'#8b9ba0';ctx.font='700 12px Space Mono';ctx.fillText(tabs[i].toUpperCase(),tx+16,148);}
-    if(page==='map')this.drawInventoryMap(game,ctx);else{const titles={status:'CORE STATUS',materials:'SPECIAL MATERIALS',items:'MERCHANT ITEMS'},rows=page==='status'?[['CORE SHELLS',`${game.player.lives} / 3`],['ELECTRICITY',`${Math.round(game.player.electricity)} / 100`],['PRIMARY DAMAGE',String(game.player.primaryDamage)],['SCRAP',String(game.player.scrap)],['SAVE LINK',game.respawnPoint.x===game.spawn.x?'INITIAL SPAWN':'RECOVERY STATION']]:page==='materials'?[['TITANIUM',String(game.player.materials.titanium)],['URANIUM',String(game.player.materials.uranium)],['MERCHANT USE','SPECIAL RECIPES PENDING']]:game.player.purchasedItems.length?game.player.purchasedItems.map(item=>[item.name,item.detail]):[['NO PURCHASES','MERCHANT ITEMS WILL APPEAR HERE']];ctx.fillStyle='#ffffff';ctx.font='700 24px Space Mono';ctx.fillText(titles[page],150,215);rows.forEach((row,index)=>{const ry=250+index*65,selected=index===game.inventorySelection;ctx.fillStyle=selected?'rgba(117,245,255,.12)':'rgba(255,255,255,.025)';ctx.fillRect(150,ry,980,48);ctx.strokeStyle=selected?'#75f5ff':'#27363c';ctx.strokeRect(150,ry,980,48);ctx.fillStyle=selected?'#ffffff':'#84959a';ctx.font='700 12px Space Mono';ctx.fillText(row[0],172,ry+20);ctx.textAlign='right';ctx.fillStyle=selected?'#d6ff3f':'#a9b6b9';ctx.fillText(row[1],1105,ry+30);ctx.textAlign='left';});}
+    if(page==='map')this.drawInventoryMap(game,ctx);else{const titles={status:'CORE STATUS',materials:'SPECIAL MATERIALS',items:'MERCHANT ITEMS'},rows=page==='status'?[['CORE SHELLS',`${game.player.lives} / 3`],['ELECTRICITY',`${Math.round(game.player.electricity)} / 100`],['PRIMARY DAMAGE',String(game.player.primaryDamage)],['SCRAP',String(game.player.scrap)]]:page==='materials'?[['TITANIUM',String(game.player.materials.titanium)],['URANIUM',String(game.player.materials.uranium)]]:game.player.purchasedItems.length?game.player.purchasedItems.map(item=>[item.name,item.detail]):[['NO PURCHASES','MERCHANT ITEMS WILL APPEAR HERE']];ctx.fillStyle='#ffffff';ctx.font='700 24px Space Mono';ctx.fillText(titles[page],150,215);rows.forEach((row,index)=>{const ry=250+index*65,selected=index===game.inventorySelection;ctx.fillStyle=selected?'rgba(117,245,255,.12)':'rgba(255,255,255,.025)';ctx.fillRect(150,ry,980,48);ctx.strokeStyle=selected?'#75f5ff':'#27363c';ctx.strokeRect(150,ry,980,48);ctx.fillStyle=selected?'#ffffff':'#84959a';ctx.font='700 12px Space Mono';ctx.fillText(row[0],172,ry+20);ctx.textAlign='right';ctx.fillStyle=selected?'#d6ff3f':'#a9b6b9';ctx.fillText(row[1],1105,ry+30);ctx.textAlign='left';});}
     ctx.restore();
   }
 
   drawInventoryMap(game,ctx) {
-    const x=150,y=215,w=980,h=310,scale=w/14500;ctx.fillStyle='#ffffff';ctx.font='700 24px Space Mono';ctx.fillText('LOCAL MAP',x,y);ctx.fillStyle='#71838a';ctx.font='10px Space Mono';ctx.fillText('SURVEY CORES REVEAL GROUPS OF CONNECTED REGIONS',x,y+26);for(const region of game.regions){const rx=x+region.x*scale,rw=Math.max(28,region.w*scale),known=game.mappedRegions.has(region.id);ctx.fillStyle=known?'#172e35':'#10171b';ctx.fillRect(rx,y+76,rw-3,145);ctx.strokeStyle=known?'#75f5ff':'#354248';ctx.lineWidth=2;ctx.strokeRect(rx,y+76,rw-3,145);ctx.fillStyle=known?'#d6ff3f':'#39474c';ctx.font='700 8px Space Mono';ctx.save();ctx.translate(rx+rw/2,y+150);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText(known?region.name:'NO DATA',0,0);ctx.restore();}const markerX=x+(game.player.x+game.player.w/2)*scale;ctx.fillStyle='#ff493f';ctx.beginPath();ctx.arc(markerX,y+63,6,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ff493f';ctx.beginPath();ctx.moveTo(markerX,y+70);ctx.lineTo(markerX,y+92);ctx.stroke();ctx.fillStyle='#84959a';ctx.font='10px Space Mono';ctx.fillText(`${game.mappedRegions.size} / ${game.regions.length} REGIONS MAPPED`,x,y+255);ctx.fillText('COLLECT GREEN SURVEY CORES TO RESTORE MISSING DATA',x,y+280);ctx.textAlign='left';
+    if(game.mapOverview)this.drawMapOverview(game,ctx);else this.drawLocalMap(game,ctx);
+  }
+
+  drawMapOverview(game,ctx) {
+    const x=150,y=198,tileW=310,tileH=112,gap=16,selected=game.mapRegionIndex,current=game.regions.findIndex(region=>region.id===game.regionId);
+    ctx.fillStyle='#ffffff';ctx.font='700 24px Space Mono';ctx.fillText('WORLD OVERVIEW',x,y);
+    ctx.fillStyle='#71838a';ctx.font='10px Space Mono';ctx.fillText('W A S D SELECT REGION // Q ZOOM IN',x,y+25);
+    for(let index=0;index<game.regions.length;index++){
+      const region=game.regions[index],column=index%3,row=Math.floor(index/3),rx=x+column*(tileW+gap),ry=y+54+row*(tileH+gap),known=game.mappedRegions.has(region.id),active=index===selected;
+      ctx.fillStyle=known?'#142b32':'#0c1317';ctx.fillRect(rx,ry,tileW,tileH);
+      ctx.strokeStyle=active?'#d6ff3f':known?'#75f5ff':'#344248';ctx.lineWidth=active?4:2;ctx.strokeRect(rx,ry,tileW,tileH);
+      ctx.fillStyle=known?'#ffffff':'#58676c';ctx.font='700 13px Space Mono';ctx.fillText(known?region.name:'NO MAP',rx+18,ry+35);
+      ctx.fillStyle=known?'#71858c':'#39464a';ctx.font='9px Space Mono';ctx.fillText(`REGION ${String(index+1).padStart(2,'0')}`,rx+18,ry+60);
+      if(index===current){ctx.fillStyle='#ff493f';ctx.beginPath();ctx.arc(rx+tileW-23,ry+24,6,0,Math.PI*2);ctx.fill();ctx.textAlign='right';ctx.fillStyle='#a9b6b9';ctx.fillText('CURRENT',rx+tileW-18,ry+58);ctx.textAlign='left';}
+      if(active){ctx.fillStyle='#d6ff3f';ctx.font='700 9px Space Mono';ctx.fillText('SELECTED',rx+18,ry+88);}
+    }
+  }
+
+  drawLocalMap(game,ctx) {
+    const region=game.regions[game.mapRegionIndex]??game.regions[0],known=game.mappedRegions.has(region.id),x=150,y=198,w=980,h=390;
+    ctx.fillStyle='#ffffff';ctx.font='700 24px Space Mono';ctx.fillText(region.name,x,y);
+    ctx.fillStyle='#71838a';ctx.font='10px Space Mono';ctx.fillText('LOCAL MAP // Q WORLD OVERVIEW',x,y+25);
+    ctx.fillStyle='#081116';ctx.fillRect(x,y+50,w,h);ctx.strokeStyle=known?'#75f5ff':'#354248';ctx.lineWidth=2;ctx.strokeRect(x,y+50,w,h);
+    if(!known){ctx.textAlign='center';ctx.fillStyle='#3d4b50';ctx.font='700 44px Space Mono';ctx.fillText('NO MAP',x+w/2,y+225);ctx.fillStyle='#65757a';ctx.font='10px Space Mono';ctx.fillText('FIND A SURVEY CORE TO RESTORE THIS REGION',x+w/2,y+258);ctx.textAlign='left';return;}
+    const pad=24,mapX=x+pad,mapY=y+74,mapW=w-pad*2,mapH=h-48,worldTop=-1000,worldHeight=2200,sx=mapW/region.w,sy=mapH/worldHeight;
+    ctx.save();ctx.beginPath();ctx.rect(mapX,mapY,mapW,mapH);ctx.clip();
+    for(const block of game.platforms){if(block.kind==='merchant-room'||block.x+block.w<=region.x||block.x>=region.x+region.w)continue;const left=Math.max(block.x,region.x),right=Math.min(block.x+block.w,region.x+region.w),rx=mapX+(left-region.x)*sx,ry=mapY+(block.y-worldTop)*sy,rw=Math.max(2,(right-left)*sx),rh=Math.max(2,block.h*sy);ctx.fillStyle=block.kind==='wall'?'#69383d':'#26383e';ctx.fillRect(rx,ry,rw,rh);if(block.kind!=='wall'){ctx.fillStyle='#d6ff3f';ctx.fillRect(rx,ry,rw,2);}}
+    for(const trap of game.traps){if(trap.x+trap.w<=region.x||trap.x>=region.x+region.w)continue;ctx.fillStyle='#ff493f';ctx.fillRect(mapX+(trap.x-region.x)*sx,mapY+(trap.y-worldTop)*sy,Math.max(3,trap.w*sx),Math.max(3,trap.h*sy));}
+    for(const merchant of game.merchants){if(merchant.x+merchant.w<=region.x||merchant.x>=region.x+region.w)continue;ctx.fillStyle=merchant.color??'#75f5ff';ctx.fillRect(mapX+(merchant.x-region.x)*sx,mapY+(merchant.y-worldTop)*sy,Math.max(4,merchant.w*sx),Math.max(5,merchant.h*sy));}
+    if(region.id===game.regionId){const px=mapX+(game.player.x+game.player.w/2-region.x)*sx,py=mapY+(game.player.y+game.player.h/2-worldTop)*sy;ctx.fillStyle='#ff493f';ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffffff';ctx.lineWidth=2;ctx.stroke();}
+    ctx.restore();ctx.fillStyle='#84959a';ctx.font='9px Space Mono';ctx.fillText('FOUNDATIONS // ROUTES // HAZARDS // MERCHANT LINKS',x+24,y+h+36);
   }
 
   drawHud(game) {

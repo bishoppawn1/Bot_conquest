@@ -22,8 +22,9 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - There is no restart key, persistent restart control, or game-over reboot. Losing the final shell rebuilds the bot at its last activated save point, or at the initial spawn if no station has been activated.
 - A destroyed bot loses all carried scrap and electricity. Its old shell remains at the death location as a three-health wreck containing the lost scrap; destroying the wreck restores that scrap but no electricity. A newer death replaces any unrecovered wreck.
 - After the boss is cleared, `O` interacts with the recovery station. Resting restores all three shells and moves both the spike-reset checkpoint and full-death respawn point beside the station.
-- `I` opens and closes the combined inventory/map overlay and pauses simulation while open. `A`/`D` move between MAP, STATUS, MATERIALS, and ITEMS; `W`/`S` move through the entries on the current page. MAP sits immediately left of STATUS.
-- The inventory shows current shells, electricity, primary damage, scrap, activated save point, titanium, uranium, and merchant purchases. The map starts obscured; the three map survey cores reveal configured groups of regions.
+- `I` opens and closes the combined inventory/map overlay and pauses simulation while open. Outside the map overview, `A`/`D` move between MAP, STATUS, MATERIALS, and ITEMS and `W`/`S` move through entries. MAP sits immediately left of STATUS.
+- MAP opens on the player's current region. An unrevealed region displays `NO MAP`; the three survey cores reveal configured groups. `Q` zooms out to the nine-region overview, `W`/`A`/`S`/`D` select another region without changing pages, and `Q` zooms into that selected local map.
+- STATUS shows shells, electricity, primary damage, and scrap. MATERIALS shows only titanium and uranium. ITEMS lists merchant purchases.
 - The player starts with three lives and loses one to enemy contact, spikes, or falling.
 - Touching a spike immediately removes one life and returns the bot to its last safe position on the most recently supported platform. It must not continue falling through the spike pit or return all the way to the initial spawn.
 
@@ -33,6 +34,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Only three conduits exist. Each holds 24 total electricity, yields 4 per primary hit, visibly drains, and generates nothing once empty.
 - The Sunken Vault tutorial conduit must remain between the Volt Jab pickup and its powered seal. Electric jab costs 24 electricity so one fresh conduit always funds the required tutorial shot.
 - Special-attack hits return 4 electricity per target.
+- The starting primary slash deals 3 damage and every ordinary enemy starts with 3 health. Each forge tier still adds exactly 1 damage so its proportional effect begins at one third rather than doubling the weapon.
 - Killing enemies awards scrap based on archetype. The Grand Exchange `EDGE FORGE` offers four run-persistent `+1` primary-slash damage upgrades costing 500, 900, 1500, and 2400 scrap. Do not add other scrap spending behavior without a new design decision.
 - Titanium and uranium are persistent special materials reserved for future merchant recipes. Selected salvage piles award their configured material instead of scrap; the Cache Scrapper awards three titanium. Do not invent material prices or merchant recipes without a new design decision.
 - Ordinary junk piles are solid destructible obstacles. Destroying one awards its configured scrap or special material but no electricity.
@@ -91,6 +93,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Quiet Drift is the conventional exploration region from X 11400–12700. Its lower foundation route must stay open regardless of the optional Cache Scrapper encounter above it.
 - Grand Exchange is the expansive region from X 12700–14500. Preserve broad floor space, multiple height layers, the far-corner Edge Forge door, and an enemy-free interaction pocket around that door.
 - `MERCHANT_SPAWNS` defines overworld doors, not exposed NPCs. Three cluster in the Relay Concourse and scattered doors appear elsewhere, including the Grand Exchange damage forge.
+- Merchant door rectangles must never overlap any solid platform or wall; the full doorway and its standing pocket must remain exposed.
 - Each door is either already in an enemy-free pocket or stays sealed until every ordinary enemy within its `clearRadius` is dead. Pressing `O` beneath an unlocked door teleports into the isolated `MERCHANT_ROOM`; its exit returns to the saved overworld position. Ordinary merchants may preview the titanium and uranium inventory but have no material recipes until those purchases are designed.
 - A merchant with `service: 'damageUpgrade'` is interactive inside the room. It uses its `upgradeCosts` table, increments `player.primaryDamage` once per purchased tier, and records each edge coil in the ITEMS inventory page.
 - `PICKUP_SPAWNS` is the shared data format for ability and map pickups and remains extensible to combat and shell pickups. It owns pickup color, name, input hint, tutorial copy, progression requirements, and map-region reveal data rather than placing those decisions in renderer conditionals.
@@ -178,4 +181,6 @@ Use `http://127.0.0.1:4175/?debug=forge-room` for the Edge Forge purchase prompt
 
 Use `http://127.0.0.1:4175/?debug=recovery` to inspect a rebuilt bot and its nearby scrap-bearing wreckage.
 
-Use `http://127.0.0.1:4175/?debug=inventory` to inspect the inventory and add `&panel=map` to open its partially revealed map page directly.
+Use `http://127.0.0.1:4175/?debug=inventory` to inspect STATUS; add `&panel=materials`, `&panel=map`, `&panel=overview`, or `&panel=nomap` for the other inventory and map states.
+
+Use `http://127.0.0.1:4175/?debug=verge-merchant` to inspect the cleared Verge Tinker doorway and its collision-free standing pocket.

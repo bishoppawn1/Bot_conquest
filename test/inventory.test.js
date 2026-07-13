@@ -5,8 +5,15 @@ import { Game } from '../src/game.js';
 const tick=(game,count=1)=>{for(let frame=0;frame<count;frame++)game.update(1/60);};
 const press=(game,key)=>{game.setInput({[key]:true});tick(game);game.setInput({[key]:false});tick(game);};
 
-test('I pauses play and WASD navigates from status left into the map',()=>{
-  const game=new Game();tick(game,30);const position={x:game.player.x,y:game.player.y},time=game.time;press(game,'inventory');assert.equal(game.inventoryOpen,true);const pausedAt=game.time;game.setInput({attack:true});tick(game,20);assert.deepEqual({x:game.player.x,y:game.player.y},position);assert.equal(game.time,pausedAt);game.setInput({attack:false});press(game,'left');assert.equal(game.inventoryPages[game.inventoryPage],'map');press(game,'right');assert.equal(game.inventoryPages[game.inventoryPage],'status');press(game,'down');assert.equal(game.inventorySelection,1);press(game,'inventory');assert.equal(game.inventoryOpen,false);assert.ok(game.time>time);
+test('I pauses play and the map switches between local and WASD overview controls',()=>{
+  const game=new Game();tick(game,30);const position={x:game.player.x,y:game.player.y},time=game.time;press(game,'inventory');assert.equal(game.inventoryOpen,true);const pausedAt=game.time;game.setInput({attack:true});tick(game,20);assert.deepEqual({x:game.player.x,y:game.player.y},position);assert.equal(game.time,pausedAt);game.setInput({attack:false});
+  press(game,'left');assert.equal(game.inventoryPages[game.inventoryPage],'map');assert.equal(game.mapOverview,false);assert.equal(game.mapRegionIndex,0);
+  press(game,'field');assert.equal(game.mapOverview,true);press(game,'right');assert.equal(game.inventoryPage,0);assert.equal(game.mapRegionIndex,1);press(game,'down');assert.equal(game.inventoryPage,0);assert.equal(game.mapRegionIndex,4);press(game,'left');assert.equal(game.inventoryPage,0);assert.equal(game.mapRegionIndex,3);
+  press(game,'field');assert.equal(game.mapOverview,false);assert.equal(game.mapRegionIndex,3);press(game,'right');assert.equal(game.inventoryPages[game.inventoryPage],'status');press(game,'down');assert.equal(game.inventorySelection,1);press(game,'inventory');assert.equal(game.inventoryOpen,false);assert.ok(game.time>time);
+});
+
+test('status and materials expose only their requested inventory rows',()=>{
+  const game=new Game();game.inventoryPage=1;assert.equal(game.inventoryEntryCount(),4);game.inventoryPage=2;assert.equal(game.inventoryEntryCount(),2);
 });
 
 test('map cores reveal configured regions while leaving the rest unknown',()=>{
