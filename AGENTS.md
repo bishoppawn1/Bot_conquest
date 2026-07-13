@@ -2,7 +2,7 @@
 
 ## Current focus
 
-We are building the first playable region of a 2D platforming/fighting game. The final game is one interconnected, explorable map—not a sequence of linear sectors or Mario-style stages. Future regions should support branching paths, backtracking, optional discoveries, and small secrets. Preserve the industrial sci-fi direction and keep gameplay readable.
+We are building the first large playable fragment of a 2D platforming/fighting game. The current fragment spans nine connected regions and remains part of one interconnected, explorable map—not a sequence of linear sectors or Mario-style stages. Future growth should support branching paths, backtracking, optional discoveries, and small secrets. Preserve the industrial sci-fi direction and keep gameplay readable.
 
 The July 2026 map is a clean replacement for the discarded access-path layout. Do not reuse the old thin staircase, named bays, location captions, or route/side-platform data model. The current spatial language is enormous foundations, heavy ceilings, thick interior forms, open chambers framed by collision geometry, and ability-gated upper masses.
 
@@ -62,6 +62,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 
 ## World structure
 
+- The current world spans X `0–14500` and Y `-1000–1200`. `REGIONS` contains nine contiguous regions connected by eight non-blocking `REGION_GATES`.
 - Do not describe content as numbered sectors, stages, or levels.
 - Do not add linear completion screens or traversal-percentage HUD elements.
 - Do not render area-name text, directional captions, or text-box-like room labels directly into the world.
@@ -80,6 +81,9 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Every normal walkable surface must retain an exposed standing span at least 80 units wide. Simulation tests must physically traverse every intended connection and its safe return path.
 - Place ordinary encounters on upper platforms, lower platforms, and gated regions so exploration space is gameplay space rather than empty decoration.
 - `REGIONS` must cover the full world without gaps. `REGION_GATES` connects each neighboring pair as a visible, non-blocking threshold.
+- Shard Gauntlet is the trap-focused region from X 9600–11400. Preserve at least three distinct spike gaps, its red hazard atmosphere, and a tested basic-jump foundation route.
+- Quiet Drift is the conventional exploration region from X 11400–12700. Its lower foundation route must stay open regardless of the optional Cache Scrapper encounter above it.
+- Grand Exchange is the expansive region from X 12700–14500. Preserve broad floor space, multiple height layers, the far-corner Edge Forge door, and an enemy-free interaction pocket around that door.
 - `MERCHANT_SPAWNS` defines overworld doors, not exposed NPCs. Three cluster in the Relay Concourse and scattered doors appear elsewhere, including the Grand Exchange damage forge.
 - Each door is either already in an enemy-free pocket or stays sealed until every ordinary enemy within its `clearRadius` is dead. Pressing `O` beneath an unlocked door teleports into the isolated `MERCHANT_ROOM`; its exit returns to the saved overworld position. Only the merchant inside shows the explicit services-offline notice until trading is designed.
 - A merchant with `service: 'damageUpgrade'` is interactive inside the room. It charges its configured 100 scrap once, increments `player.primaryDamage`, and then reports the edge coil as installed.
@@ -88,7 +92,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - True vertical walls use `kind: 'wall'` and the dedicated red-braced wall rendering. Do not render walls with the green top-edge treatment used by floors.
 - `RECESSES` contain no `label` field.
 
-## Boss arena
+## Heavy Core arena
 
 - `BOSS_ARENA` is the open chamber on the `boss-floor` foundation mass. Keep its full 1,300-unit width clear of ordinary interior blocks, enemies, conduits, and junk.
 - Crossing `triggerX` activates the encounter. Both animated gates descend from the ceiling, become solid player colliders, and remain closed while the boss lives.
@@ -96,13 +100,23 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - The boss has 18 health and cycles deterministically through three moves: telegraphed horizontal charge, aerial slam with a ground shockwave, and a three-projectile volley.
 - Killing the boss awards 150 scrap, deletes its active hazards, marks the arena cleared, and retracts both gates. The boss never respawns during that run.
 
+## Abyss Warden arena
+
+- `VAULT_BOSS_ARENA` is a full boss encounter, not an entry in `MINI_BOSS_ARENAS`. The Abyss Warden has 12 health and awards 110 scrap.
+- Its right exit seal exists whenever the arena is uncleared, including before activation. It spans Y 700–1120, reaches the floor, and must block approach from every escape platform. Never shorten it to a jumpable gate.
+- Dropping into the trigger volume activates the Warden and closes the animated left entry seal. The dormant Warden is not targetable from the approach.
+- The Warden deterministically cycles through horizontal charge, leaping shockwave, and five-projectile volley attacks. It uses the full-size cyan boss health bar.
+- `volt-core` remains unavailable and inside the sealed chamber until `vaultBossArena.cleared` is true. Killing the Warden removes both seals and active hazards, then releases the pickup.
+- The tutorial conduit and `vault-volt-seal` remain outside the opened boss exit. The powered seal must touch—but never geometrically overlap—the right boss gate.
+
 ## Mini-boss arenas
 
-- `MINI_BOSS_ARENAS` is the reusable data format for contained elite fights. The first entry is `vault-sentinel` in the Sunken Vault.
+- `MINI_BOSS_ARENAS` is the reusable data format for optional contained elite fights. The current entry is `drift-scrapper` in Quiet Drift.
 - Entering a configured trigger volume activates the encounter and closes its exit gate. The entrance may be a deliberate one-way drop only when the exit is tested and guaranteed after victory.
 - A mini boss is not targetable before its arena activates; attacks from approach platforms must never pre-clear the encounter.
 - Killing the configured mini boss awards its arena's scrap reward, shows a temporary reward notice, marks the arena cleared, and retracts its gate permanently for that run.
 - Mini-boss arenas use a smaller health bar and one focused combat pattern. They must not duplicate the full Heavy Core presentation or attack cycle.
+- Mini bosses may guard optional scrap, benches, caches, or shortcuts. They must never guard a required movement/combat ability or block the region's required foundation route.
 
 ## Rest and recovery
 
