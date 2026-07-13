@@ -1,6 +1,6 @@
 export const WORLD_WIDTH = 14500;
 export const WORLD_TOP = -1000;
-export const WORLD_BOTTOM = 1200;
+export const WORLD_BOTTOM = 2240;
 export const WORLD_HEIGHT = WORLD_BOTTOM-WORLD_TOP;
 
 export const SPAWN = { x:180, y:624 };
@@ -116,6 +116,46 @@ export const LOWER_BLOCKS = [
   {id:'under-exit-high',x:3340,y:820,w:80,h:40,kind:'lower'}
 ];
 
+// Wall Climb opens a large upper Vault chamber without obstructing the basic
+// route below. The hanging wall stops 200 units above the foundation, leaving
+// normal traversal intact while providing a continuous climb into the loft.
+export const VAULT_UPPER_BLOCKS = [
+  {id:'vault-upper-climb',x:2500,y:300,w:60,h:180,kind:'wall',requires:'wallClimb',region:'vault-upper',gateEntry:true},
+  {id:'vault-upper-west',x:2560,y:300,w:240,h:50,kind:'vault-upper',requires:'wallClimb',region:'vault-upper'},
+  {id:'vault-upper-mid',x:2860,y:130,w:260,h:50,kind:'vault-upper',requires:'wallClimb',region:'vault-upper'},
+  {id:'vault-upper-spine',x:3060,y:-70,w:60,h:200,kind:'wall',requires:'wallClimb',region:'vault-upper'},
+  {id:'vault-upper-crown',x:2760,y:-70,w:300,h:50,kind:'vault-upper',requires:'wallClimb',region:'vault-upper'},
+  {id:'vault-upper-east',x:3190,y:280,w:260,h:50,kind:'vault-upper',requires:'wallClimb',region:'vault-upper'}
+];
+
+// Once Wall Climb is owned and the Abyss Warden is dead, the hatch retracts
+// and this ledge appears beside it. Crossing the ledge commits the player to
+// three 240-unit drops ending in the Rift Stalker arena.
+export const DEPTH_ACCESS_BLOCKS = [
+  {id:'vault-depth-floor-west',x:2860,y:1120,w:210,h:80,kind:'lower'},
+  {id:'vault-depth-access',x:3070,y:900,w:60,h:220,kind:'wall',requires:'wallClimb',region:'vault-depth',gateEntry:true},
+  {id:'vault-depth-floor-east',x:3210,y:1120,w:120,h:80,kind:'lower'}
+];
+
+export const VAULT_DEEP_BLOCKS = [
+  {id:'vault-deep-drop-one',x:3000,y:1360,w:210,h:50,kind:'vault-depth'},
+  {id:'vault-deep-drop-two',x:3310,y:1600,w:240,h:50,kind:'vault-depth'},
+  {id:'vault-deep-drop-three',x:3000,y:1840,w:230,h:50,kind:'vault-depth'},
+  {id:'depth-boss-left-wall',x:2380,y:1690,w:60,h:400,kind:'wall'},
+  {id:'depth-boss-floor',x:2440,y:2090,w:1110,h:150,kind:'foundation'}
+];
+
+// These surfaces rise only after the Rift Stalker dies. The two alternating
+// 270-unit gaps require Dash, after which the route rejoins the open hatch.
+export const DEPTH_RETURN_BLOCKS = [
+  {id:'depth-return-one',x:2480,y:1950,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-two',x:2910,y:1820,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-three',x:2480,y:1690,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-four',x:2780,y:1560,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-five',x:2780,y:1430,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-hatch',x:3130,y:1230,w:80,h:50,kind:'vault-depth-return',requires:'dash'}
+];
+
 // Small alcoves exist only at the outer ends of the world, where their back
 // walls cannot seal a through-route or strand the player.
 export const POCKET_BLOCKS = [
@@ -167,12 +207,20 @@ export const VAULT_BOSS_ARENA = {
   boss:{type:'vaultBoss',x:3120,y:1038,w:92,h:82,health:12}
 };
 
+export const DEPTH_BOSS_ARENA = {
+  id:'rift-stalker',name:'RIFT STALKER',region:'vault',
+  x:2440,y:1870,w:1030,h:220,floorY:2090,triggerY:1900,
+  rightGateX:3470,gateY:1870,gateWidth:40,gateHeight:220,
+  rewardScrap:180,
+  boss:{type:'depthBoss',x:2680,y:2018,w:88,h:72,health:24}
+};
+
 export const MINI_BOSS_ARENAS = [
   {
     id:'drift-scrapper',name:'CACHE SCRAPPER',region:'drift',
     x:11800,y:170,w:560,h:170,floorY:340,triggerY:205,
     gateX:12320,gateY:170,gateWidth:40,gateHeight:170,rewardScrap:0,rewardMaterial:{type:'titanium',amount:3},
-    enemy:{type:'miniBoss',x:12080,y:268,w:82,h:72,health:6}
+    enemy:{type:'miniBoss',x:12080,y:268,w:82,h:72,health:12}
   }
 ];
 
@@ -211,6 +259,7 @@ export const REGION_GATES = [
 export const PICKUP_SPAWNS = [
   {id:'volt-core',kind:'ability',ability:'electricJab',x:3260,y:1080,w:24,h:24,color:'#75f5ff',name:'VOLT JAB',key:'F',description:'Spend electricity to fire a long powered jab.',requiresVaultBossClear:true},
   {id:'vault-core',kind:'ability',ability:'wallClimb',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'WALL CLIMB',key:'W + A / D',description:'Hold W on a wall; press away to jump at any height.',requiresBossClear:true},
+  {id:'dash-core',kind:'ability',ability:'dash',x:2570,y:2066,w:24,h:24,color:'#d6ff3f',name:'DASH DRIVE',key:'SHIFT',description:'Burst across the deep return gaps.',requiresDepthBossClear:true},
   {id:'map-west',kind:'map',x:1080,y:256,w:24,h:24,color:'#d6ff3f',name:'WESTERN SURVEY',regions:['verge','vault']},
   {id:'map-central',kind:'map',x:4740,y:356,w:24,h:24,color:'#d6ff3f',name:'CENTRAL SURVEY',regions:['foundry','bastion','concourse']},
   {id:'map-east',kind:'map',x:11020,y:326,w:24,h:24,color:'#d6ff3f',name:'EASTERN SURVEY',regions:['crown','gauntlet','drift','exchange']}
@@ -265,6 +314,8 @@ export const PLATFORMS = [
   ...INTERIOR_BLOCKS,
   ...BRANCH_BLOCKS,
   ...LOWER_BLOCKS,
+  ...VAULT_UPPER_BLOCKS,
+  ...VAULT_DEEP_BLOCKS,
   ...POCKET_BLOCKS,
   ...WALL_BLOCKS,
   ...ABILITY_GATED_BLOCKS,
@@ -297,6 +348,8 @@ export const ENEMY_SPAWNS = [
   {type:'crawler',x:2760,y:890,w:30,h:40,patrol:true,patrolRange:60},
   {type:'brute',x:3000,y:757,w:58,h:63},
   {type:'drone',x:2860,y:650,w:42,h:30},
+  {type:'crawler',x:2640,y:260,w:30,h:40,patrol:true,patrolRange:55},
+  {type:'hopper',x:2820,y:-115,w:34,h:45},
   {type:'crawler',x:4050,y:570,w:30,h:40},
   {type:'brute',x:4280,y:547,w:58,h:63},
   {type:'roller',x:4020,y:372,w:46,h:28,patrol:true,patrolRange:90},

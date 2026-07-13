@@ -15,7 +15,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - `Space` performs an instantaneous 105-unit directional slash locked to the current aim. Damage resolves across the full area on the press frame only. Its visual is a brief, static white forward slash—no extension, retraction, arrow, pointer, or circular arc.
 - New runs start with the basic jump, slash, and repair. `E` spends 30 electricity and starts a 0.7-second repair channel; the missing shell returns only when it completes. Damage interrupts the channel without refunding electricity, and repair cannot begin during post-hit invulnerability.
 - The basic jump can begin only while supported on the ground. Walking or running off a platform consumes that grounded jump immediately. Once double jump is unlocked, leaving a platform without jumping preserves exactly one airborne jump.
-- Double jump, dash, wall movement, electric field, and electric jab remain implemented but locked for pickups. Use `game.unlockAbility(name)` when progression grants one.
+- Double jump, dash, wall movement, electric field, and electric jab remain implemented but locked for pickups. Dash is now granted by the deep-Vault `dash-core`; use `game.unlockAbility(name)` when progression grants one.
 - The blue `volt-core` in the Sunken Vault unlocks electric jab and opens a large temporary tutorial popup showing `F`. It remains unavailable inside the Abyss Warden arena until that full boss is dead. The nearby tutorial conduit contains exactly the 24 electricity required for one jab, and the following `vault-volt-seal` requires that attack.
 - The white post-boss `vault-core` appears only after the Heavy Core is cleared; touching it unlocks `wallClimb`. Hold `W` against a wall to climb continuously. Press `D` away from a left wall or `A` away from a right wall to jump off at the bot's current height. Never teleport the bot to a wall top.
 - Once unlocked, `Q` creates the circular field, `F` uses electric jab, and `Shift` dashes.
@@ -34,7 +34,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Only three conduits exist. Each holds 24 total electricity, yields 4 per primary hit, visibly drains, and generates nothing once empty.
 - The Sunken Vault tutorial conduit must remain between the Volt Jab pickup and its powered seal. Electric jab costs 24 electricity so one fresh conduit always funds the required tutorial shot.
 - Special-attack hits return 4 electricity per target.
-- The starting primary slash deals 3 damage and every ordinary enemy starts with 3 health. Each forge tier still adds exactly 1 damage so its proportional effect begins at one third rather than doubling the weapon.
+- The starting primary slash deals 3 damage. Crawlers and rollers have 6 health, hoppers and drones have 9, and brutes have 12, so ordinary enemies take two or three hits while the large brute takes four. Each forge tier still adds exactly 1 damage so upgrades remain incremental.
 - Killing enemies awards scrap based on archetype. The Grand Exchange `EDGE FORGE` offers four run-persistent `+1` primary-slash damage upgrades costing 500, 900, 1500, and 2400 scrap. Do not add other scrap spending behavior without a new design decision.
 - Titanium and uranium are persistent special materials reserved for future merchant recipes. They must remain genuinely rare: exactly two ordinary salvage piles award them—one titanium and one uranium—and both sit on ability-gated upper routes. The Cache Scrapper separately awards three titanium. Do not add more material piles or invent material prices or merchant recipes without a new design decision.
 - Ordinary junk piles are solid destructible obstacles. Destroying one awards its configured scrap or special material but no electricity.
@@ -50,7 +50,8 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Ground enemies must probe for supporting floor before moving. They stop at platform and spike-gap edges.
 - Hoppers commit to a high leap toward the player, then remain grounded for 0.7 seconds after landing so the player has a reliable attack window.
 - The Abyss Warden is a twelve-health full boss protecting Volt Jab. Its full-height right exit seal exists before activation, so the reward can never be reached backward from the escape route. Dropping into the chamber activates a second entry seal. It cycles through a telegraphed charge, a leaping shockwave, and a five-bolt volley.
-- The Cache Scrapper is an optional six-health mini boss in Quiet Drift. It awards three titanium, remains outside the required foundation route, and never grants an ability.
+- The Cache Scrapper is an optional twelve-health mini boss in Quiet Drift. It awards three titanium, remains outside the required foundation route, and never grants an ability.
+- The Rift Stalker is a twenty-four-health full boss at the bottom of the extended Sunken Vault. It protects Dash and cycles through a cross-room dash, a teleporting overhead drop, and one fast, briefly tracking projectile that explodes against solid geometry.
 - Activating a save station or losing the final shell reconstructs every ordinary enemy from `ENEMY_SPAWNS`. Defeated full bosses and mini bosses remain defeated for the run.
 - Enemy types should continue to vary in size, silhouette, health, speed, and movement style.
 
@@ -70,7 +71,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 
 ## World structure
 
-- The current world spans X `0–14500` and Y `-1000–1200`. `REGIONS` contains nine contiguous regions connected by eight non-blocking `REGION_GATES`.
+- The current world spans X `0–14500` and Y `-1000–2240`. `REGIONS` contains nine contiguous regions connected by eight non-blocking `REGION_GATES`.
 - Do not describe content as numbered sectors, stages, or levels.
 - Do not add linear completion screens or traversal-percentage HUD elements.
 - Do not render area-name text, directional captions, or text-box-like room labels directly into the world.
@@ -78,7 +79,8 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Favor loops, alternate entrances, optional rooms, hidden caches, and ability-gated shortcuts as the map grows.
 - Never add a glowing finish gate or other terminal marker at a map boundary.
 - `FOUNDATION_BLOCKS` form the tested basic-jump lower network. Upward transitions may rise by at most 70 units and gaps may be no wider than 160 units. Simulation tests must physically cross every gap in both directions.
-- The five `vault-*` foundations descend from Y 680 to Y 820 and rise again in 70-unit increments. The optional branch continues down to the Abyss Warden floor at Y 1120. Every pre-arena drop must remain reversible with the basic jump; only the clearly framed boss drop is one-way.
+- The five `vault-*` foundations descend from Y 680 to Y 820 and rise again in 70-unit increments. The original branch continues down to the Abyss Warden floor at Y 1120. Every pre-Warden drop must remain reversible with the basic jump; only the clearly framed boss drop is one-way. After the Warden is dead and Wall Climb is owned, the Warden floor opens into an irreversible descent to Y 2090.
+- `VAULT_UPPER_BLOCKS` forms a Wall-Climb-gated loft above the Sunken Vault. `VAULT_DEEP_BLOCKS` forms the long post-Warden descent and Rift Stalker floor. `DEPTH_RETURN_BLOCKS` appear after the Rift Stalker dies and include two tested gaps that cannot be crossed without Dash.
 - `OVERHEAD_BLOCKS` and the first eight `RECESSES` form the original hollow rooms. The map now extends through Shard Gauntlet, Quiet Drift, and Grand Exchange chambers to X 14500.
 - `POCKET_BLOCKS` form the two end-alcove ceilings. `WALL_BLOCKS` also includes the relay-crown climbing wall, the destructible Heavy Core roof bulkheads, and the left wall of the Abyss Warden room.
 - Suspended platforms are normally 40–60 units thick to preserve air and visibility. The two deep Vault floor masses may be 80 units thick. Foundations stay 120+ units thick except the five 60-unit Sunken Vault foundations, which preserve traversal clearance; ceilings remain massive structural forms.
@@ -117,6 +119,13 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - The Warden deterministically cycles through horizontal charge, leaping shockwave, and five-projectile volley attacks. It uses the full-size cyan boss health bar.
 - `volt-core` remains unavailable and inside the sealed chamber until `vaultBossArena.cleared` is true. Killing the Warden removes both seals and active hazards, then releases the pickup.
 - The tutorial conduit and `vault-volt-seal` remain outside the opened boss exit. The powered seal must touch—but never geometrically overlap—the right boss gate.
+
+## Rift Stalker arena
+
+- `DEPTH_BOSS_ARENA` is the third full boss encounter. Its right exit gate exists whenever the arena is uncleared, and the dormant boss cannot be targeted before the player drops into the trigger volume.
+- The route can open only when both `player.abilities.wallClimb` and `vaultBossArena.cleared` are true. Opening it replaces the intact Warden floor with two safe floor pieces, a climbing ledge, and an 80-unit hatch.
+- The Rift Stalker has 24 health, awards 180 scrap, and cycles deterministically through a 520-unit-per-second cross-room dash, a telegraphed relocation above the player followed by a ground slam, and a fast briefly tracking bolt. The bolt explodes on platforms and arena gates.
+- Killing the Rift Stalker permanently opens its gate, releases `dash-core`, and adds `DEPTH_RETURN_BLOCKS`. The two alternating 270-unit return gaps require Dash; the remaining jumps lead back through the open Warden-floor hatch.
 
 ## Mini-boss arenas
 
@@ -168,6 +177,8 @@ Use `http://127.0.0.1:4175/?debug=explore` for visual QA of the assembly platfor
 Use `http://127.0.0.1:4175/?debug=lower` for visual QA of the vault undercroft.
 
 Use `http://127.0.0.1:4175/?debug=vault-boss` for the active Abyss Warden room, `http://127.0.0.1:4175/?debug=mini` for the optional Quiet Drift Cache Scrapper, and `http://127.0.0.1:4175/?debug=volt` for the post-Warden Volt Jab tutorial.
+
+Use `http://127.0.0.1:4175/?debug=vault-upper` for the Wall-Climb loft, `http://127.0.0.1:4175/?debug=deep-vault` for the opened post-Warden descent, `http://127.0.0.1:4175/?debug=depth-boss` for the active Rift Stalker, and `http://127.0.0.1:4175/?debug=dash` for the released Dash core and return platforms.
 
 Use `http://127.0.0.1:4175/?debug=merchant` to verify an unlocked merchant door and its separate interior.
 

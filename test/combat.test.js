@@ -18,8 +18,8 @@ test('a slash direction is frozen for its visual flash',()=>{
 });
 
 test('killing an enemy grants scrap and hitting it grants electricity',()=>{
-  const game=settled(),enemy=game.enemy({type:'crawler',x:game.player.x+58,y:game.player.y,w:30,h:40});game.enemies=[enemy];press(game,'attack');
-  assert.equal(enemy.dead,true);assert.equal(game.player.scrap,SCRAP_VALUES.crawler);assert.equal(game.player.electricity,12);
+  const game=settled(),enemy=game.enemy({type:'crawler',x:game.player.x+58,y:game.player.y,w:30,h:40});game.enemies=[enemy];game.player.attackHits=new Set();game.resolvePrimaryAttack();
+  assert.equal(enemy.dead,false);game.player.attackHits=new Set();game.resolvePrimaryAttack();assert.equal(enemy.dead,true);assert.equal(game.player.scrap,SCRAP_VALUES.crawler);assert.equal(game.player.electricity,24);
 });
 
 test('hitting a conduit generates electricity without destroying it',()=>{
@@ -58,7 +58,7 @@ test('attacks are ignored without cancelling an active repair channel',()=>{
 
 test('electric field spends energy and damages enemies around the player',()=>{
   const game=settled(),enemy=game.enemy({type:'crawler',x:game.player.x-35,y:game.player.y,w:30,h:40});game.enemies=[enemy];game.unlockAbility('field');game.player.electricity=ABILITY_COSTS.field;press(game,'field');
-  assert.equal(game.player.specialType,'field');assert.equal(enemy.health,2);assert.equal(enemy.dead,false);assert.equal(game.player.electricity,4);
+  assert.equal(game.player.specialType,'field');assert.equal(enemy.health,5);assert.equal(enemy.dead,false);assert.equal(game.player.electricity,4);
 });
 
 test('electric field uses a true circle rather than its square bounds',()=>{
@@ -75,20 +75,20 @@ test('electric field remains active for its extended duration',()=>{
 
 test('electric jab reaches farther in the locked aim direction',()=>{
   const game=settled(),enemy=game.enemy({type:'crawler',x:game.player.x+180,y:game.player.y,w:30,h:40});game.enemies=[enemy];game.unlockAbility('electricJab');game.player.electricity=ABILITY_COSTS.electricJab;press(game,'electricJab');
-  assert.equal(game.player.specialType,'electricJab');assert.equal(enemy.health,1);assert.equal(enemy.dead,false);assert.equal(game.player.electricity,4);
+  assert.equal(game.player.specialType,'electricJab');assert.equal(enemy.health,4);assert.equal(enemy.dead,false);assert.equal(game.player.electricity,4);
 });
 
-test('the starting slash and ordinary enemies share a three-point baseline',()=>{
-  const game=new Game(),ordinary=game.enemies.filter(enemy=>!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isMiniBoss);assert.equal(game.player.primaryDamage,3);assert.ok(ordinary.length>0);assert.ok(ordinary.every(enemy=>enemy.health===3));
+test('ordinary enemies need two or three starting slashes while brutes need more',()=>{
+  const game=new Game(),ordinary=game.enemies.filter(enemy=>!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isDepthBoss&&!enemy.isMiniBoss);assert.equal(game.player.primaryDamage,3);assert.ok(ordinary.length>0);assert.ok(ordinary.filter(enemy=>enemy.type!=='brute').every(enemy=>enemy.health===6||enemy.health===9));assert.ok(ordinary.filter(enemy=>enemy.type==='brute').every(enemy=>enemy.health===12));
 });
 
 test('basic slash retains the full 105-unit range',()=>{
-  const game=settled(),enemy=game.enemy({type:'crawler',x:game.player.x+140,y:game.player.y,w:20,h:30});game.enemies=[enemy];press(game,'attack');
+  const game=settled(),enemy=game.enemy({type:'crawler',x:game.player.x+140,y:game.player.y,w:20,h:30,health:3});game.enemies=[enemy];press(game,'attack');
   assert.equal(ATTACK_RANGE.primary,105);assert.equal(enemy.dead,true);
 });
 
 test('primary slash hits its entire area simultaneously',()=>{
-  const game=settled(),near=game.enemy({type:'crawler',x:game.player.x+60,y:game.player.y,w:20,h:30}),far=game.enemy({type:'crawler',x:game.player.x+130,y:game.player.y,w:20,h:30});game.enemies=[near,far];game.setInput({attack:true});tick(game);
+  const game=settled(),near=game.enemy({type:'crawler',x:game.player.x+60,y:game.player.y,w:20,h:30,health:3}),far=game.enemy({type:'crawler',x:game.player.x+130,y:game.player.y,w:20,h:30,health:3});game.enemies=[near,far];game.setInput({attack:true});tick(game);
   assert.equal(near.dead,true);assert.equal(far.dead,true);assert.equal(game.player.electricity,24);
 });
 

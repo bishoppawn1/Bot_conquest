@@ -22,7 +22,7 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 | Wall movement | Hold/press `W` at wall | Locked at the beginning; available after its future pickup |
 | Vault | Hold `W` while running into a low obstacle | Locked initially; after the post-boss pickup, hop onto obstacles up to 115 units high |
 | Aim down | `S` | Set downward aim without moving |
-| Dash | `Shift` | Locked at the beginning; short horizontal burst after unlock |
+| Dash | `Shift` | Locked at the beginning; the Rift Stalker core grants the short horizontal burst |
 | Basic slash | `Space` | Instantly strike the full 105-unit area in the locked aim direction |
 | Repair | `E` | Spend 30 electricity, then channel for 0.7 seconds to restore one missing shell; damage interrupts it, attacks are locked out during the channel, and it cannot start during post-hit invulnerability |
 | Electric field | `Q` | Locked initially; spend 40 electricity after unlock |
@@ -56,7 +56,7 @@ Acquisition, swapping locations, exact bonuses, and balance costs remain for a l
 
 ## Resource loop
 
-The starting primary slash deals three damage, and every ordinary enemy begins with three health. Enemies award scrap when killed: crawler 6, roller 8, hopper 10, drone 12, and brute 25. The Grand Exchange Edge Forge offers four increasingly expensive, run-persistent `+1` primary-slash upgrades at 500, 900, 1,500, and 2,400 scrap. Each first-tier increase is therefore one third of the starting output rather than a damage doubling. Purchased edge coils appear in the inventory and a completed forge cannot be purchased again.
+The starting primary slash deals three damage. Crawlers and rollers have six health, hoppers and drones have nine, and the larger brute has twelve, producing two-hit, three-hit, and four-hit starting encounters. Enemies award scrap when killed: crawler 6, roller 8, hopper 10, drone 12, and brute 25. The Grand Exchange Edge Forge offers four increasingly expensive, run-persistent `+1` primary-slash upgrades at 500, 900, 1,500, and 2,400 scrap. Each first-tier increase is therefore one third of the starting output rather than a damage doubling. Purchased edge coils appear in the inventory and a completed forge cannot be purchased again.
 
 Titanium and uranium are persistent special materials for future merchant recipes. Their world density is intentionally very low: only two ordinary salvage piles contain rare material, one titanium and one uranium, and both are hidden on ability-gated upper routes. The Cache Scrapper separately awards three titanium as a mini-boss reward. Ordinary merchants display the carried material totals, but actual material recipes and prices remain intentionally undesigned.
 
@@ -78,7 +78,7 @@ Crawlers change direction immediately and pursue at a steady 75 units per second
 
 Drones detect at 340 units. When inactive they hover around their spawn height. Once active they steer toward the player's actual two-dimensional position at 105 units per second. Drone movement resolves horizontal and vertical collision against solid blocks, so drones cannot fly through floors, ceilings, or walls.
 
-Current archetypes are crawler, roller, hopper, drone, and brute. Their silhouettes use hard industrial chassis, pistons, claws, spikes, and needle-like feet rather than soft creature shapes. All ordinary archetypes use the same three-health baseline and are defeated by one unmodified three-damage slash; bosses and mini bosses retain their larger explicit health pools.
+Current archetypes are crawler, roller, hopper, drone, and brute. Their silhouettes use hard industrial chassis, pistons, claws, spikes, and needle-like feet rather than soft creature shapes. Crawlers and rollers take two unmodified slashes, hoppers and drones take three, and brutes take four; bosses and mini bosses retain their larger explicit health pools.
 
 ### Boss encounter
 
@@ -98,7 +98,13 @@ The Sunken Vault contains the twelve-health Abyss Warden, a full boss with its o
 
 Defeating the Abyss Warden awards 110 scrap, removes its hazards, opens both sides, and releases the blue Volt Jab core inside the chamber. The opened escape leads to the tutorial conduit and powered seal.
 
-Quiet Drift contains the reusable six-health Cache Scrapper mini-boss on an optional upper route. It awards three titanium; the normal foundation route remains open and it never protects an ability.
+Quiet Drift contains the reusable twelve-health Cache Scrapper mini-boss on an optional upper route. It awards three titanium; the normal foundation route remains open and it never protects an ability.
+
+### Rift Stalker
+
+After the Abyss Warden is defeated and Wall Climb has been acquired, climbing the short ledge on the Warden floor retracts an 80-unit hatch. The route below is deliberately irreversible with the starting jump: three deep landings descend to the Rift Stalker floor at Y 2,090.
+
+The twenty-four-health Rift Stalker is a full boss with three deterministic attacks: a fast dash across the chamber, a telegraphed relocation above the player followed by a vertical ground slam, and one 520-unit-per-second projectile that tracks briefly before committing to its line. The projectile is meant to be dodged vertically and explodes when it touches a solid platform or the arena gate. Defeating the boss awards 180 scrap, opens the exit, releases the Dash core, and raises a return route. Its two alternating 270-unit horizontal gaps cannot be crossed with the normal jump but are physically tested with Dash.
 
 ### Recovery room
 
@@ -112,7 +118,7 @@ MAP sits to the left of STATUS and opens on the player's current region. A revea
 
 ## Current map fragment
 
-The current map is a complete geometric reset and must not derive its layout from the discarded access-path prototype. It spans X 0–14,500 and Y -1,000–1,200. Seventeen foundation pieces form the lower traversal network. Within the Sunken Vault, five foundations descend from Y 680 to Y 820 and rise again in 70-unit increments. A reversible branch continues to Y 1,040 before one deliberate drop reaches the Abyss Warden floor at Y 1,120. The gate-controlled escape uses three tested basic-jump platforms; no accidental early drop is allowed to strand the player.
+The current map is a complete geometric reset and must not derive its layout from the discarded access-path prototype. It spans X 0–14,500 and Y -1,000–2,240. Seventeen foundation pieces form the lower traversal network. Within the Sunken Vault, five foundations descend from Y 680 to Y 820 and rise again in 70-unit increments. A reversible branch continues to Y 1,040 before one deliberate drop reaches the Abyss Warden floor at Y 1,120. The gate-controlled Warden escape uses three tested basic-jump platforms; no accidental early drop is allowed to strand the player. A Wall-Climb loft extends above the original Vault, while the post-Warden hatch and three-stage irreversible descent extend to the Rift Stalker at Y 2,090.
 
 Heavy overhead blocks frame large chambers. Thirty-three starting-kit platforms are scattered across at least nine of them as broad leaps, return drops, combat perches, and alternate crossings. They are not a staircase or serpentine chain. Most suspended platforms are 40–60 units thick; only the two deep Vault floor masses reach 80 units. Massive foundations remain at least 120 units thick except the five 60-unit Vault foundations, whose reduced depth leaves more passage clearance.
 
@@ -122,7 +128,7 @@ Nine named regions cover the current world and meet at eight visible mechanical 
 
 Three merchant doors cluster in the Relay Concourse, with additional doors in the Rusted Verge, Ember Foundry, and Grand Exchange. Every doorway rectangle and its standing pocket remain outside solid platforms and walls. A door in a safe pocket can open immediately; otherwise it remains sealed until nearby ordinary enemies are defeated. Pressing `O` beneath an unlocked door moves the bot into a separate enemy-free merchant room, and its interior exit returns to the saved overworld position. Ordinary merchants preview carried special materials while recipes remain pending; the Edge Forge offers its four configured slash-upgrade tiers.
 
-Enemies, junk, and secrets occupy the upper networks, the deep vault, and the ability-gated regions—not only the lower left-to-right floor. The map contains ten spike gaps, three exhaustible conduits, fourteen ordinary junk piles, two powered seals, one optional mini-boss encounter, two full boss encounters, and two end alcoves. The Sunken Vault uses a darker blue-black background, Shard Gauntlet uses red hazard silhouettes, and Grand Exchange uses warm industrial accents.
+Enemies, junk, and secrets occupy the upper networks, the deep vault, and the ability-gated regions—not only the lower left-to-right floor. The map contains ten spike gaps, three exhaustible conduits, fourteen ordinary junk piles, two powered seals, one optional mini-boss encounter, three full boss encounters, and two end alcoves. The Sunken Vault uses a darker blue-black background, Shard Gauntlet uses red hazard silhouettes, and Grand Exchange uses warm industrial accents.
 
 Solid rectangles never intersect: platform faces may touch but cannot overlap, bury one another, or contain a placed enemy, conduit, or junk pile. Every intended starting-kit connection has a simulated safe traversal or return drop. Ordinary junk always leaves at least one bot-width bypass, eliminating narrow obstacle pockets that can strand the player.
 
@@ -132,6 +138,6 @@ The world contains no permanent embedded area-name captions, directional labels,
 
 - Gameplay rules stay deterministic apart from cosmetic particles and leg placement.
 - Rendering, input, level data, geometry, and simulation remain separate modules.
-- Automated tests cover starting locks, absent restart input, repair timing, wall climbing, merchant-room access, the Edge Forge purchase, the permanent pre-fight Vault exit seal, all three Abyss Warden attacks, Volt-core release, Heavy Core barrier destruction, optional mini-boss rewards, region-entry titles, combat, resources, life loss, enemy behavior, two-way room connections, and valid surface contact.
+- Automated tests cover starting locks, absent restart input, repair timing, wall climbing, merchant-room access, the Edge Forge purchase, the permanent pre-fight Vault exit seal, all three Abyss Warden and Rift Stalker attacks, Volt- and Dash-core release, Dash-required return gaps, Heavy Core barrier destruction, optional mini-boss rewards, region-entry titles, combat, resources, life loss, enemy behavior, two-way room connections, and valid surface contact.
 - Level-data tests enforce world dimensions, varied platform thickness, zero solid intersections, object clearance, the reversible stepped Vault, its intentional full-boss drop and tested escape, bot-sized headroom, junk bypasses, dedicated wall geometry, enemy distribution, nine contiguous regions, matching region gates, distinct new-region identities, generic pickup data, framed unlabeled recesses, and three substantial ability-gated regions.
 - The browser console has no errors during the start and play states.

@@ -56,6 +56,30 @@ function begin() {
     game.player.x=2720;
     game.player.y=930-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'deep-vault') {
+    game.unlockAbility('wallClimb');
+    const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();
+    game.player.x=3145;
+    game.player.y=1080-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'vault-upper') {
+    game.unlockAbility('wallClimb');
+    game.player.x=2880;
+    game.player.y=-70-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'depth-boss') {
+    game.unlockAbility('wallClimb');
+    const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();
+    game.player.x=2920;
+    game.player.y=game.depthBossArena.floorY-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};game.updateDepthBossArena();
+  } else if (debugSpawn === 'dash') {
+    game.unlockAbility('wallClimb');
+    const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();
+    const depthBoss=game.depthBoss();game.depthBossArena.cleared=true;depthBoss.dead=true;depthBoss.health=0;game.releaseDepthReturn();
+    game.player.x=game.pickups.find(item=>item.id==='dash-core').x;
+    game.player.y=game.depthBossArena.floorY-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'mini') {
     const arena=game.miniBossArenas[0];
     game.player.x=arena.x+80;
@@ -79,7 +103,7 @@ function begin() {
     const door=game.merchants.find(merchant=>merchant.id==='merchant-verge');
     game.player.x=door.x+15;
     game.player.y=door.y+door.h-game.player.h;
-    for(const enemy of game.enemies)if(!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isMiniBoss&&Math.abs(enemy.originX+enemy.w/2-(door.x+door.w/2))<=door.clearRadius)enemy.dead=true;
+    for(const enemy of game.enemies)if(!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isDepthBoss&&!enemy.isMiniBoss&&Math.abs(enemy.originX+enemy.w/2-(door.x+door.w/2))<=door.clearRadius)enemy.dead=true;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'merchant-room') {
     game.merchantRoom.activeMerchant=game.merchants[0];

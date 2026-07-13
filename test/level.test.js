@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS,
+  ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
   ENEMY_SPAWNS, FORGE_UPGRADE_COSTS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
   LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
   PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_GATES, REGIONS,
-  REST_AREA, TRAPS, VAULT_BOSS_ARENA, WALL_BLOCKS, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
+  REST_AREA, TRAPS, VAULT_BOSS_ARENA, VAULT_DEEP_BLOCKS, VAULT_UPPER_BLOCKS, WALL_BLOCKS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
 } from '../src/level.js';
 
 const intersects=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
@@ -14,7 +14,8 @@ const horizontalGap=(a,b)=>Math.max(0,b.x-(a.x+a.w),a.x-(b.x+b.w));
 test('the map occupies a genuine two-dimensional playfield',()=>{
   assert.equal(WORLD_WIDTH,14500);
   assert.equal(WORLD_TOP,-1000);
-  assert.equal(WORLD_HEIGHT,2200);
+  assert.equal(WORLD_BOTTOM,2240);
+  assert.equal(WORLD_HEIGHT,3240);
   assert.ok(PLATFORMS.some(block=>block.x+block.w===WORLD_WIDTH));
   assert.ok(LOWER_BLOCKS.some(block=>block.y>=1080),'the map needs playable space below the main floor');
   assert.ok(ABILITY_GATED_BLOCKS.some(block=>block.y<=-650),'the map needs substantial upper space');
@@ -104,11 +105,12 @@ test('merchant doors cluster in the concourse while the Grand Exchange has a dam
 });
 
 test('ability and map cores use the generic pickup format',()=>{
-  const abilities=PICKUP_SPAWNS.filter(pickup=>pickup.kind==='ability'),maps=PICKUP_SPAWNS.filter(pickup=>pickup.kind==='map');assert.equal(abilities.length,2);assert.equal(maps.length,3);
+  const abilities=PICKUP_SPAWNS.filter(pickup=>pickup.kind==='ability'),maps=PICKUP_SPAWNS.filter(pickup=>pickup.kind==='map');assert.equal(abilities.length,3);assert.equal(maps.length,3);
   assert.ok(abilities.every(pickup=>pickup.name&&pickup.key&&pickup.color));assert.deepEqual(new Set(maps.flatMap(pickup=>pickup.regions)),new Set(REGIONS.map(region=>region.id)));
   const vault=PICKUP_SPAWNS.find(pickup=>pickup.id==='vault-core'),volt=PICKUP_SPAWNS.find(pickup=>pickup.id==='volt-core');
   assert.equal(vault.ability,'wallClimb');assert.equal(vault.requiresBossClear,true);assert.ok(vault.x>7190&&vault.x<REST_AREA.x+REST_AREA.w);
   assert.equal(volt.ability,'electricJab');assert.equal(volt.color,'#75f5ff');assert.equal(volt.requiresVaultBossClear,true);assert.ok(volt.x>VAULT_BOSS_ARENA.x&&volt.x<VAULT_BOSS_ARENA.rightGateX);
+  const dash=PICKUP_SPAWNS.find(pickup=>pickup.id==='dash-core');assert.equal(dash.ability,'dash');assert.equal(dash.requiresDepthBossClear,true);assert.ok(dash.x>DEPTH_BOSS_ARENA.x&&dash.x<DEPTH_BOSS_ARENA.rightGateX);
   assert.ok(PICKUP_SPAWNS.every(pickup=>PLATFORMS.every(block=>!intersects(pickup,block))));
 });
 
@@ -155,6 +157,13 @@ test('the lower vault has a contained full-boss floor and a staged escape',()=>{
   assert.equal(floor.y,1120);assert.equal(floor.x+floor.w,VAULT_BOSS_ARENA.rightGateX);
   assert.equal(threshold.x,VAULT_BOSS_ARENA.rightGateX+VAULT_BOSS_ARENA.gateWidth);
   assert.deepEqual(LOWER_BLOCKS.filter(block=>block.id.startsWith('under-exit-')).map(block=>block.y),[1020,920,820]);
+});
+
+test('the Sunken Vault has a Wall-Climb loft and a much deeper Dash-locked return',()=>{
+  assert.ok(VAULT_UPPER_BLOCKS.some(block=>block.y<0));assert.ok(VAULT_UPPER_BLOCKS.some(block=>block.kind==='wall'&&block.requires==='wallClimb'));
+  assert.ok(VAULT_DEEP_BLOCKS.some(block=>block.y>=1800));assert.equal(DEPTH_BOSS_ARENA.floorY,2090);assert.ok(DEPTH_BOSS_ARENA.boss.health>VAULT_BOSS_ARENA.boss.health);
+  assert.ok(DEPTH_ACCESS_BLOCKS.some(block=>block.kind==='wall'&&block.requires==='wallClimb'));assert.ok(DEPTH_RETURN_BLOCKS.length>=5);assert.ok(DEPTH_RETURN_BLOCKS.every(block=>block.requires==='dash'));
+  const drops=VAULT_DEEP_BLOCKS.filter(block=>block.id.startsWith('vault-deep-drop'));for(let index=1;index<drops.length;index++)assert.ok(drops[index].y-drops[index-1].y>=230,'the descent should remain irreversible with the basic jump');
 });
 
 test('walkable surfaces leave enough headroom for the bot',()=>{
