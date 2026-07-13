@@ -196,7 +196,7 @@ export const BOSS_ARENA = {
   x:5890,y:350,w:1300,h:250,floorY:600,
   triggerX:6000,leftGateX:5905,rightGateX:7133,gateWidth:42,
   gateStartY:80,gateClosedY:350,gateHeight:250,
-  boss:{type:'boss',x:6512,y:522,w:96,h:78,health:18}
+  boss:{type:'boss',x:6512,y:522,w:96,h:78,health:36}
 };
 
 export const VAULT_BOSS_ARENA = {
@@ -204,7 +204,7 @@ export const VAULT_BOSS_ARENA = {
   x:2860,y:950,w:510,h:170,floorY:1120,triggerY:1000,
   leftGateX:2818,rightGateX:3330,gateY:700,gateWidth:40,gateHeight:420,
   rewardScrap:110,
-  boss:{type:'vaultBoss',x:3120,y:1038,w:92,h:82,health:12}
+  boss:{type:'vaultBoss',x:3120,y:1038,w:92,h:82,health:24}
 };
 
 export const DEPTH_BOSS_ARENA = {
@@ -212,7 +212,7 @@ export const DEPTH_BOSS_ARENA = {
   x:2440,y:1870,w:1030,h:220,floorY:2090,triggerY:1900,
   rightGateX:3470,gateY:1870,gateWidth:40,gateHeight:220,
   rewardScrap:180,
-  boss:{type:'depthBoss',x:2680,y:2018,w:88,h:72,health:24}
+  boss:{type:'depthBoss',x:2680,y:2018,w:88,h:72,health:48}
 };
 
 export const MINI_BOSS_ARENAS = [
@@ -266,15 +266,23 @@ export const PICKUP_SPAWNS = [
 ];
 
 export const FORGE_UPGRADE_COSTS = Object.freeze([500,900,1500,2400]);
+export const HEALTH_UPGRADE_COSTS = Object.freeze([450,900,1600]);
+export const ENERGY_UPGRADE_COSTS = Object.freeze([400,800,1400]);
+export const INTERNAL_SLOT_COSTS = Object.freeze([800,1600,2800]);
+
+export const BODY_MODIFIERS = Object.freeze([
+  {id:'adaptive-lattice',name:'ADAPTIVE LATTICE',cost:500,effects:{shell:{maxLives:2,label:'+2 MAX SHELLS'},core:{maxElectricity:40,label:'+40 CAPACITY'},legs:{moveSpeed:45,label:'+45 MOVE SPEED'},internal:{maxLives:1,maxElectricity:15,moveSpeed:12,label:'+1 SHELL / +15 CAP / +12 SPEED'}}},
+  {id:'dense-matrix',name:'DENSE MATRIX',cost:850,effects:{shell:{maxLives:3,label:'+3 MAX SHELLS'},core:{maxElectricity:60,label:'+60 CAPACITY'},legs:{moveSpeed:65,label:'+65 MOVE SPEED'},internal:{maxLives:1,maxElectricity:20,moveSpeed:18,label:'+1 SHELL / +20 CAP / +18 SPEED'}}}
+]);
 
 // Merchant terminals lead to one sealed, enemy-free interior. A terminal
 // remains locked until its explicitly local enemy group is defeated.
 export const MERCHANT_SPAWNS = [
-  {id:'merchant-parts',name:'PARTS BROKER',x:7800,y:540,w:80,h:120,region:'concourse',hub:true,color:'#75f5ff',clearRadius:260},
-  {id:'merchant-shells',name:'SHELL ARCHIVE',x:7930,y:540,w:80,h:120,region:'concourse',hub:true,color:'#d6ff3f',clearRadius:260},
-  {id:'merchant-salvage',name:'SALVAGE EXCHANGE',x:8060,y:540,w:80,h:120,region:'concourse',hub:true,color:'#ffb85c',clearRadius:260},
+  {id:'merchant-parts',name:'PARTS BROKER',x:7800,y:540,w:80,h:120,region:'concourse',hub:true,color:'#75f5ff',clearRadius:260,service:'modifierShop',stock:['adaptive-lattice','dense-matrix']},
+  {id:'merchant-shells',name:'SHELL ARCHIVE',x:7930,y:540,w:80,h:120,region:'concourse',hub:true,color:'#d6ff3f',clearRadius:260,service:'healthUpgrade',upgradeCosts:HEALTH_UPGRADE_COSTS},
+  {id:'merchant-salvage',name:'CAPACITOR EXCHANGE',x:8060,y:540,w:80,h:120,region:'concourse',hub:true,color:'#ffb85c',clearRadius:260,service:'energyUpgrade',upgradeCosts:ENERGY_UPGRADE_COSTS},
   {id:'merchant-verge',name:'VERGE TINKER',x:2160,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:260},
-  {id:'merchant-foundry',name:'FOUNDRY FACTOR',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:300},
+  {id:'merchant-foundry',name:'INNER FOUNDRY',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:300,service:'internalSlot',upgradeCosts:INTERNAL_SLOT_COSTS},
   {id:'merchant-forge',name:'EDGE FORGE',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:260,service:'damageUpgrade',upgradeCosts:FORGE_UPGRADE_COSTS}
 ];
 

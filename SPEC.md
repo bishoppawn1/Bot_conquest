@@ -4,7 +4,7 @@
 
 Bot Conquest takes place across one interconnected mechanical world. It is not divided into numbered sectors, discrete stages, or finish-line courses. Its spaces support exploration, backtracking, alternate routes, optional rooms, shortcuts, hidden caches, environmental storytelling, and small secrets.
 
-The current replacement fragment spans 14,500 horizontal units and 2,200 vertical units. It is not the complete map and has no region-clear state, glowing finish gate, or traversal-percentage objective.
+The current replacement fragment spans 14,500 horizontal units and 3,240 vertical units. It is not the complete map and has no region-clear state, glowing finish gate, or traversal-percentage objective.
 
 ## Player
 
@@ -30,7 +30,7 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 | Interact | `O` | Rest at the recovery station or enter/leave an unlocked merchant room |
 | Inventory / map | `I` | Toggle a simulation-pausing overlay; use `A`/`D` for pages, or use `Q` and `WASD` to zoom and select local maps |
 
-There is no restart key or persistent restart control. Losing all three shells rebuilds the bot at the last activated save point, or at the initial spawn before any station has been activated.
+There is no restart key or persistent restart control. Losing the final shell rebuilds the bot at the last activated save point, or at the initial spawn before any station has been activated.
 
 The basic jump is grounded: running or walking beyond a platform edge consumes it, so it cannot be delayed until the bot is already airborne. After double jump is unlocked, leaving an edge without jumping preserves exactly one airborne jump, the same allowance that remains after a normal grounded jump.
 
@@ -52,7 +52,15 @@ Shell swapping is planned but not implemented in this prototype. Shells will cha
 - A large, heavy shell with substantially more maximum health but slower movement.
 - A reach-focused shell with a longer primary slash.
 
-Acquisition, swapping locations, exact bonuses, and balance costs remain for a later design pass. The current inventory can list acquired special items, but shell swapping is not yet part of it.
+Acquisition, swapping locations, exact bonuses, and balance costs remain for a later design pass. The current inventory can list acquired special items and manage modifiers, but body swapping is not yet part of it.
+
+### Body modifications
+
+The standard body has three full-strength modifier mounts: shell, core, and legs. A purchased modifier is reusable and occupies at most one mount. On the ITEMS page, selecting a modifier and pressing `O` cycles it from storage through every compatible mount and back to storage. If the destination is occupied, its previous modifier returns to storage.
+
+The same modifier behaves differently by placement. Shell mounting adds maximum shells, core mounting adds electricity capacity, and leg mounting adds movement speed. The Adaptive Lattice costs 500 scrap and provides `+2` shells, `+40` capacity, or `+45` movement speed. The Dense Matrix costs 850 scrap and provides `+3` shells, `+60` capacity, or `+65` movement speed.
+
+The Inner Foundry sells up to three internal bays for 800, 1,600, and 2,800 scrap. Internal bays accept the same modifiers but use intentionally reduced mixed profiles: an internal modifier provides only a small shell, capacity, and movement benefit compared with a full external mount. The body owns its mount arrays, so future bodies can expose different parts and additional placements without changing the inventory system.
 
 ## Resource loop
 
@@ -60,7 +68,9 @@ The starting primary slash deals three damage. Crawlers and rollers have six hea
 
 Titanium and uranium are persistent special materials for future merchant recipes. Their world density is intentionally very low: only two ordinary salvage piles contain rare material, one titanium and one uranium, and both are hidden on ability-gated upper routes. The Cache Scrapper separately awards three titanium as a mini-boss reward. Ordinary merchants display the carried material totals, but actual material recipes and prices remain intentionally undesigned.
 
-The player has an electricity meter capped at 100. A standard slash against an enemy adds 12 electricity. Three conduits each contain 24 electricity, yield 4 per slash, and stay permanently empty after six successful harvests. A target hit by a special attack returns 4 electricity.
+The player starts with an electricity capacity of 100. A standard slash against an enemy adds 12 electricity up to the current capacity. The Capacitor Exchange sells three persistent `+25` capacity tiers for 400, 800, and 1,400 scrap, and core/internal modifiers can raise capacity further. Three conduits each contain 24 electricity, yield 4 per slash, and stay permanently empty after six successful harvests. A target hit by a special attack returns 4 electricity.
+
+The Shell Archive sells three persistent `+1` maximum-shell tiers for 450, 900, and 1,600 scrap. Buying a shell or capacitor tier also fills the newly added capacity. Modifier placement changes maximum statistics without refilling them, and removing a modifier clamps the current value to the new maximum.
 
 Ordinary junk piles have configured health and burst into scrap or special-material payouts when destroyed. Two powered seals have minimum damage 2 and require electric jab: the two-health Sunken Vault tutorial seal and a later armored cache wall. Hitting junk does not generate electricity.
 
@@ -68,7 +78,7 @@ The electric field lasts 0.9 seconds and uses a true 112-unit-radius circular co
 
 ## Lives and failure
 
-The player starts with three core shells. Enemy contact removes one shell and briefly grants invulnerability. Touching a spike immediately removes one shell and returns the player to the last safe position recorded on the most recently supported platform; the player never continues falling through the spike pit. Falling completely out of the world still returns to the initial spawn. Losing the third shell rebuilds the bot with three shells at its last activated save point. Carried electricity and scrap drop to zero, while titanium, uranium, upgrades, and special items persist. A three-health wreck remains at the death location holding the lost scrap. Destroying that wreck returns all stored scrap but no electricity. A newer death replaces any unrecovered wreck. Full death reconstructs all ordinary enemies; defeated full bosses and mini bosses stay defeated.
+The player starts with three core shells. Enemy contact removes one shell and briefly grants invulnerability. Touching a spike immediately removes one shell and returns the player to the last safe position recorded on the most recently supported platform; the player never continues falling through the spike pit. Falling completely out of the world still returns to the initial spawn. Losing the final shell rebuilds the bot with its current maximum shells at its last activated save point. Carried electricity and scrap drop to zero, while titanium, uranium, upgrades, modifiers, and special items persist. A three-health wreck remains at the death location holding the lost scrap. Destroying that wreck returns all stored scrap but no electricity. A newer death replaces any unrecovered wreck. Full death reconstructs all ordinary enemies; defeated full bosses and mini bosses stay defeated.
 
 ## Enemies
 
@@ -84,7 +94,7 @@ Current archetypes are crawler, roller, hopper, drone, and brute. Their silhouet
 
 After traversing roughly two-thirds of the current route, the player enters a 1,300-unit-wide open arena. Crossing its inner trigger while physically inside the chamber drops a solid gate behind the player and another at the far exit. The gates finish closing in about 0.3 seconds and cannot be crossed while the boss remains alive. Full-height structural bulkheads seal both approaches to the arena roof, preventing roof bypasses and ensuring a gate can never lock the player outside the fight.
 
-The Heavy Core boss has 18 health and three deterministic attacks. Its 96-by-78-unit collision body remains imposing but can be cleared cleanly with the starting jump, preventing its charge from creating an unavoidable wall pin.
+The Heavy Core boss has 36 health and three deterministic attacks. Its 96-by-78-unit collision body remains imposing but can be cleared cleanly with the starting jump, preventing its charge from creating an unavoidable wall pin.
 
 - A telegraphed horizontal charge locks its direction before rushing at 260 units per second.
 - An aerial slam launches upward, then creates an expanding 300-unit ground shockwave when it lands.
@@ -94,7 +104,7 @@ The HUD displays the boss health bar throughout the encounter. Defeating the Hea
 
 ### Mini-boss encounter
 
-The Sunken Vault contains the twelve-health Abyss Warden, a full boss with its own large health bar and deterministic charge, leaping shockwave, and five-bolt volley. Its 420-unit-tall right exit seal is solid before the encounter activates, reaches from Y 700 to the floor at Y 1120, and cannot be jumped around from the exit platforms. Dropping into the chamber activates the Warden and closes the entry seal. The dormant Warden cannot be damaged from the approach.
+The Sunken Vault contains the twenty-four-health Abyss Warden, a full boss with its own large health bar and deterministic charge, leaping shockwave, and five-bolt volley. Its 420-unit-tall right exit seal is solid before the encounter activates, reaches from Y 700 to the floor at Y 1120, and cannot be jumped around from the exit platforms. Dropping into the chamber activates the Warden and closes the entry seal. The dormant Warden cannot be damaged from the approach.
 
 Defeating the Abyss Warden awards 110 scrap, removes its hazards, opens both sides, and releases the blue Volt Jab core inside the chamber. The opened escape leads to the tutorial conduit and powered seal.
 
@@ -104,15 +114,15 @@ Quiet Drift contains the reusable twelve-health Cache Scrapper mini-boss on an o
 
 After the Abyss Warden is defeated and Wall Climb has been acquired, climbing the short ledge on the Warden floor retracts an 80-unit hatch. The route below is deliberately irreversible with the starting jump: three deep landings descend to the Rift Stalker floor at Y 2,090.
 
-The twenty-four-health Rift Stalker is a full boss with three deterministic attacks: a fast dash across the chamber, a telegraphed relocation above the player followed by a vertical ground slam, and one 520-unit-per-second projectile that tracks briefly before committing to its line. The projectile is meant to be dodged vertically and explodes when it touches a solid platform or the arena gate. Defeating the boss awards 180 scrap, opens the exit, releases the Dash core, and raises a return route. Its two alternating 270-unit horizontal gaps cannot be crossed with the normal jump but are physically tested with Dash.
+The forty-eight-health Rift Stalker is a full boss with three deterministic attacks: a fast dash across the chamber, a telegraphed relocation above the player followed by a vertical ground slam, and one 520-unit-per-second projectile that tracks briefly before committing to its line. The projectile is meant to be dodged vertically and explodes when it touches a solid platform or the arena gate. Defeating the boss awards 180 scrap, opens the exit, releases the Dash core, and raises a return route. Its two alternating 270-unit horizontal gaps cannot be crossed with the normal jump but are physically tested with Dash.
 
 ### Recovery room
 
-The foundation immediately beyond the boss arena is a calm recovery room with no ordinary enemies, junk, conduits, or floor obstacles. Its station powers on only after the Heavy Core is defeated. While within 115 units, the HUD displays the `O // REST AND RECOVER` prompt. Resting restores all three core shells, clears current knockback, plays a recovery pulse, moves both the spike-reset checkpoint and full-death respawn point beside the station, and reconstructs all ordinary enemies. It does not refill electricity, revive defeated bosses or mini bosses, or unlock abilities.
+The foundation immediately beyond the boss arena is a calm recovery room with no ordinary enemies, junk, conduits, or floor obstacles. Its station powers on only after the Heavy Core is defeated. While within 115 units, the HUD displays the `O // REST AND RECOVER` prompt. Resting restores the current maximum core shells, clears current knockback, plays a recovery pulse, moves both the spike-reset checkpoint and full-death respawn point beside the station, and reconstructs all ordinary enemies. It does not refill electricity, revive defeated bosses or mini bosses, or unlock abilities.
 
 ## Inventory and map
 
-Pressing `I` opens the combined overlay and pauses world simulation. It starts on STATUS; outside the world overview, `A` and `D` move between MAP, STATUS, MATERIALS, and ITEMS while `W` and `S` move the selection within the active page. STATUS reports only shells, electricity, primary damage, and scrap. MATERIALS reports only titanium and uranium. ITEMS lists merchant purchases such as Edge Forge coils.
+Pressing `I` opens the combined overlay and pauses world simulation. It starts on STATUS; outside the world overview, `A` and `D` move between MAP, STATUS, MATERIALS, and ITEMS while `W` and `S` move the selection within the active page. STATUS reports current/maximum shells, current/maximum electricity, primary damage, and scrap. MATERIALS reports only titanium and uranium. ITEMS lists merchant purchases and body modifiers; `O` moves the selected modifier through the current body's available mounts.
 
 MAP sits to the left of STATUS and opens on the player's current region. A revealed local map diagrams that region's foundations, routes, hazards, merchant links, and current-player marker using one uniform world-to-map scale on both axes; it must never widen geometry to fill the panel. An unrevealed local map displays `NO MAP`. Pressing `Q` zooms out to a three-by-three overview of all nine regions. While zoomed out, `W`, `A`, `S`, and `D` select a region and never change inventory pages; pressing `Q` again zooms into the selected region. Three survey cores reveal configured west, central, and east groups that together cover the world.
 
@@ -126,7 +136,7 @@ The starting kit cannot reach the whole map. Twelve platforms form three substan
 
 Nine named regions cover the current world and meet at eight visible mechanical gates. The Shard Gauntlet concentrates four spike gaps and red hazard atmosphere; Quiet Drift is a more conventional exploration chamber with an optional scrap mini-boss; the 1,800-unit Grand Exchange is a broad multi-height district with the Edge Forge in its far corner. Region gates remain non-blocking navigation thresholds rather than stage exits.
 
-Three merchant doors cluster in the Relay Concourse, with additional doors in the Rusted Verge, Ember Foundry, and Grand Exchange. Every doorway rectangle and its standing pocket remain outside solid platforms and walls. A door in a safe pocket can open immediately; otherwise it remains sealed until nearby ordinary enemies are defeated. Pressing `O` beneath an unlocked door moves the bot into a separate enemy-free merchant room, and its interior exit returns to the saved overworld position. Ordinary merchants preview carried special materials while recipes remain pending; the Edge Forge offers its four configured slash-upgrade tiers.
+Three merchant doors cluster in the Relay Concourse, with additional doors in the Rusted Verge, Ember Foundry, and Grand Exchange. Every doorway rectangle and its standing pocket remain outside solid platforms and walls. A door in a safe pocket can open immediately; otherwise it remains sealed until nearby ordinary enemies are defeated. Pressing `O` beneath an unlocked door moves the bot into a separate enemy-free merchant room, and its interior exit returns to the saved overworld position. The current services sell health tiers, electricity-capacity tiers, two reusable body modifiers, three reduced-power internal bays, and the Edge Forge's four slash upgrades. Merchants still preview carried special materials, while titanium/uranium recipes remain pending.
 
 Enemies, junk, and secrets occupy the upper networks, the deep vault, and the ability-gated regions—not only the lower left-to-right floor. The map contains ten spike gaps, three exhaustible conduits, fourteen ordinary junk piles, two powered seals, one optional mini-boss encounter, three full boss encounters, and two end alcoves. The Sunken Vault uses a darker blue-black background, Shard Gauntlet uses red hazard silhouettes, and Grand Exchange uses warm industrial accents.
 
@@ -138,6 +148,6 @@ The world contains no permanent embedded area-name captions, directional labels,
 
 - Gameplay rules stay deterministic apart from cosmetic particles and leg placement.
 - Rendering, input, level data, geometry, and simulation remain separate modules.
-- Automated tests cover starting locks, absent restart input, repair timing, wall climbing, merchant-room access, the Edge Forge purchase, the permanent pre-fight Vault exit seal, all three Abyss Warden and Rift Stalker attacks, Volt- and Dash-core release, Dash-required return gaps, Heavy Core barrier destruction, optional mini-boss rewards, region-entry titles, combat, resources, life loss, enemy behavior, two-way room connections, and valid surface contact.
+- Automated tests cover starting locks, absent restart input, repair timing, wall climbing, merchant-room access, all merchant upgrade services, modifier placement and reduced internal effects, increased boss durability, the permanent pre-fight Vault exit seal, all three Abyss Warden and Rift Stalker attacks, Volt- and Dash-core release, Dash-required return gaps, Heavy Core barrier destruction, optional mini-boss rewards, region-entry titles, combat, resources, life loss, enemy behavior, two-way room connections, and valid surface contact.
 - Level-data tests enforce world dimensions, varied platform thickness, zero solid intersections, object clearance, the reversible stepped Vault, its intentional full-boss drop and tested escape, bot-sized headroom, junk bypasses, dedicated wall geometry, enemy distribution, nine contiguous regions, matching region gates, distinct new-region identities, generic pickup data, framed unlabeled recesses, and three substantial ability-gated regions.
 - The browser console has no errors during the start and play states.

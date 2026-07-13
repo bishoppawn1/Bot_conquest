@@ -1,9 +1,10 @@
 import { clamp, hasFloorAhead, overlaps, shareSupportingPlatform, supportingPlatform } from './geometry.js';
 import { ABILITY_COSTS, ATTACK_RANGE, ATTACK_TIMING, circleIntersectsRect, directionalBox, ELECTRICITY_MAX, ELECTRICITY_PER_HIT, fieldCircle, SCRAP_VALUES } from './combat.js';
-import { BOSS_ARENA, CONDUITS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS, ENEMY_SPAWNS, FORGE_UPGRADE_COSTS, JUNK_PILES, MERCHANT_ROOM, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, PICKUP_SPAWNS, PLATFORMS, RECESSES, REGION_GATES, REGIONS, REST_AREA, SPAWN, TRAPS, VAULT_BOSS_ARENA, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
+import { BODY_MODIFIERS, BOSS_ARENA, CONDUITS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS, ENEMY_SPAWNS, FORGE_UPGRADE_COSTS, JUNK_PILES, MERCHANT_ROOM, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, PICKUP_SPAWNS, PLATFORMS, RECESSES, REGION_GATES, REGIONS, REST_AREA, SPAWN, TRAPS, VAULT_BOSS_ARENA, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
 
 export { WORLD_WIDTH as WIDTH, WORLD_HEIGHT as HEIGHT } from './level.js';
 export const PLAYER_JUMP_SPEED = 600;
+export const PLAYER_MOVE_SPEED = 250;
 export const HEAL_DURATION = .7;
 export const WALL_CLIMB_SPEED = 155;
 
@@ -16,7 +17,7 @@ export class Game {
     this.spawn={...SPAWN};
     this.safePosition={...this.spawn};
     this.respawnPoint={...this.spawn};this.recoveryCorpse=null;this.inventoryOpen=false;this.inventoryPage=1;this.inventorySelection=0;this.inventoryPages=['map','status','materials','items'];this.mappedRegions=new Set();this.mapOverview=false;this.mapRegionIndex=0;
-    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:0,lives:3,scrap:0,electricity:0,materials:{titanium:0,uranium:0},purchasedItems:[],primaryDamage:3,damageUpgrades:0,abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
+    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:0,lives:3,maxLives:3,scrap:0,electricity:0,maxElectricity:ELECTRICITY_MAX,materials:{titanium:0,uranium:0},purchasedItems:[],primaryDamage:3,damageUpgrades:0,healthUpgrades:0,energyUpgrades:0,internalSlotUpgrades:0,moveSpeed:PLAYER_MOVE_SPEED,body:{id:'standard-body',name:'STANDARD BODY',slots:[{id:'shell',part:'shell',label:'SHELL MOUNT',efficiency:1},{id:'core',part:'core',label:'CORE MOUNT',efficiency:1},{id:'legs',part:'legs',label:'LEG MOUNT',efficiency:1}],internalSlots:[]},abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
     this.platforms=PLATFORMS.map(platform=>({...platform}));
     this.traps=TRAPS.map(trap=>({...trap}));
     this.recesses=RECESSES.map(recess=>({...recess}));
@@ -39,7 +40,22 @@ export class Game {
     this.junkPiles=JUNK_PILES.map((pile,index)=>({...pile,kind:'junk',id:pile.id??`junk-${index}`,maxHealth:pile.health,dead:false,hitFlash:0}));
   }
   enemy({type,x,y,w,h,health,patrol=false,patrolRange=80,patrolDirection=1}){const ordinaryHealth=type==='brute'?12:type==='hopper'||type==='drone'?9:6;return{type,x,y,w,h,originX:x,originY:y,vx:0,vy:0,health:health??ordinaryHealth,onGround:false,phase:x*.01,dead:false,active:false,aggroRadius:type==='drone'?340:type==='brute'?240:210,patrol,patrolRange,patrolDirection,windup:0,chargeTime:0,chargeCooldown:0,jumpCooldown:0,jumping:false,chargeDirection:patrolDirection};}
+  bodySlots(){return[...this.player.body.slots,...this.player.body.internalSlots];}
+  modifierDefinition(id){return BODY_MODIFIERS.find(modifier=>modifier.id===id)??null;}
+  modifierEffect(item,slot){const definition=this.modifierDefinition(item.modifierId??item.id);return definition?.effects[slot?.part]??null;}
+  recomputeBodyStats(){
+    const p=this.player;let maxLives=3+p.healthUpgrades,maxElectricity=ELECTRICITY_MAX+p.energyUpgrades*25,moveSpeed=PLAYER_MOVE_SPEED;
+    for(const item of p.purchasedItems.filter(entry=>entry.kind==='modifier'&&entry.equippedSlot)){const slot=this.bodySlots().find(candidate=>candidate.id===item.equippedSlot),effect=this.modifierEffect(item,slot);if(!effect)continue;maxLives+=effect.maxLives??0;maxElectricity+=effect.maxElectricity??0;moveSpeed+=effect.moveSpeed??0;}
+    p.maxLives=maxLives;p.maxElectricity=maxElectricity;p.moveSpeed=moveSpeed;p.lives=Math.min(p.lives,p.maxLives);p.electricity=Math.min(p.electricity,p.maxElectricity);return{maxLives,maxElectricity,moveSpeed};
+  }
+  modifierPlacementDetail(item){if(!item.equippedSlot)return'UNEQUIPPED // O INSTALL';const slot=this.bodySlots().find(candidate=>candidate.id===item.equippedSlot),effect=this.modifierEffect(item,slot);return`${slot?.label??'UNKNOWN SLOT'} // ${effect?.label??'NO EFFECT'}`;}
+  inventoryItemRows(){const items=this.player.purchasedItems;return items.length?items.map(item=>[item.name,item.kind==='modifier'?this.modifierPlacementDetail(item):item.detail??'PERMANENT UPGRADE']):[['NO PURCHASES','MERCHANT ITEMS WILL APPEAR HERE']];}
   inventoryEntryCount(){const page=this.inventoryPages[this.inventoryPage];if(page==='status')return 4;if(page==='materials')return 2;if(page==='items')return Math.max(1,this.player.purchasedItems.length);return 1;}
+  cycleSelectedModifier(){
+    const item=this.player.purchasedItems[this.inventorySelection];if(item?.kind!=='modifier')return false;const slots=this.bodySlots(),current=slots.findIndex(slot=>slot.id===item.equippedSlot),next=current<0?0:current+1<slots.length?current+1:-1;
+    if(next<0)item.equippedSlot=null;else{const target=slots[next],occupant=this.player.purchasedItems.find(entry=>entry.kind==='modifier'&&entry.equippedSlot===target.id&&entry!==item);if(occupant)occupant.equippedSlot=null;item.equippedSlot=target.id;}
+    this.recomputeBodyStats();this.rewardToast={text:next<0?'MODIFIER REMOVED':'MODIFIER INSTALLED',detail:next<0?item.name:this.modifierPlacementDetail(item),time:2.4};return true;
+  }
   selectCurrentMapRegion(){const index=this.regions.findIndex(region=>region.id===this.regionId);this.mapRegionIndex=index<0?0:index;}
   moveMapSelection(dx,dy){const columns=3,index=this.mapRegionIndex,row=Math.floor(index/columns),column=index%columns,nextRow=clamp(row+dy,0,Math.ceil(this.regions.length/columns)-1),nextColumn=clamp(column+dx,0,columns-1),next=nextRow*columns+nextColumn;if(next<this.regions.length)this.mapRegionIndex=next;}
   setInput(input){Object.assign(this.input,input);}
@@ -47,7 +63,23 @@ export class Game {
   update(dt=1/60){
     if(!this.running)return; dt=Math.min(dt,.034); const p=this.player;
     const toggledInventory=this.pressed('inventory');if(toggledInventory){this.inventoryOpen=!this.inventoryOpen;p.vx=0;p.vy=0;if(this.inventoryOpen){this.mapOverview=false;this.selectCurrentMapRegion();}}
-    if(this.inventoryOpen){if(!toggledInventory){const page=this.inventoryPages[this.inventoryPage];if(page==='map'){if(this.pressed('field'))this.mapOverview=!this.mapOverview;else if(this.mapOverview){if(this.pressed('left'))this.moveMapSelection(-1,0);if(this.pressed('right'))this.moveMapSelection(1,0);if(this.pressed('jump'))this.moveMapSelection(0,-1);if(this.pressed('down'))this.moveMapSelection(0,1);}else if(this.pressed('right')){this.inventoryPage=1;this.inventorySelection=0;}}else{if(this.pressed('left')){this.inventoryPage=Math.max(0,this.inventoryPage-1);this.inventorySelection=0;if(this.inventoryPages[this.inventoryPage]==='map'){this.mapOverview=false;this.selectCurrentMapRegion();}}if(this.pressed('right')){this.inventoryPage=Math.min(this.inventoryPages.length-1,this.inventoryPage+1);this.inventorySelection=0;}if(this.pressed('jump'))this.inventorySelection=Math.max(0,this.inventorySelection-1);if(this.pressed('down'))this.inventorySelection=Math.min(this.inventoryEntryCount()-1,this.inventorySelection+1);}}this.prev={...this.input};return;}
+    if(this.inventoryOpen){
+      if(!toggledInventory){
+        const page=this.inventoryPages[this.inventoryPage];
+        if(page==='map'){
+          if(this.pressed('field'))this.mapOverview=!this.mapOverview;
+          else if(this.mapOverview){if(this.pressed('left'))this.moveMapSelection(-1,0);if(this.pressed('right'))this.moveMapSelection(1,0);if(this.pressed('jump'))this.moveMapSelection(0,-1);if(this.pressed('down'))this.moveMapSelection(0,1);}
+          else if(this.pressed('right')){this.inventoryPage=1;this.inventorySelection=0;}
+        }else{
+          if(page==='items'&&this.pressed('rest'))this.cycleSelectedModifier();
+          if(this.pressed('left')){this.inventoryPage=Math.max(0,this.inventoryPage-1);this.inventorySelection=0;if(this.inventoryPages[this.inventoryPage]==='map'){this.mapOverview=false;this.selectCurrentMapRegion();}}
+          if(this.pressed('right')){this.inventoryPage=Math.min(this.inventoryPages.length-1,this.inventoryPage+1);this.inventorySelection=0;}
+          if(this.pressed('jump'))this.inventorySelection=Math.max(0,this.inventorySelection-1);
+          if(this.pressed('down'))this.inventorySelection=Math.min(this.inventoryEntryCount()-1,this.inventorySelection+1);
+        }
+      }
+      this.prev={...this.input};return;
+    }
     this.time+=dt;
     this.syncDepthAccess();
     p.invuln=Math.max(0,p.invuln-dt);p.dashCooldown=Math.max(0,p.dashCooldown-dt);p.wallJumpTime=Math.max(0,p.wallJumpTime-dt);p.attackCooldown=Math.max(0,p.attackCooldown-dt);p.attackTime=Math.max(0,p.attackTime-dt);p.specialTime=Math.max(0,p.specialTime-dt);p.healFlash=Math.max(0,p.healFlash-dt);p.restFlash=Math.max(0,p.restFlash-dt);this.regionToastTime=Math.max(0,this.regionToastTime-dt);if(this.abilityPopup)this.abilityPopup.time=Math.max(0,this.abilityPopup.time-dt);if(this.rewardToast)this.rewardToast.time=Math.max(0,this.rewardToast.time-dt);for(const c of this.conduits)c.hitFlash=Math.max(0,c.hitFlash-dt);if(this.recoveryCorpse)this.recoveryCorpse.hitFlash=Math.max(0,this.recoveryCorpse.hitFlash-dt);
@@ -66,7 +98,7 @@ export class Game {
     if(this.pressed('electricJab'))this.startSpecial('electricJab');
     if(this.pressed('rest'))this.tryInteract();
     const climbing=climbingWall&&this.input.jump&&!wallJump&&p.wallJumpTime<=0;
-    if(p.dashTime>0)p.dashTime-=dt; else if(climbing){p.vx=wall*18;p.vy=-WALL_CLIMB_SPEED;}else {if(p.wallJumpTime<=0){const target=axis*250;p.vx+=(target-p.vx)*Math.min(1,(p.onGround?13:6)*dt);}p.vy+=1100*dt;}
+    if(p.dashTime>0)p.dashTime-=dt; else if(climbing){p.vx=wall*18;p.vy=-WALL_CLIMB_SPEED;}else {if(p.wallJumpTime<=0){const target=axis*p.moveSpeed;p.vx+=(target-p.vx)*Math.min(1,(p.onGround?13:6)*dt);}p.vy+=1100*dt;}
     this.moveActor(p,dt,true);
     this.rememberSafePlatform();
     const hitSpike=this.traps.some(trap=>overlaps(p,trap));
@@ -226,24 +258,43 @@ export class Game {
     const p=this.player,cost=ABILITY_COSTS[type];if(p.healTime>0||!p.abilities[type]||p.specialTime>0||p.electricity<cost)return false;
     p.electricity-=cost;p.specialAimX=p.aimX;p.specialAimY=p.aimY;p.specialType=type;p.specialTime=ATTACK_TIMING[type];p.specialHits=new Set();return true;
   }
-  startHeal(){const p=this.player;if(p.healTime>0||p.invuln>0||!p.abilities.heal||p.lives>=3||p.electricity<ABILITY_COSTS.heal)return false;p.electricity-=ABILITY_COSTS.heal;p.healTime=HEAL_DURATION;return true;}
+  startHeal(){const p=this.player;if(p.healTime>0||p.invuln>0||!p.abilities.heal||p.lives>=p.maxLives||p.electricity<ABILITY_COSTS.heal)return false;p.electricity-=ABILITY_COSTS.heal;p.healTime=HEAL_DURATION;return true;}
   cancelHeal(){if(this.player.healTime<=0)return false;this.player.healTime=0;return true;}
-  completeHeal(){const p=this.player;if(p.lives>=3)return false;p.lives++;p.healFlash=.6;this.burst(p.x+p.w/2,p.y+p.h/2,'#75f5ff',24);return true;}
+  completeHeal(){const p=this.player;if(p.lives>=p.maxLives)return false;p.lives++;p.healFlash=.6;this.burst(p.x+p.w/2,p.y+p.h/2,'#75f5ff',24);return true;}
   canRest(){const p=this.player,station=this.restArea.station,dx=(p.x+p.w/2)-(station.x+station.w/2),dy=(p.y+p.h/2)-(station.y+station.h/2);return this.bossArena.cleared&&Math.hypot(dx,dy)<=station.interactionRadius;}
-  tryRest(){if(!this.canRest())return false;const p=this.player,station=this.restArea.station;p.lives=3;p.invuln=0;p.vx=0;p.vy=0;p.restFlash=1;const checkpointX=clamp(station.x+station.w+24,this.restArea.x+16,this.restArea.x+this.restArea.w-p.w-16);this.safePosition={x:checkpointX,y:this.restArea.floorY-p.h};this.respawnPoint={...this.safePosition};this.respawnOrdinaryEnemies();this.burst(station.x+station.w/2,station.y+station.h/2,'#d6ff3f',30);return true;}
+  tryRest(){if(!this.canRest())return false;const p=this.player,station=this.restArea.station;p.lives=p.maxLives;p.invuln=0;p.vx=0;p.vy=0;p.restFlash=1;const checkpointX=clamp(station.x+station.w+24,this.restArea.x+16,this.restArea.x+this.restArea.w-p.w-16);this.safePosition={x:checkpointX,y:this.restArea.floorY-p.h};this.respawnPoint={...this.safePosition};this.respawnOrdinaryEnemies();this.burst(station.x+station.w/2,station.y+station.h/2,'#d6ff3f',30);return true;}
   tryInteract(){
     const merchant=this.nearbyMerchant();
-    if(merchant?.service==='damageUpgrade')return this.buyDamageUpgrade(merchant);
+    if(merchant?.service)return this.buyMerchantService(merchant);
     if(this.nearMerchantExit()){const p=this.player,returnPosition=this.merchantRoom.returnPosition;p.x=returnPosition.x;p.y=returnPosition.y;p.vx=0;p.vy=0;this.safePosition={...returnPosition};this.merchantRoom.activeMerchant=null;this.merchantRoom.returnPosition=null;return true;}
     const door=this.nearbyMerchantDoor();
     if(door&&this.merchantDoorUnlocked(door)){const p=this.player;this.merchantRoom.returnPosition={x:p.x,y:p.y};this.merchantRoom.activeMerchant=door;p.x=this.merchantRoom.spawn.x;p.y=this.merchantRoom.spawn.y;p.vx=0;p.vy=0;this.safePosition={...this.merchantRoom.spawn};return true;}
     return this.tryRest();
   }
+  buyMerchantService(merchant){if(merchant.service==='damageUpgrade')return this.buyDamageUpgrade(merchant);if(merchant.service==='healthUpgrade')return this.buyHealthUpgrade(merchant);if(merchant.service==='energyUpgrade')return this.buyEnergyUpgrade(merchant);if(merchant.service==='modifierShop')return this.buyModifier(merchant);if(merchant.service==='internalSlot')return this.buyInternalSlot(merchant);return false;}
+  nextHealthUpgradeCost(merchant){return merchant.upgradeCosts[this.player.healthUpgrades]??null;}
+  nextEnergyUpgradeCost(merchant){return merchant.upgradeCosts[this.player.energyUpgrades]??null;}
+  nextInternalSlotCost(merchant){return merchant.upgradeCosts[this.player.internalSlotUpgrades]??null;}
+  nextModifierOffer(merchant){return(merchant.stock??[]).map(id=>this.modifierDefinition(id)).find(definition=>definition&&!this.player.purchasedItems.some(item=>item.modifierId===definition.id))??null;}
+  buyHealthUpgrade(merchant){const p=this.player,cost=this.nextHealthUpgradeCost(merchant);if(cost===null||p.scrap<cost)return false;p.scrap-=cost;p.healthUpgrades++;const previous=p.maxLives;this.recomputeBodyStats();p.lives+=p.maxLives-previous;p.purchasedItems.push({id:`shell-capacity-${p.healthUpgrades}`,kind:'upgrade',name:`SHELL CAPACITY MK ${p.healthUpgrades}`,detail:'+1 MAX SHELL'});this.rewardToast={text:'MAX SHELLS +1',detail:`${merchant.name} REINFORCED THE BODY`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#d6ff3f',30);return true;}
+  buyEnergyUpgrade(merchant){const p=this.player,cost=this.nextEnergyUpgradeCost(merchant);if(cost===null||p.scrap<cost)return false;p.scrap-=cost;p.energyUpgrades++;const previous=p.maxElectricity;this.recomputeBodyStats();p.electricity+=p.maxElectricity-previous;p.purchasedItems.push({id:`capacitor-bank-${p.energyUpgrades}`,kind:'upgrade',name:`CAPACITOR BANK MK ${p.energyUpgrades}`,detail:'+25 MAX ELECTRICITY'});this.rewardToast={text:'CAPACITY +25',detail:`${merchant.name} EXPANDED THE CORE`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#75f5ff',30);return true;}
+  buyModifier(merchant){const p=this.player,offer=this.nextModifierOffer(merchant);if(!offer||p.scrap<offer.cost)return false;p.scrap-=offer.cost;p.purchasedItems.push({id:`modifier-${offer.id}`,modifierId:offer.id,kind:'modifier',name:offer.name,detail:'UNEQUIPPED',equippedSlot:null});this.rewardToast={text:'MODIFIER ACQUIRED',detail:`${offer.name} // EQUIP IN ITEMS`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,merchant.color,34);return true;}
+  buyInternalSlot(merchant){const p=this.player,cost=this.nextInternalSlotCost(merchant);if(cost===null||p.scrap<cost)return false;p.scrap-=cost;p.internalSlotUpgrades++;const slotNumber=p.internalSlotUpgrades;p.body.internalSlots.push({id:`internal-${slotNumber}`,part:'internal',label:`INTERNAL BAY ${slotNumber}`,efficiency:.3});p.purchasedItems.push({id:`internal-bay-${slotNumber}`,kind:'upgrade',name:`INTERNAL BAY ${slotNumber}`,detail:'REDUCED-EFFECT MODIFIER SLOT'});this.rewardToast={text:'INTERNAL BAY OPENED',detail:'REDUCED-POWER MODIFIER SLOT ADDED',time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffb85c',34);return true;}
+  merchantOffer(merchant){
+    const p=this.player;let cost=null,name='',detail='';
+    if(merchant.service==='damageUpgrade'){cost=this.nextDamageUpgradeCost(merchant);name=cost===null?'EDGE COIL ARRAY COMPLETE':`EDGE COIL MK ${p.damageUpgrades+1}`;detail=cost===null?'MAXIMUM PRIMARY OUTPUT':`+1 PRIMARY DAMAGE // ${p.primaryDamage} CURRENT`;}
+    else if(merchant.service==='healthUpgrade'){cost=this.nextHealthUpgradeCost(merchant);name=cost===null?'SHELL REINFORCEMENT COMPLETE':`SHELL CAPACITY MK ${p.healthUpgrades+1}`;detail=cost===null?`${p.maxLives} MAX SHELLS`:`+1 MAX SHELL // ${p.maxLives} CURRENT`;}
+    else if(merchant.service==='energyUpgrade'){cost=this.nextEnergyUpgradeCost(merchant);name=cost===null?'CAPACITOR ARRAY COMPLETE':`CAPACITOR BANK MK ${p.energyUpgrades+1}`;detail=cost===null?`${p.maxElectricity} MAX ELECTRICITY`:`+25 MAX ELECTRICITY // ${p.maxElectricity} CURRENT`;}
+    else if(merchant.service==='internalSlot'){cost=this.nextInternalSlotCost(merchant);name=cost===null?'INTERNAL FRAME COMPLETE':`INTERNAL BAY ${p.internalSlotUpgrades+1}`;detail=cost===null?`${p.internalSlotUpgrades} REDUCED-EFFECT BAYS`:'EXTRA BODY SLOT // EFFECT GREATLY REDUCED';}
+    else if(merchant.service==='modifierShop'){const offer=this.nextModifierOffer(merchant);cost=offer?.cost??null;name=offer?.name??'MODIFIER STOCK DEPLETED';detail=offer?'SHELL: HP // CORE: CAPACITY // LEGS: SPEED':'ALL MODIFIERS ACQUIRED';}
+    else return null;
+    return{name,detail,cost,complete:cost===null,affordable:cost!==null&&p.scrap>=cost};
+  }
   nextDamageUpgradeCost(merchant){return(merchant.upgradeCosts??FORGE_UPGRADE_COSTS)[this.player.damageUpgrades]??null;}
-  buyDamageUpgrade(merchant){const p=this.player,cost=this.nextDamageUpgradeCost(merchant);if(cost===null||p.scrap<cost)return false;p.scrap-=cost;p.damageUpgrades++;p.primaryDamage++;p.purchasedItems.push({id:`edge-coil-${p.damageUpgrades}`,name:`EDGE COIL MK ${p.damageUpgrades}`,detail:'+1 PRIMARY SLASH DAMAGE'});this.rewardToast={text:'SLASH DAMAGE +1',detail:`${merchant.name} INSTALLED EDGE COIL MK ${p.damageUpgrades}`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffffff',34);return true;}
+  buyDamageUpgrade(merchant){const p=this.player,cost=this.nextDamageUpgradeCost(merchant);if(cost===null||p.scrap<cost)return false;p.scrap-=cost;p.damageUpgrades++;p.primaryDamage++;p.purchasedItems.push({id:`edge-coil-${p.damageUpgrades}`,kind:'upgrade',name:`EDGE COIL MK ${p.damageUpgrades}`,detail:'+1 PRIMARY SLASH DAMAGE'});this.rewardToast={text:'SLASH DAMAGE +1',detail:`${merchant.name} INSTALLED EDGE COIL MK ${p.damageUpgrades}`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffffff',34);return true;}
   unlockAbility(name){if(name in this.player.abilities){this.player.abilities[name]=true;if(name==='doubleJump'&&this.player.onGround)this.player.jumps=2;return true;}return false;}
   gainMaterial(type,amount){if(!(type in this.player.materials))return false;this.player.materials[type]+=amount;return true;}
-  gainElectricity(amount=ELECTRICITY_PER_HIT){this.player.electricity=clamp(this.player.electricity+amount,0,ELECTRICITY_MAX);}
+  gainElectricity(amount=ELECTRICITY_PER_HIT){this.player.electricity=clamp(this.player.electricity+amount,0,this.player.maxElectricity);}
   hitTarget(target,damage,hitSet,electricity=ELECTRICITY_PER_HIT){
     if(hitSet.has(target))return;hitSet.add(target);
     if(target.kind==='corpse'){
@@ -359,7 +410,7 @@ export class Game {
   destroyPlayer(cause){
     const p=this.player,recovery=cause==='enemy'?{x:p.x,y:p.y+p.h-22}:{x:this.safePosition.x,y:this.safePosition.y+p.h-22};
     this.recoveryCorpse={kind:'corpse',x:clamp(recovery.x,0,WORLD_WIDTH-50),y:recovery.y,w:50,h:22,health:3,maxHealth:3,scrapValue:p.scrap,dead:false,hitFlash:0};
-    p.scrap=0;p.electricity=0;p.lives=3;p.x=this.respawnPoint.x;p.y=this.respawnPoint.y;p.vx=0;p.vy=0;p.invuln=1;p.dashTime=0;p.wallJumpTime=0;p.attackTime=0;p.specialTime=0;p.specialType=null;p.healTime=0;p.onWall=0;p.onGround=false;p.jumps=p.abilities.doubleJump?1:0;this.safePosition={...this.respawnPoint};this.resetUnclearedEncounters();this.respawnOrdinaryEnemies();this.rewardToast={text:'SHELL REBUILT',detail:'RECOVER YOUR WRECKAGE TO RECLAIM SCRAP',time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffffff',30);
+    p.scrap=0;p.electricity=0;p.lives=p.maxLives;p.x=this.respawnPoint.x;p.y=this.respawnPoint.y;p.vx=0;p.vy=0;p.invuln=1;p.dashTime=0;p.wallJumpTime=0;p.attackTime=0;p.specialTime=0;p.specialType=null;p.healTime=0;p.onWall=0;p.onGround=false;p.jumps=p.abilities.doubleJump?1:0;this.safePosition={...this.respawnPoint};this.resetUnclearedEncounters();this.respawnOrdinaryEnemies();this.rewardToast={text:'SHELL REBUILT',detail:'RECOVER YOUR WRECKAGE TO RECLAIM SCRAP',time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffffff',30);
   }
   damagePlayer(cause='enemy',sourceX=0){const p=this.player;if(p.invuln>0)return;this.cancelHeal();p.lives--;this.shake=12;this.burst(p.x+20,p.y+20,'#ff493f',22);if(p.lives<=0){this.destroyPlayer(cause);return;}if(cause==='spike'||cause==='fall'){const reset=cause==='spike'?this.safePosition:this.spawn;p.x=reset.x;p.y=reset.y;p.vx=0;p.vy=0;p.invuln=.6;}else{p.invuln=1.2;p.vx=(p.x<sourceX?-1:1)*360;p.vy=-300;}}
   burst(x,y,color,count){for(let i=0;i<count;i++)this.particles.push({x,y,vx:(Math.random()-.5)*260,vy:(Math.random()-.5)*260,life:.25+Math.random()*.35,color});}

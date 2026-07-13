@@ -21,22 +21,22 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Once unlocked, `Q` creates the circular field, `F` uses electric jab, and `Shift` dashes.
 - There is no restart key, persistent restart control, or game-over reboot. Losing the final shell rebuilds the bot at its last activated save point, or at the initial spawn if no station has been activated.
 - A destroyed bot loses all carried scrap and electricity. Its old shell remains at the death location as a three-health wreck containing the lost scrap; destroying the wreck restores that scrap but no electricity. A newer death replaces any unrecovered wreck.
-- After the boss is cleared, `O` interacts with the recovery station. Resting restores all three shells and moves both the spike-reset checkpoint and full-death respawn point beside the station.
+- After the boss is cleared, `O` interacts with the recovery station. Resting restores the bot to its current maximum shells and moves both the spike-reset checkpoint and full-death respawn point beside the station.
 - `I` opens and closes the combined inventory/map overlay and pauses simulation while open. Outside the map overview, `A`/`D` move between MAP, STATUS, MATERIALS, and ITEMS and `W`/`S` move through entries. MAP sits immediately left of STATUS.
 - Local maps must use one uniform world-to-map scale for X and Y. Center the resulting true-scale region diagram inside the panel; never stretch its horizontal and vertical axes independently to fill the available rectangle.
 - MAP opens on the player's current region. An unrevealed region displays `NO MAP`; the three survey cores reveal configured groups. `Q` zooms out to the nine-region overview, `W`/`A`/`S`/`D` select another region without changing pages, and `Q` zooms into that selected local map.
-- STATUS shows shells, electricity, primary damage, and scrap. MATERIALS shows only titanium and uranium. ITEMS lists merchant purchases.
+- STATUS shows current/maximum shells, current/maximum electricity, primary damage, and scrap. MATERIALS shows only titanium and uranium. ITEMS lists merchant purchases and body modifiers; pressing `O` on a modifier cycles it through the current body's compatible mounts and then back to storage.
 - The player starts with three lives and loses one to enemy contact, spikes, or falling.
 - Touching a spike immediately removes one life and returns the bot to its last safe position on the most recently supported platform. It must not continue falling through the spike pit or return all the way to the initial spawn.
 
 ## Resources and combat economy
 
-- A standard enemy hit generates 12 electricity, capped at 100.
+- A standard enemy hit generates 12 electricity, capped at the player's current capacity. The standard body starts at 100 capacity; capacitor upgrades and equipped modifiers may raise it.
 - Only three conduits exist. Each holds 24 total electricity, yields 4 per primary hit, visibly drains, and generates nothing once empty.
 - The Sunken Vault tutorial conduit must remain between the Volt Jab pickup and its powered seal. Electric jab costs 24 electricity so one fresh conduit always funds the required tutorial shot.
 - Special-attack hits return 4 electricity per target.
 - The starting primary slash deals 3 damage. Crawlers and rollers have 6 health, hoppers and drones have 9, and brutes have 12, so ordinary enemies take two or three hits while the large brute takes four. Each forge tier still adds exactly 1 damage so upgrades remain incremental.
-- Killing enemies awards scrap based on archetype. The Grand Exchange `EDGE FORGE` offers four run-persistent `+1` primary-slash damage upgrades costing 500, 900, 1500, and 2400 scrap. Do not add other scrap spending behavior without a new design decision.
+- Killing enemies awards scrap based on archetype. The Grand Exchange `EDGE FORGE` offers four run-persistent `+1` primary-slash damage upgrades costing 500, 900, 1500, and 2400 scrap. Other authorized scrap sinks are the three-tier shell reinforcement, capacitor, and internal-bay services plus the two configured body modifiers; do not invent additional sinks without a new design decision.
 - Titanium and uranium are persistent special materials reserved for future merchant recipes. They must remain genuinely rare: exactly two ordinary salvage piles award them—one titanium and one uranium—and both sit on ability-gated upper routes. The Cache Scrapper separately awards three titanium. Do not add more material piles or invent material prices or merchant recipes without a new design decision.
 - Ordinary junk piles are solid destructible obstacles. Destroying one awards its configured scrap or special material but no electricity.
 
@@ -50,9 +50,9 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Drones use axis-separated collision against all solid platform blocks. Flying movement never permits them to pass through floors, ceilings, or walls.
 - Ground enemies must probe for supporting floor before moving. They stop at platform and spike-gap edges.
 - Hoppers commit to a high leap toward the player, then remain grounded for 0.7 seconds after landing so the player has a reliable attack window.
-- The Abyss Warden is a twelve-health full boss protecting Volt Jab. Its full-height right exit seal exists before activation, so the reward can never be reached backward from the escape route. Dropping into the chamber activates a second entry seal. It cycles through a telegraphed charge, a leaping shockwave, and a five-bolt volley.
+- The Abyss Warden is a twenty-four-health full boss protecting Volt Jab. Its full-height right exit seal exists before activation, so the reward can never be reached backward from the escape route. Dropping into the chamber activates a second entry seal. It cycles through a telegraphed charge, a leaping shockwave, and a five-bolt volley.
 - The Cache Scrapper is an optional twelve-health mini boss in Quiet Drift. It awards three titanium, remains outside the required foundation route, and never grants an ability.
-- The Rift Stalker is a twenty-four-health full boss at the bottom of the extended Sunken Vault. It protects Dash and cycles through a cross-room dash, a teleporting overhead drop, and one fast, briefly tracking projectile that explodes against solid geometry.
+- The Rift Stalker is a forty-eight-health full boss at the bottom of the extended Sunken Vault. It protects Dash and cycles through a cross-room dash, a teleporting overhead drop, and one fast, briefly tracking projectile that explodes against solid geometry.
 - Activating a save station or losing the final shell reconstructs every ordinary enemy from `ENEMY_SPAWNS`. Defeated full bosses and mini bosses remain defeated for the run.
 - Enemy types should continue to vary in size, silhouette, health, speed, and movement style.
 
@@ -97,8 +97,8 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - Grand Exchange is the expansive region from X 12700–14500. Preserve broad floor space, multiple height layers, the far-corner Edge Forge door, and an enemy-free interaction pocket around that door.
 - `MERCHANT_SPAWNS` defines overworld doors, not exposed NPCs. Three cluster in the Relay Concourse and scattered doors appear elsewhere, including the Grand Exchange damage forge.
 - Merchant door rectangles must never overlap any solid platform or wall; the full doorway and its standing pocket must remain exposed.
-- Each door is either already in an enemy-free pocket or stays sealed until every ordinary enemy within its `clearRadius` is dead. Pressing `O` beneath an unlocked door teleports into the isolated `MERCHANT_ROOM`; its exit returns to the saved overworld position. Ordinary merchants may preview the titanium and uranium inventory but have no material recipes until those purchases are designed.
-- A merchant with `service: 'damageUpgrade'` is interactive inside the room. It uses its `upgradeCosts` table, increments `player.primaryDamage` once per purchased tier, and records each edge coil in the ITEMS inventory page.
+- Each door is either already in an enemy-free pocket or stays sealed until every ordinary enemy within its `clearRadius` is dead. Pressing `O` beneath an unlocked door teleports into the isolated `MERCHANT_ROOM`; its exit returns to the saved overworld position. Merchants may preview the titanium and uranium inventory, but material recipes remain undesigned.
+- Merchant services are data-driven: `damageUpgrade` adds `+1` slash damage through four forge tiers; `healthUpgrade` adds one maximum shell through three tiers; `energyUpgrade` adds 25 maximum electricity through three tiers; `modifierShop` sells its configured reusable modifier stock; and `internalSlot` adds reduced-effect internal body bays through three tiers. All purchases persist for the run and appear in ITEMS.
 - `PICKUP_SPAWNS` is the shared data format for ability and map pickups and remains extensible to combat and shell pickups. It owns pickup color, name, input hint, tutorial copy, progression requirements, and map-region reveal data rather than placing those decisions in renderer conditionals.
 - Ordinary junk must leave at least one bot-width bypass on its supporting platform. Only the explicitly ability-gated junk wall may seal an optional pocket.
 - True vertical walls use `kind: 'wall'` and the dedicated red-braced wall rendering. Do not render walls with the green top-edge treatment used by floors.
@@ -109,12 +109,12 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - `BOSS_ARENA` is the open chamber on the `boss-floor` foundation mass. Keep its full 1,300-unit width clear of ordinary interior blocks, enemies, conduits, and junk.
 - Crossing `triggerX` activates the encounter. Both animated gates descend from the ceiling, become solid player colliders, and remain closed while the boss lives.
 - The arena trigger requires the player to be vertically inside the chamber. The two full-height `boss-roof-*` bulkheads seal both ends of the arena ceiling so the player cannot bypass the fight or become trapped above a closed gate. Both bulkheads are removed from live collision and burst apart when the Heavy Core dies.
-- The boss has 18 health and cycles deterministically through three moves: telegraphed horizontal charge, aerial slam with a ground shockwave, and a three-projectile volley.
+- The boss has 36 health and cycles deterministically through three moves: telegraphed horizontal charge, aerial slam with a ground shockwave, and a three-projectile volley.
 - Killing the boss awards 150 scrap, deletes its active hazards, marks the arena cleared, and retracts both gates. The boss never respawns during that run.
 
 ## Abyss Warden arena
 
-- `VAULT_BOSS_ARENA` is a full boss encounter, not an entry in `MINI_BOSS_ARENAS`. The Abyss Warden has 12 health and awards 110 scrap.
+- `VAULT_BOSS_ARENA` is a full boss encounter, not an entry in `MINI_BOSS_ARENAS`. The Abyss Warden has 24 health and awards 110 scrap.
 - Its right exit seal exists whenever the arena is uncleared, including before activation. It spans Y 700–1120, reaches the floor, and must block approach from every escape platform. Never shorten it to a jumpable gate.
 - Dropping into the trigger volume activates the Warden and closes the animated left entry seal. The dormant Warden is not targetable from the approach.
 - The Warden deterministically cycles through horizontal charge, leaping shockwave, and five-projectile volley attacks. It uses the full-size cyan boss health bar.
@@ -125,7 +125,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 
 - `DEPTH_BOSS_ARENA` is the third full boss encounter. Its right exit gate exists whenever the arena is uncleared, and the dormant boss cannot be targeted before the player drops into the trigger volume.
 - The route can open only when both `player.abilities.wallClimb` and `vaultBossArena.cleared` are true. Opening it replaces the intact Warden floor with two safe floor pieces, a climbing ledge, and an 80-unit hatch.
-- The Rift Stalker has 24 health, awards 180 scrap, and cycles deterministically through a 520-unit-per-second cross-room dash, a telegraphed relocation above the player followed by a ground slam, and a fast briefly tracking bolt. The bolt explodes on platforms and arena gates.
+- The Rift Stalker has 48 health, awards 180 scrap, and cycles deterministically through a 520-unit-per-second cross-room dash, a telegraphed relocation above the player followed by a ground slam, and a fast briefly tracking bolt. The bolt explodes on platforms and arena gates.
 - Killing the Rift Stalker permanently opens its gate, releases `dash-core`, and adds `DEPTH_RETURN_BLOCKS`. The two alternating 270-unit return gaps require Dash; the remaining jumps lead back through the open Warden-floor hatch.
 
 ## Mini-boss arenas
@@ -141,14 +141,18 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 
 - `REST_AREA` occupies the foundation immediately after the boss arena. Keep its floor clear of ordinary enemies, conduits, junk, and interior obstacles.
 - The recovery station remains offline until `bossArena.cleared` is true.
-- Pressing `O` within the configured interaction radius restores the player to three lives, clears knockback/invulnerability motion, plays the recovery effect, and records the station-side spike and full-death checkpoints.
+- Pressing `O` within the configured interaction radius restores the player to its current maximum lives, clears knockback/invulnerability motion, plays the recovery effect, and records the station-side spike and full-death checkpoints.
 - Resting reconstructs all ordinary enemies while preserving defeated boss and mini-boss state.
 - Resting does not refill electricity or unlock abilities.
 - The post-boss wall-climb pickup may occupy the entrance side of this region. Merchant doors remain beyond the configured `REST_AREA` boundary so the immediate recovery pocket stays calm.
 
 ## Planned shell bodies
 
-- Shell swapping is a later system and is not implemented yet. Preserve room in player state and pickup design for visually distinct bodies.
+- Shell swapping is a later system and is not implemented yet. The implemented body-mod system must remain extensible to bodies with different mount arrays while leaving room for visually distinct shells.
+- The standard body owns three full-strength mounts: `shell`, `core`, and `legs`. A modifier can occupy only one mount at a time. In ITEMS, `O` cycles the selected modifier through compatible mounts and storage; moving one modifier onto an occupied mount displaces the previous modifier.
+- Modifier effects depend on placement. The configured Adaptive Lattice and Dense Matrix grant maximum shells on the shell mount, electricity capacity on the core mount, and movement speed on the leg mount.
+- `internalSlot` merchant purchases add `internal` bays to the current body. Internal placement uses the modifier's explicitly configured reduced profile, may combine small shell/capacity/speed effects, and must remain materially weaker than any full-strength external mount.
+- Maximum-shell, electricity-capacity, movement-speed, and modifier bonuses must be recomputed from the base body, permanent merchant tiers, and current placements. Repositioning a modifier may clamp current shells or electricity but never creates a free refill.
 - The current design candidates are a tall/light shell with a jump bonus, a large/heavy shell with extra maximum health and slower movement, and a reach shell with an extended primary slash.
 - Each shell must change the rendered silhouette as well as gameplay statistics. Do not ship stat-only recolors.
 - Shell bonuses, drawbacks, acquisition, and swapping rules require a separate design pass before implementation.
@@ -183,7 +187,7 @@ Use `http://127.0.0.1:4175/?debug=vault-upper` for the Wall-Climb loft, `http://
 
 Use `http://127.0.0.1:4175/?debug=merchant` to verify an unlocked merchant door and its separate interior.
 
-Use `http://127.0.0.1:4175/?debug=merchant-room` to inspect the merchant interior directly.
+Use `http://127.0.0.1:4175/?debug=merchant-room` to inspect the modifier merchant interior directly. Add `&panel=health`, `&panel=energy`, or `&panel=internal` to inspect the other upgrade services.
 
 Use `http://127.0.0.1:4175/?debug=wall` to verify continuous wall climbing and jumps away from either wall side.
 
@@ -193,6 +197,6 @@ Use `http://127.0.0.1:4175/?debug=forge-room` for the Edge Forge purchase prompt
 
 Use `http://127.0.0.1:4175/?debug=recovery` to inspect a rebuilt bot and its nearby scrap-bearing wreckage.
 
-Use `http://127.0.0.1:4175/?debug=inventory` to inspect STATUS; add `&panel=materials`, `&panel=map`, `&panel=overview`, or `&panel=nomap` for the other inventory and map states.
+Use `http://127.0.0.1:4175/?debug=inventory` to inspect STATUS; add `&panel=items`, `&panel=materials`, `&panel=map`, `&panel=overview`, or `&panel=nomap` for the other inventory and map states.
 
 Use `http://127.0.0.1:4175/?debug=verge-merchant` to inspect the cleared Verge Tinker doorway and its collision-free standing pocket.
