@@ -80,7 +80,7 @@ Current archetypes are crawler, roller, hopper, drone, and brute. Their silhouet
 
 After traversing roughly two-thirds of the current route, the player enters a 1,300-unit-wide open arena. Crossing its inner trigger while physically inside the chamber drops a solid gate behind the player and another at the far exit. The gates finish closing in about 0.3 seconds and cannot be crossed while the boss remains alive. Full-height structural bulkheads seal both approaches to the arena roof, preventing roof bypasses and ensuring a gate can never lock the player outside the fight.
 
-The Heavy Core boss has 18 health and three deterministic attacks:
+The Heavy Core boss has 18 health and three deterministic attacks. Its 96-by-78-unit collision body remains imposing but can be cleared cleanly with the starting jump, preventing its charge from creating an unavoidable wall pin.
 
 - A telegraphed horizontal charge locks its direction before rushing at 260 units per second.
 - An aerial slam launches upward, then creates an expanding 300-unit ground shockwave when it lands.

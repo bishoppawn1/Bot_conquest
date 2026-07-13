@@ -25,6 +25,14 @@ test('the boss cycles through charge, slam shockwave, and projectile volley',()=
   assert.ok(moves.has('bossCharge'));assert.ok(moves.has('slamAir'));assert.equal(sawShockwave,true);assert.ok(maxProjectiles>=3);
 });
 
+test('the starting jump clears the Heavy Core without taking contact damage',()=>{
+  const game=new Game(),boss=game.boss();game.enemies=[boss];
+  Object.assign(game.player,{x:boss.x-90,y:game.bossArena.floorY-game.player.h,vx:0,vy:0,onGround:true,jumps:1});game.safePosition={x:game.player.x,y:game.player.y};
+  game.setInput({right:true,jump:true});tick(game);game.setInput({jump:false});
+  for(let frame=0;frame<120&&game.player.x<boss.x+boss.w+20;frame++)tick(game);
+  assert.ok(game.player.x>boss.x+boss.w);assert.equal(game.player.lives,3);
+});
+
 test('defeating the boss awards scrap and retracts the arena gates',()=>{
   const game=new Game(),boss=game.boss(),barriers=game.platforms.filter(block=>block.destructibleAfterBoss);assert.equal(barriers.length,2);game.bossArena.active=true;game.bossArena.gateProgress=1;boss.health=1;game.hitTarget(boss,1,new Set(),0);assert.equal(boss.dead,true);assert.equal(game.bossArena.cleared,true);assert.equal(game.player.scrap,SCRAP_VALUES.boss);assert.equal(game.bossProjectiles.length,0);assert.equal(game.platforms.some(block=>block.destructibleAfterBoss),false);for(let index=0;index<30;index++)game.updateBossArena(1/60);assert.equal(game.bossArena.gateProgress,0);assert.equal(game.bossGates().length,0);
 });

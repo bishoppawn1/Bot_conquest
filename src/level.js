@@ -156,7 +156,7 @@ export const BOSS_ARENA = {
   x:5890,y:350,w:1300,h:250,floorY:600,
   triggerX:6000,leftGateX:5905,rightGateX:7133,gateWidth:42,
   gateStartY:80,gateClosedY:350,gateHeight:250,
-  boss:{type:'boss',x:6500,y:500,w:120,h:100,health:18}
+  boss:{type:'boss',x:6512,y:522,w:96,h:78,health:18}
 };
 
 export const VAULT_BOSS_ARENA = {
