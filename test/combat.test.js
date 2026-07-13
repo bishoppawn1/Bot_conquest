@@ -48,6 +48,14 @@ test('repair cannot be hidden inside post-hit invulnerability',()=>{
   const game=settled();game.player.lives=2;game.player.electricity=ABILITY_COSTS.heal;game.player.invuln=.5;press(game,'heal');assert.equal(game.player.healTime,0);assert.equal(game.player.electricity,ABILITY_COSTS.heal);
 });
 
+test('attacks are ignored without cancelling an active repair channel',()=>{
+  const game=settled();game.player.lives=2;game.player.electricity=100;game.unlockAbility('field');game.unlockAbility('electricJab');press(game,'heal');
+  const remaining=game.player.healTime,attackId=game.player.attackId,electricity=game.player.electricity;
+  press(game,'attack');press(game,'field');press(game,'electricJab');
+  assert.ok(game.player.healTime>0&&game.player.healTime<remaining);assert.equal(game.player.attackId,attackId);assert.equal(game.player.specialType,null);assert.equal(game.player.electricity,electricity);
+  tick(game,50);assert.equal(game.player.lives,3);
+});
+
 test('electric field spends energy and damages enemies around the player',()=>{
   const game=settled(),enemy=game.enemy({type:'crawler',x:game.player.x-35,y:game.player.y,w:30,h:40});game.enemies=[enemy];game.unlockAbility('field');game.player.electricity=ABILITY_COSTS.field;press(game,'field');
   assert.equal(game.player.specialType,'field');assert.equal(enemy.dead,true);assert.equal(game.player.electricity,4);

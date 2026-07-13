@@ -35,7 +35,7 @@ export class Game {
     this.conduits=CONDUITS.map((conduit,index)=>({...conduit,kind:'conduit',id:`conduit-${index}`,maxCharge:conduit.charge,hitFlash:0}));
     this.junkPiles=JUNK_PILES.map((pile,index)=>({...pile,kind:'junk',id:pile.id??`junk-${index}`,maxHealth:pile.health,dead:false,hitFlash:0}));
   }
-  enemy({type,x,y,w,h,health,patrol=false,patrolRange=80,patrolDirection=1}){return{type,x,y,w,h,originX:x,originY:y,vx:0,vy:0,health:health??(type==='boss'?18:type==='brute'?3:1),onGround:false,phase:x*.01,dead:false,active:false,aggroRadius:type==='drone'?340:type==='brute'?240:210,patrol,patrolRange,patrolDirection,windup:0,chargeTime:0,chargeCooldown:0,chargeDirection:patrolDirection};}
+  enemy({type,x,y,w,h,health,patrol=false,patrolRange=80,patrolDirection=1}){return{type,x,y,w,h,originX:x,originY:y,vx:0,vy:0,health:health??(type==='boss'?18:type==='brute'?3:1),onGround:false,phase:x*.01,dead:false,active:false,aggroRadius:type==='drone'?340:type==='brute'?240:210,patrol,patrolRange,patrolDirection,windup:0,chargeTime:0,chargeCooldown:0,jumpCooldown:0,chargeDirection:patrolDirection};}
   setInput(input){Object.assign(this.input,input);}
   pressed(key){return this.input[key]&&!this.prev[key];}
   update(dt=1/60){
@@ -50,10 +50,10 @@ export class Game {
     const wallJump=climbingWall&&((wall===-1&&this.pressed('right'))||(wall===1&&this.pressed('left')));
     if(wallJump){p.vx=-wall*360;p.vy=-440;p.wallJumpTime=.18;p.onWall=0;p.jumps=p.abilities.doubleJump?1:0;this.burst(p.x+p.w/2,p.y+p.h/2,'#ffffff',8);}
     if(this.pressed('jump')&&!wallJump&&p.jumps>0&&!climbingWall){p.vy=-PLAYER_JUMP_SPEED;p.jumps--;p.onGround=false;this.burst(p.x+19,p.y+40,'#d6ff3f',5);}
-    if(this.pressed('attack')&&p.attackCooldown<=0){this.cancelHeal();this.startAttack();}
+    if(this.pressed('attack')&&p.attackCooldown<=0)this.startAttack();
     if(this.pressed('heal'))this.startHeal();
-    if(this.pressed('field')){this.cancelHeal();this.startSpecial('field');}
-    if(this.pressed('electricJab')){this.cancelHeal();this.startSpecial('electricJab');}
+    if(this.pressed('field'))this.startSpecial('field');
+    if(this.pressed('electricJab'))this.startSpecial('electricJab');
     if(this.pressed('rest'))this.tryInteract();
     const climbing=climbingWall&&this.input.jump&&!wallJump&&p.wallJumpTime<=0;
     if(p.dashTime>0)p.dashTime-=dt; else if(climbing){p.vx=wall*18;p.vy=-WALL_CLIMB_SPEED;}else {if(p.wallJumpTime<=0){const target=axis*250;p.vx+=(target-p.vx)*Math.min(1,(p.onGround?13:6)*dt);}p.vy+=1100*dt;}
@@ -173,9 +173,9 @@ export class Game {
   attackDirection(){return{x:this.player.attackAimX,y:this.player.attackAimY};}
   specialDirection(){return{x:this.player.specialAimX,y:this.player.specialAimY};}
   attackBox(){return directionalBox(this.player,this.attackDirection(),ATTACK_RANGE.primary,30);}
-  startAttack(){const p=this.player;p.attackAimX=p.aimX;p.attackAimY=p.aimY;p.attackTime=ATTACK_TIMING.primary;p.attackCooldown=.32;p.attackId++;p.attackHits=new Set();this.resolvePrimaryAttack();this.burst(p.x+p.w/2+p.attackAimX*62,p.y+p.h/2+p.attackAimY*62,'#ffffff',6);}
+  startAttack(){const p=this.player;if(p.healTime>0)return false;p.attackAimX=p.aimX;p.attackAimY=p.aimY;p.attackTime=ATTACK_TIMING.primary;p.attackCooldown=.32;p.attackId++;p.attackHits=new Set();this.resolvePrimaryAttack();this.burst(p.x+p.w/2+p.attackAimX*62,p.y+p.h/2+p.attackAimY*62,'#ffffff',6);return true;}
   startSpecial(type){
-    const p=this.player,cost=ABILITY_COSTS[type];if(!p.abilities[type]||p.specialTime>0||p.electricity<cost)return false;
+    const p=this.player,cost=ABILITY_COSTS[type];if(p.healTime>0||!p.abilities[type]||p.specialTime>0||p.electricity<cost)return false;
     p.electricity-=cost;p.specialAimX=p.aimX;p.specialAimY=p.aimY;p.specialType=type;p.specialTime=ATTACK_TIMING[type];p.specialHits=new Set();return true;
   }
   startHeal(){const p=this.player;if(p.healTime>0||p.invuln>0||!p.abilities.heal||p.lives>=3||p.electricity<ABILITY_COSTS.heal)return false;p.electricity-=ABILITY_COSTS.heal;p.healTime=HEAL_DURATION;return true;}
@@ -232,7 +232,7 @@ export class Game {
         this.moveFlyingActor(e,dt);
       } else {
         e.active=distance<=e.aggroRadius&&shareSupportingPlatform(e,p,this.platforms);
-        e.chargeCooldown=Math.max(0,e.chargeCooldown-dt);
+        e.chargeCooldown=Math.max(0,e.chargeCooldown-dt);e.jumpCooldown=Math.max(0,e.jumpCooldown-dt);
         const speed=e.type==='brute'?55:e.type==='roller'?115:75;
         let direction=e.active?Math.sign(p.x-e.x):(e.patrol&&e.onGround?e.patrolDirection:0);
         if(!e.active&&direction){if(e.x<=e.originX-e.patrolRange)e.patrolDirection=1;if(e.x+e.w>=e.originX+e.patrolRange)e.patrolDirection=-1;direction=e.patrolDirection;if(!hasFloorAhead(e,direction,this.platforms)){e.patrolDirection*=-1;direction=e.patrolDirection;}}
@@ -246,8 +246,11 @@ export class Game {
           const target=safeToAdvance?direction*(e.active?150:speed*.42):0;
           e.vx+=(target-e.vx)*Math.min(1,(e.active?3.5:5)*dt);
           if(!safeToAdvance)e.vx=0;
+        }else if(e.type==='hopper'){
+          const grounded=e.onGround||Boolean(supportingPlatform(e,this.platforms));
+          if(e.active&&grounded&&safeToAdvance&&e.jumpCooldown<=0){e.vx=direction*210;e.vy=-560;e.jumpCooldown=.9;e.onGround=false;}
+          else if(grounded)e.vx=safeToAdvance?direction*48:0;
         }else e.vx=safeToAdvance?direction*speed*(e.active?1:.42):0;
-        if(e.type==='hopper'&&e.active&&e.onGround&&safeToAdvance)e.vy=-370;
         e.vy+=900*dt;this.moveActor(e,dt);
       }
       if(overlaps(p,e))this.damagePlayer('enemy',e.x+e.w/2);

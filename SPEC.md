@@ -24,7 +24,7 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 | Aim down | `S` | Set downward aim without moving |
 | Dash | `Shift` | Locked at the beginning; short horizontal burst after unlock |
 | Basic slash | `Space` | Instantly strike the full 105-unit area in the locked aim direction |
-| Repair | `E` | Spend 30 electricity, then channel for 0.7 seconds to restore one missing shell; damage interrupts it and it cannot start during post-hit invulnerability |
+| Repair | `E` | Spend 30 electricity, then channel for 0.7 seconds to restore one missing shell; damage interrupts it, attacks are locked out during the channel, and it cannot start during post-hit invulnerability |
 | Electric field | `Q` | Locked initially; spend 40 electricity after unlock |
 | Electric jab | `F` | Locked initially; spend 24 electricity after collecting the blue Volt Jab core |
 | Interact | `O` | Rest at the recovery station or enter/leave an unlocked merchant room |
@@ -68,13 +68,13 @@ The player starts with three core shells. Enemy contact removes one shell and br
 
 ## Enemies
 
-Selected crawlers and rollers patrol passively within configured leashes. Basic ground enemies detect at 210 units and brutes at 240 units. Distance alone is insufficient: both the player and ground enemy must stand on the same supporting platform before pursuit begins. Ground enemies probe for walkable support before every step.
+Selected crawlers and rollers patrol passively within configured leashes. Basic ground enemies detect at 210 units and brutes at 240 units. Distance alone is insufficient: both the player and ground enemy must stand on the same supporting platform before pursuit begins. Ground enemies probe for walkable support before every step. Main-route ground encounters occupy usable combat floor rather than narrow pockets caught between a raised block and spikes.
 
-Crawlers change direction immediately and pursue at a steady 75 units per second. Oblong rollers accelerate gradually toward a 150-unit-per-second chase speed, preserving momentum rather than copying crawler motion. Square brutes stop for a visible 0.38-second warning, lock a direction, and charge at 190 units per second for 0.42 seconds before cooling down. Hoppers remain the jumping archetype.
+Crawlers change direction immediately and pursue at a steady 75 units per second. Oblong rollers accelerate gradually toward a 150-unit-per-second chase speed, preserving momentum rather than copying crawler motion. Square brutes stop for a visible 0.38-second warning, lock a direction, and charge at 190 units per second for 0.42 seconds before cooling down. Hoppers commit to a high, fast leap toward the player's horizontal position, then pause briefly before leaping again.
 
 Drones detect at 340 units. When inactive they hover around their spawn height. Once active they steer toward the player's actual two-dimensional position at 105 units per second. Drone movement resolves horizontal and vertical collision against solid blocks, so drones cannot fly through floors, ceilings, or walls.
 
-Current archetypes are crawler, roller, hopper, drone, and brute. The brute takes three basic-slash hits; basic enemies take one.
+Current archetypes are crawler, roller, hopper, drone, and brute. Their silhouettes use hard industrial chassis, pistons, claws, spikes, and needle-like feet rather than soft creature shapes. The brute takes three basic-slash hits; basic enemies take one.
 
 ### Boss encounter
 

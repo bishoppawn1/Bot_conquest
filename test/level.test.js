@@ -132,6 +132,17 @@ test('starting-kit platforms form varied room networks with combat',()=>{
   assert.ok(supportedEnemies.length>=12,'upper and lower exploration spaces need their own encounters');
 });
 
+test('main-route ground encounters have room to fight away from spike-and-step pockets',()=>{
+  const ground=ENEMY_SPAWNS.filter(enemy=>enemy.type!=='drone');
+  for(const enemy of ground){
+    const support=PLATFORMS.find(block=>enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w&&enemy.y+enemy.h===block.y);
+    if(!support||!FOUNDATION_BLOCKS.includes(support))continue;
+    const nearbyStep=INTERIOR_BLOCKS.find(block=>block.y+block.h===support.y&&(Math.abs(block.x-(enemy.x+enemy.w))<110||Math.abs(enemy.x-(block.x+block.w))<110));
+    const nearbyTrap=TRAPS.find(trap=>Math.abs(trap.x-(enemy.x+enemy.w))<110||Math.abs(enemy.x-(trap.x+trap.w))<110);
+    assert.ok(!(nearbyStep&&nearbyTrap),`ground enemy at ${enemy.x} is pinned between a step and spikes`);
+  }
+});
+
 test('the lower vault has a contained full-boss floor and a staged escape',()=>{
   assert.equal(LOWER_BLOCKS.length,5);
   const floor=LOWER_BLOCKS.find(block=>block.id==='under-cache'),threshold=LOWER_BLOCKS.find(block=>block.id==='under-threshold');
