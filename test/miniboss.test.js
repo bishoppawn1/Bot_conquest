@@ -5,14 +5,14 @@ import { ABILITY_COSTS } from '../src/combat.js';
 
 const tick=(game,count=1)=>{for(let frame=0;frame<count;frame++)game.update(1/60);};
 
-test('falling into the Sunken Vault room activates its mini boss and exit gate',()=>{
+test('entering the optional Drift cache activates its mini boss and reward gate',()=>{
   const game=new Game(),arena=game.miniBossArenas[0],miniBoss=game.miniBoss(arena.id);game.enemies=[miniBoss];
-  Object.assign(game.player,{x:2940,y:arena.floorY-game.player.h,vx:0,vy:0});tick(game,25);
+  Object.assign(game.player,{x:arena.x+80,y:arena.floorY-game.player.h,vx:0,vy:0});tick(game,25);
   assert.equal(arena.active,true);assert.equal(miniBoss.active,true);assert.ok(arena.gateProgress>.95);
   assert.equal(game.miniBossGates().length,1);
 });
 
-test('the Vault Sentinel cannot be damaged before its room activates',()=>{
+test('the cache mini boss cannot be damaged before its optional room activates',()=>{
   const game=new Game(),arena=game.miniBossArenas[0],miniBoss=game.miniBoss(arena.id);game.enemies=[miniBoss];
   Object.assign(game.player,{x:miniBoss.x-50,y:miniBoss.y,aimX:1,aimY:0,attackHits:new Set()});game.resolvePrimaryAttack();
   assert.equal(miniBoss.health,miniBoss.maxHealth);

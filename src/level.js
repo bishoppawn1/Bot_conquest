@@ -1,4 +1,4 @@
-export const WORLD_WIDTH = 9600;
+export const WORLD_WIDTH = 14500;
 export const WORLD_TOP = -1000;
 export const WORLD_BOTTOM = 1200;
 export const WORLD_HEIGHT = WORLD_BOTTOM-WORLD_TOP;
@@ -19,7 +19,12 @@ export const FOUNDATION_BLOCKS = [
   {id:'prearena-floor',x:4950,y:670,w:840,h:130,kind:'foundation'},
   {id:'boss-floor',x:5890,y:600,w:1300,h:200,kind:'foundation'},
   {id:'rest-floor',x:7350,y:660,w:980,h:140,kind:'foundation'},
-  {id:'relay-floor',x:8400,y:590,w:1200,h:210,kind:'foundation'}
+  {id:'relay-floor',x:8400,y:590,w:1200,h:210,kind:'foundation'},
+  {id:'gauntlet-west',x:9600,y:650,w:480,h:150,kind:'foundation'},
+  {id:'gauntlet-depth',x:10180,y:710,w:440,h:120,kind:'foundation'},
+  {id:'gauntlet-east',x:10720,y:650,w:580,h:150,kind:'foundation'},
+  {id:'drift-floor',x:11400,y:620,w:1200,h:180,kind:'foundation'},
+  {id:'exchange-floor',x:12700,y:660,w:1800,h:140,kind:'foundation'}
 ];
 
 export const OVERHEAD_BLOCKS = [
@@ -30,7 +35,10 @@ export const OVERHEAD_BLOCKS = [
   {x:4950,y:-300,w:840,h:100,kind:'ceiling'},
   {x:5890,y:250,w:1300,h:100,kind:'ceiling'},
   {x:7350,y:350,w:980,h:100,kind:'ceiling'},
-  {x:8400,y:-900,w:1200,h:110,kind:'ceiling'}
+  {x:8400,y:-900,w:1200,h:110,kind:'ceiling'},
+  {x:9600,y:-100,w:1700,h:80,kind:'ceiling'},
+  {x:11400,y:-600,w:1200,h:90,kind:'ceiling'},
+  {x:12700,y:-800,w:1800,h:100,kind:'ceiling'}
 ];
 
 // Every interior block sits flush on one foundation, is exactly one basic
@@ -43,7 +51,11 @@ export const INTERIOR_BLOCKS = [
   {id:'foundry-step',x:3650,y:540,w:300,h:70,kind:'interior'},
   {x:4400,y:540,w:260,h:70,kind:'interior'},
   {id:'prearena-step',x:5100,y:600,w:200,h:70,kind:'interior'},
-  {id:'relay-step',x:8600,y:520,w:260,h:70,kind:'interior'}
+  {id:'relay-step',x:8600,y:520,w:260,h:70,kind:'interior'},
+  {id:'drift-step-west',x:11600,y:550,w:240,h:70,kind:'interior'},
+  {id:'drift-step-east',x:12150,y:550,w:220,h:70,kind:'interior'},
+  {id:'exchange-step-west',x:13000,y:590,w:300,h:70,kind:'interior'},
+  {id:'exchange-step-east',x:13800,y:590,w:260,h:70,kind:'interior'}
 ];
 
 // Starting-kit exploration surfaces are scattered across rooms rather than
@@ -74,7 +86,23 @@ export const BRANCH_BLOCKS = [
   {id:'relay-entry',x:8870,y:380,w:210,h:40,kind:'branch',zone:'relay'},
   {id:'relay-east',x:9250,y:240,w:300,h:55,kind:'branch',zone:'relay'},
   {id:'relay-center',x:8840,y:100,w:260,h:45,kind:'branch',zone:'relay'},
-  {id:'relay-west',x:8440,y:-40,w:310,h:50,kind:'branch',zone:'relay'}
+  {id:'relay-west',x:8440,y:-40,w:310,h:50,kind:'branch',zone:'relay'},
+
+  {id:'gauntlet-west-perch',x:9920,y:520,w:140,h:40,kind:'branch',zone:'gauntlet'},
+  {id:'gauntlet-center',x:10120,y:390,w:260,h:45,kind:'branch',zone:'gauntlet'},
+  {id:'gauntlet-east-perch',x:10620,y:500,w:230,h:40,kind:'branch',zone:'gauntlet'},
+  {id:'gauntlet-overlook',x:10920,y:370,w:300,h:50,kind:'branch',zone:'gauntlet'},
+
+  {id:'drift-rise',x:11480,y:460,w:220,h:45,kind:'branch',zone:'drift'},
+  {id:'drift-cache-floor',x:11800,y:340,w:520,h:50,kind:'branch',zone:'drift'},
+  {id:'drift-threshold',x:12360,y:360,w:170,h:50,kind:'branch',zone:'drift'},
+  {id:'drift-east',x:12380,y:470,w:190,h:40,kind:'branch',zone:'drift'},
+
+  {id:'exchange-west-loft',x:12820,y:450,w:330,h:50,kind:'branch',zone:'exchange'},
+  {id:'exchange-mid-link',x:13200,y:430,w:150,h:40,kind:'branch',zone:'exchange'},
+  {id:'exchange-central-span',x:13380,y:320,w:520,h:55,kind:'branch',zone:'exchange'},
+  {id:'exchange-east-loft',x:13900,y:430,w:250,h:45,kind:'branch',zone:'exchange'},
+  {id:'exchange-high-cache',x:13600,y:180,w:360,h:50,kind:'branch',zone:'exchange'}
 ];
 
 // The Sunken Vault descends through a reversible upper route, then uses one
@@ -92,15 +120,15 @@ export const LOWER_BLOCKS = [
 // walls cannot seal a through-route or strand the player.
 export const POCKET_BLOCKS = [
   {x:40,y:430,w:300,h:70,kind:'pocket-ceiling'},
-  {x:9300,y:380,w:300,h:70,kind:'pocket-ceiling'}
+  {x:14200,y:380,w:300,h:70,kind:'pocket-ceiling'}
 ];
 
 export const WALL_BLOCKS = [
   {x:40,y:500,w:60,h:160,kind:'wall'},
-  {x:9540,y:450,w:60,h:140,kind:'wall'},
+  {x:14440,y:450,w:60,h:210,kind:'wall'},
   {x:8340,y:-600,w:60,h:540,kind:'wall'},
-  {id:'boss-roof-left',x:5790,y:-1000,w:100,h:1350,kind:'wall'},
-  {id:'boss-roof-right',x:7190,y:-1000,w:160,h:1350,kind:'wall'},
+  {id:'boss-roof-left',x:5790,y:-1000,w:100,h:1350,kind:'wall',destructibleAfterBoss:true},
+  {id:'boss-roof-right',x:7190,y:-1000,w:160,h:1350,kind:'wall',destructibleAfterBoss:true},
   {id:'vault-arena-left',x:2800,y:985,w:60,h:135,kind:'wall'}
 ];
 
@@ -131,12 +159,20 @@ export const BOSS_ARENA = {
   boss:{type:'boss',x:6500,y:500,w:120,h:100,health:18}
 };
 
+export const VAULT_BOSS_ARENA = {
+  id:'vault-warden',name:'ABYSS WARDEN',region:'vault',
+  x:2860,y:950,w:510,h:170,floorY:1120,triggerY:1000,
+  leftGateX:2818,rightGateX:3330,gateY:700,gateWidth:40,gateHeight:420,
+  rewardScrap:110,
+  boss:{type:'vaultBoss',x:3120,y:1038,w:92,h:82,health:12}
+};
+
 export const MINI_BOSS_ARENAS = [
   {
-    id:'vault-sentinel',name:'VAULT SENTINEL',region:'vault',
-    x:2860,y:950,w:510,h:170,floorY:1120,triggerY:1000,
-    gateX:3330,gateY:950,gateWidth:40,gateHeight:170,rewardScrap:60,
-    enemy:{type:'miniBoss',x:3140,y:1048,w:82,h:72,health:6}
+    id:'drift-scrapper',name:'CACHE SCRAPPER',region:'drift',
+    x:11800,y:170,w:560,h:170,floorY:340,triggerY:205,
+    gateX:12320,gateY:170,gateWidth:40,gateHeight:170,rewardScrap:80,
+    enemy:{type:'miniBoss',x:12080,y:268,w:82,h:72,health:6}
   }
 ];
 
@@ -151,7 +187,10 @@ export const REGIONS = [
   {id:'foundry',name:'EMBER FOUNDRY',x:3550,w:2340},
   {id:'bastion',name:'CORE BASTION',x:5890,w:1460},
   {id:'concourse',name:'RELAY CONCOURSE',x:7350,w:1050,merchantHub:true},
-  {id:'crown',name:'CROWNWORKS',x:8400,w:1200}
+  {id:'crown',name:'CROWNWORKS',x:8400,w:1200},
+  {id:'gauntlet',name:'SHARD GAUNTLET',x:9600,w:1800},
+  {id:'drift',name:'QUIET DRIFT',x:11400,w:1300},
+  {id:'exchange',name:'GRAND EXCHANGE',x:12700,w:1800,merchantHub:true}
 ];
 
 // Region gates are readable non-blocking thresholds. Crossing one changes the
@@ -161,13 +200,16 @@ export const REGION_GATES = [
   {x:3562,y:440,w:72,h:170,from:'vault',to:'foundry'},
   {x:5902,y:350,w:72,h:250,from:'foundry',to:'bastion'},
   {x:7362,y:490,w:72,h:170,from:'bastion',to:'concourse'},
-  {x:8412,y:420,w:72,h:170,from:'concourse',to:'crown'}
+  {x:8412,y:420,w:72,h:170,from:'concourse',to:'crown'},
+  {x:9612,y:480,w:72,h:170,from:'crown',to:'gauntlet'},
+  {x:11412,y:450,w:72,h:170,from:'gauntlet',to:'drift'},
+  {x:12712,y:490,w:72,h:170,from:'drift',to:'exchange'}
 ];
 
 // Pickups share one data shape so future movement, combat, and shell pickups
 // can use the same contact collection flow.
 export const PICKUP_SPAWNS = [
-  {id:'volt-core',kind:'ability',ability:'electricJab',x:3410,y:980,w:24,h:24,color:'#75f5ff',name:'VOLT JAB',key:'F',description:'Spend electricity to fire a long powered jab.'},
+  {id:'volt-core',kind:'ability',ability:'electricJab',x:3260,y:1080,w:24,h:24,color:'#75f5ff',name:'VOLT JAB',key:'F',description:'Spend electricity to fire a long powered jab.',requiresVaultBossClear:true},
   {id:'vault-core',kind:'ability',ability:'wallClimb',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'WALL CLIMB',key:'W + A / D',description:'Hold W on a wall; press away to jump at any height.',requiresBossClear:true}
 ];
 
@@ -178,7 +220,8 @@ export const MERCHANT_SPAWNS = [
   {id:'merchant-shells',name:'SHELL ARCHIVE',x:7930,y:540,w:80,h:120,region:'concourse',hub:true,color:'#d6ff3f',clearRadius:260},
   {id:'merchant-salvage',name:'SALVAGE EXCHANGE',x:8060,y:540,w:80,h:120,region:'concourse',hub:true,color:'#ffb85c',clearRadius:260},
   {id:'merchant-verge',name:'VERGE TINKER',x:2070,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:260},
-  {id:'merchant-foundry',name:'FOUNDRY FACTOR',x:4630,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:300}
+  {id:'merchant-foundry',name:'FOUNDRY FACTOR',x:4630,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:300},
+  {id:'merchant-forge',name:'EDGE FORGE',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:260,service:'damageUpgrade',cost:100}
 ];
 
 export const MERCHANT_ROOM = {
@@ -204,8 +247,11 @@ export const RECESSES = [
   {x:7440,y:450,w:800,h:210,floorY:660,ceilingY:450,openSide:'right'},
   {x:8500,y:-790,w:980,h:1380,floorY:590,ceilingY:-790,openSide:'left'},
   {x:100,y:500,w:240,h:160,floorY:660,ceilingY:500,openSide:'right',pocket:true},
-  {x:9300,y:450,w:240,h:140,floorY:590,ceilingY:450,openSide:'left',pocket:true},
-  {x:2660,y:-930,w:580,h:330,floorY:-600,ceilingY:-930,merchantRoom:true}
+  {x:14200,y:450,w:240,h:210,floorY:660,ceilingY:450,openSide:'left',pocket:true},
+  {x:2660,y:-930,w:580,h:330,floorY:-600,ceilingY:-930,merchantRoom:true},
+  {x:9650,y:-20,w:1600,h:670,floorY:650,ceilingY:-20,openSide:'right'},
+  {x:11450,y:-510,w:1100,h:1130,floorY:620,ceilingY:-510,openSide:'left'},
+  {x:12750,y:-700,w:1700,h:1360,floorY:660,ceilingY:-700,openSide:'left'}
 ];
 
 export const PLATFORMS = [
@@ -226,7 +272,11 @@ export const TRAPS = [
   {x:4850,y:700,w:100,h:100},
   {x:5790,y:700,w:100,h:100},
   {x:7190,y:700,w:160,h:100},
-  {x:8330,y:700,w:70,h:100}
+  {x:8330,y:700,w:70,h:100},
+  {x:10080,y:680,w:100,h:150},
+  {x:10620,y:680,w:100,h:150},
+  {x:11300,y:680,w:100,h:150},
+  {x:12600,y:690,w:100,h:110}
 ];
 
 export const ENEMY_SPAWNS = [
@@ -256,7 +306,17 @@ export const ENEMY_SPAWNS = [
   {type:'crawler',x:9300,y:200,w:30,h:40,patrol:true,patrolRange:100},
   {type:'hopper',x:8800,y:-515,w:34,h:45},
   {type:'brute',x:9250,y:-383,w:58,h:63},
-  {type:'drone',x:9000,y:0,w:42,h:30}
+  {type:'drone',x:9000,y:0,w:42,h:30},
+  {type:'hopper',x:9700,y:605,w:34,h:45},
+  {type:'drone',x:10300,y:500,w:42,h:30},
+  {type:'roller',x:10780,y:622,w:46,h:28,patrol:true,patrolRange:100},
+  {type:'brute',x:11050,y:587,w:58,h:63},
+  {type:'crawler',x:11520,y:580,w:30,h:40,patrol:true,patrolRange:80},
+  {type:'drone',x:12400,y:250,w:42,h:30},
+  {type:'roller',x:12850,y:632,w:46,h:28,patrol:true,patrolRange:100},
+  {type:'hopper',x:13450,y:615,w:34,h:45},
+  {type:'brute',x:13650,y:597,w:58,h:63},
+  {type:'drone',x:13650,y:260,w:42,h:30}
 ];
 
 export const CONDUITS = [
@@ -276,6 +336,10 @@ export const JUNK_PILES = [
   {x:5600,y:264,w:80,h:46,health:5,scrapValue:28},
   {x:8940,y:54,w:78,h:46,health:5,scrapValue:30},
   {x:9040,y:-696,w:92,h:46,health:7,scrapValue:44},
-  {id:'vault-volt-seal',x:3360,y:740,w:50,h:80,health:2,scrapValue:20,minimumDamage:2,gate:true,requires:'electricJab'},
-  {x:9300,y:500,w:120,h:90,health:8,scrapValue:60,minimumDamage:2,gate:true}
+  {id:'vault-volt-seal',x:3370,y:740,w:50,h:80,health:2,scrapValue:20,minimumDamage:2,gate:true,requires:'electricJab'},
+  {x:9300,y:500,w:120,h:90,health:8,scrapValue:60,minimumDamage:2,gate:true},
+  {x:10280,y:344,w:82,h:46,health:6,scrapValue:38},
+  {x:12160,y:294,w:82,h:46,health:6,scrapValue:45},
+  {x:13560,y:274,w:88,h:46,health:7,scrapValue:48},
+  {x:14000,y:384,w:90,h:46,health:7,scrapValue:50}
 ];

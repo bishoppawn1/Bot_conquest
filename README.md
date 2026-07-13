@@ -1,6 +1,6 @@
 # Bot Conquest
 
-A dependency-free 2D canvas platformer prototype set in a growing interconnected world. Explore a 9,600-unit-wide, 2,200-unit-tall mechanical ruin with a dark descending Sunken Vault, a gated mini-boss encounter, enemies above and below the main floor, named region gates, sealed merchant rooms, and upper regions reserved for later movement abilities. Ability cores unlock Volt Jab in the vault and wall climbing after the Heavy Core.
+A dependency-free 2D canvas platformer prototype set in a growing interconnected world. Explore a 14,500-unit-wide, 2,200-unit-tall mechanical ruin with the dark descending Sunken Vault, two full bosses, an optional scrap mini-boss, the trap-heavy Shard Gauntlet, Quiet Drift, and the expansive Grand Exchange. Ability cores unlock Volt Jab after the Abyss Warden and wall climbing after the Heavy Core.
 
 ## Run
 
@@ -31,5 +31,7 @@ npm test
 ```
 
 The suite checks movement, jumping, wall climbing, merchant-room access, repair timing and interruption, pickups and tutorial popups, region transitions, bosses, cardinal melee combat, resources, enemy damage, traps, lives, aggro, edge avoidance, reversible Vault routes, ability gates, headroom, junk bypasses, and surface queries.
+
+The Edge Forge merchant in the Grand Exchange sells one `+1` primary-slash damage upgrade for 100 scrap.
 
 See [SPEC.md](SPEC.md) for the current gameplay contract and [AGENTS.md](AGENTS.md) for contributor guidance and code ownership boundaries.

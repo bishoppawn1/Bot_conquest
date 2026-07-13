@@ -1,6 +1,6 @@
 import { clamp, hasFloorAhead, overlaps, shareSupportingPlatform, supportingPlatform } from './geometry.js';
 import { ABILITY_COSTS, ATTACK_RANGE, ATTACK_TIMING, circleIntersectsRect, directionalBox, ELECTRICITY_MAX, ELECTRICITY_PER_HIT, fieldCircle, SCRAP_VALUES } from './combat.js';
-import { BOSS_ARENA, CONDUITS, ENEMY_SPAWNS, JUNK_PILES, MERCHANT_ROOM, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, PICKUP_SPAWNS, PLATFORMS, RECESSES, REGION_GATES, REGIONS, REST_AREA, SPAWN, TRAPS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
+import { BOSS_ARENA, CONDUITS, ENEMY_SPAWNS, JUNK_PILES, MERCHANT_ROOM, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, PICKUP_SPAWNS, PLATFORMS, RECESSES, REGION_GATES, REGIONS, REST_AREA, SPAWN, TRAPS, VAULT_BOSS_ARENA, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH } from './level.js';
 
 export { WORLD_WIDTH as WIDTH, WORLD_HEIGHT as HEIGHT } from './level.js';
 export const PLAYER_JUMP_SPEED = 600;
@@ -15,11 +15,12 @@ export class Game {
     this.prev={...this.input}; this.particles=[];this.bossProjectiles=[];this.bossShockwave=null;this.abilityPopup=null;this.rewardToast=null;
     this.spawn={...SPAWN};
     this.safePosition={...this.spawn};
-    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:1,lives:3,scrap:0,electricity:0,abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
+    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:1,lives:3,scrap:0,electricity:0,primaryDamage:1,damageUpgrades:0,abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
     this.platforms=PLATFORMS.map(platform=>({...platform}));
     this.traps=TRAPS.map(trap=>({...trap}));
     this.recesses=RECESSES.map(recess=>({...recess}));
     this.bossArena={...BOSS_ARENA,boss:{...BOSS_ARENA.boss},active:false,cleared:false,gateProgress:0};
+    this.vaultBossArena={...VAULT_BOSS_ARENA,boss:{...VAULT_BOSS_ARENA.boss},active:false,cleared:false,leftGateProgress:0};
     this.miniBossArenas=MINI_BOSS_ARENAS.map(arena=>({...arena,enemy:{...arena.enemy},active:false,cleared:false,gateProgress:0}));
     this.restArea={...REST_AREA,station:{...REST_AREA.station}};
     this.regions=REGIONS.map(region=>({...region}));this.regionGates=REGION_GATES.map(gate=>({...gate}));
@@ -28,8 +29,9 @@ export class Game {
     this.merchants=MERCHANT_SPAWNS.map(merchant=>({...merchant}));
     this.merchantRoom={...MERCHANT_ROOM,spawn:{...MERCHANT_ROOM.spawn},exit:{...MERCHANT_ROOM.exit},merchant:{...MERCHANT_ROOM.merchant},activeMerchant:null,returnPosition:null};
     const boss=this.enemy(BOSS_ARENA.boss);Object.assign(boss,{isBoss:true,maxHealth:BOSS_ARENA.boss.health,bossMove:'dormant',bossTimer:0,bossMoveIndex:0});
+    const vaultBoss=this.enemy(VAULT_BOSS_ARENA.boss);Object.assign(vaultBoss,{isVaultBoss:true,name:VAULT_BOSS_ARENA.name,maxHealth:VAULT_BOSS_ARENA.boss.health,rewardScrap:VAULT_BOSS_ARENA.rewardScrap,bossMove:'dormant',bossTimer:0,bossMoveIndex:0});
     const miniBosses=this.miniBossArenas.map(arena=>{const enemy=this.enemy(arena.enemy);return Object.assign(enemy,{isMiniBoss:true,arenaId:arena.id,name:arena.name,maxHealth:arena.enemy.health,rewardScrap:arena.rewardScrap});});
-    this.enemies=[...ENEMY_SPAWNS.map(spawn=>this.enemy(spawn)),...miniBosses,boss];
+    this.enemies=[...ENEMY_SPAWNS.map(spawn=>this.enemy(spawn)),...miniBosses,vaultBoss,boss];
     this.conduits=CONDUITS.map((conduit,index)=>({...conduit,kind:'conduit',id:`conduit-${index}`,maxCharge:conduit.charge,hitFlash:0}));
     this.junkPiles=JUNK_PILES.map((pile,index)=>({...pile,kind:'junk',id:pile.id??`junk-${index}`,maxHealth:pile.health,dead:false,hitFlash:0}));
   }
@@ -60,12 +62,12 @@ export class Game {
     const hitSpike=this.traps.some(trap=>overlaps(p,trap));
     if(hitSpike)this.damagePlayer('spike');else if(p.y>WORLD_BOTTOM+100)this.damagePlayer('fall');
     p.x=clamp(p.x,0,WORLD_WIDTH-p.w);this.updateRegion();this.updatePickups();
-    this.updateBossArena(dt);this.updateMiniBossArenas(dt);this.updateCombat();this.updateEnemies(dt);this.updateBossHazards(dt);this.updateParticles(dt);
+    this.updateBossArena(dt);this.updateVaultBossArena(dt);this.updateMiniBossArenas(dt);this.updateCombat();this.updateEnemies(dt);this.updateBossHazards(dt);this.updateParticles(dt);
     this.cameraX=clamp(p.x-350,0,WORLD_WIDTH-1280);this.cameraY=clamp(p.y-360,WORLD_TOP,WORLD_BOTTOM-720);this.shake=Math.max(0,this.shake-dt*20);
     this.prev={...this.input};
   }
   moveActor(a,dt,isPlayer=false){
-    const colliders=isPlayer?[...this.platforms,...this.junkPiles.filter(pile=>!pile.dead),...this.bossGates(),...this.miniBossGates()]:this.platforms;
+    const colliders=isPlayer?[...this.platforms,...this.junkPiles.filter(pile=>!pile.dead),...this.bossGates(),...this.vaultBossGates(),...this.miniBossGates()]:this.platforms;
     a.x+=a.vx*dt;a.onWall=0;
     for(const b of colliders)if(overlaps(a,b)){
       if(a.vx>0){a.x=b.x-a.w;if(isPlayer)a.onWall=1;}else if(a.vx<0){a.x=b.x+b.w;if(isPlayer)a.onWall=-1;}a.vx=0;
@@ -78,10 +80,10 @@ export class Game {
   wallSide(actor){const inset=4,left={x:actor.x-3,y:actor.y+inset,w:3,h:actor.h-inset*2},right={x:actor.x+actor.w,y:actor.y+inset,w:3,h:actor.h-inset*2};if(this.platforms.some(block=>overlaps(left,block)))return-1;if(this.platforms.some(block=>overlaps(right,block)))return 1;return 0;}
   regionAt(x){return this.regions?.find(region=>x>=region.x&&x<region.x+region.w)??null;}
   updateRegion(){if(this.merchantRoom.activeMerchant)return;const region=this.regionAt(this.player.x+this.player.w/2);if(!region||region.id===this.regionId)return;this.regionId=region.id;this.regionToast=region.name;this.regionToastTime=2.4;}
-  pickupAvailable(pickup){return!pickup.collected&&(!pickup.requiresBossClear||this.bossArena.cleared);}
+  pickupAvailable(pickup){return!pickup.collected&&(!pickup.requiresBossClear||this.bossArena.cleared)&&(!pickup.requiresVaultBossClear||this.vaultBossArena.cleared);}
   updatePickups(){for(const pickup of this.pickups)if(this.pickupAvailable(pickup)&&overlaps(this.player,pickup)){pickup.collected=true;if(pickup.kind==='ability'){this.unlockAbility(pickup.ability);this.abilityPopup={ability:pickup.ability,name:pickup.name,key:pickup.key,description:pickup.description,color:pickup.color??'#ffffff',time:4.5,maxTime:4.5};}this.burst(pickup.x+pickup.w/2,pickup.y+pickup.h/2,pickup.color??'#ffffff',36);}}
   nearbyMerchantDoor(){if(this.merchantRoom.activeMerchant)return null;const p=this.player;return this.merchants.find(merchant=>p.x+p.w/2>=merchant.x&&p.x+p.w/2<=merchant.x+merchant.w&&Math.abs(p.y+p.h-merchant.y-merchant.h)<=20)??null;}
-  merchantDoorUnlocked(merchant){const center=merchant.x+merchant.w/2;return this.enemies.every(enemy=>enemy.dead||enemy.isBoss||enemy.isMiniBoss||Math.abs(enemy.originX+enemy.w/2-center)>merchant.clearRadius);}
+  merchantDoorUnlocked(merchant){const center=merchant.x+merchant.w/2;return this.enemies.every(enemy=>enemy.dead||enemy.isBoss||enemy.isVaultBoss||enemy.isMiniBoss||Math.abs(enemy.originX+enemy.w/2-center)>merchant.clearRadius);}
   nearMerchantExit(){const exit=this.merchantRoom.exit,p=this.player;return Boolean(this.merchantRoom.activeMerchant&&p.x+p.w/2>=exit.x&&p.x+p.w/2<=exit.x+exit.w&&Math.abs(p.y+p.h-exit.y-exit.h)<=20);}
   nearbyMerchant(){if(!this.merchantRoom.activeMerchant)return null;const merchant={...this.merchantRoom.activeMerchant,...this.merchantRoom.merchant};const p=this.player;return Math.hypot((p.x+p.w/2)-(merchant.x+merchant.w/2),(p.y+p.h/2)-(merchant.y+merchant.h/2))<=105?merchant:null;}
   rememberSafePlatform(){
@@ -104,6 +106,13 @@ export class Game {
     const arena=this.bossArena;if(!arena||arena.gateProgress<=0)return[];
     const y=arena.gateStartY+(arena.gateClosedY-arena.gateStartY)*arena.gateProgress;
     return[{x:arena.leftGateX,y,w:arena.gateWidth,h:arena.gateHeight,kind:'boss-gate'},{x:arena.rightGateX,y,w:arena.gateWidth,h:arena.gateHeight,kind:'boss-gate'}];
+  }
+  vaultBoss(){return this.enemies.find(enemy=>enemy.isVaultBoss)??null;}
+  vaultBossGates(){
+    const arena=this.vaultBossArena;if(!arena||arena.cleared)return[];
+    const gates=[{x:arena.rightGateX,y:arena.gateY,w:arena.gateWidth,h:arena.gateHeight,kind:'vault-boss-gate',side:'exit'}];
+    if(arena.leftGateProgress>0){const y=arena.gateY-arena.gateHeight*(1-arena.leftGateProgress);gates.push({x:arena.leftGateX,y,w:arena.gateWidth,h:arena.gateHeight,kind:'vault-boss-gate',side:'entry'});}
+    return gates;
   }
   miniBoss(arenaId){return this.enemies.find(enemy=>enemy.isMiniBoss&&enemy.arenaId===arenaId)??null;}
   miniBossGates(){
@@ -128,6 +137,13 @@ export class Game {
     const target=arena.active&&!arena.cleared?1:0;
     arena.gateProgress+=Math.sign(target-arena.gateProgress)*Math.min(Math.abs(target-arena.gateProgress),dt*3.4);
   }
+  updateVaultBossArena(dt){
+    const arena=this.vaultBossArena,boss=this.vaultBoss();if(!arena||!boss)return;
+    const p=this.player,centerX=p.x+p.w/2,centerY=p.y+p.h/2;
+    if(!arena.active&&!arena.cleared&&centerX>=arena.x&&centerX<arena.rightGateX&&centerY>=arena.triggerY&&centerY<arena.floorY){arena.active=true;boss.active=true;boss.bossMove='idle';boss.bossTimer=.55;}
+    const target=arena.active&&!arena.cleared&&!boss.dead?1:0;
+    arena.leftGateProgress+=Math.sign(target-arena.leftGateProgress)*Math.min(Math.abs(target-arena.leftGateProgress),dt*4);
+  }
   updateMiniBoss(enemy,dt){
     const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);
     if(!arena?.active||arena.cleared){enemy.active=false;enemy.vx=0;enemy.vy+=900*dt;this.moveActor(enemy,dt);return;}
@@ -138,8 +154,22 @@ export class Game {
     else enemy.vx=0;
     enemy.vy+=900*dt;this.moveActor(enemy,dt);
   }
+  updateVaultBoss(enemy,dt){
+    const arena=this.vaultBossArena;
+    if(!arena.active||arena.cleared){enemy.active=false;enemy.vx=0;enemy.vy+=900*dt;this.moveActor(enemy,dt);return;}
+    enemy.active=true;enemy.bossTimer=Math.max(0,enemy.bossTimer-dt);
+    if(enemy.bossMove==='idle'&&enemy.bossTimer===0){const moves=['wardenChargeWindup','wardenLeapWindup','wardenVolleyWindup'];enemy.bossMove=moves[enemy.bossMoveIndex%moves.length];enemy.bossMoveIndex++;enemy.bossTimer=enemy.bossMove==='wardenVolleyWindup'?.55:.42;enemy.vx=0;}
+    else if(enemy.bossMove?.endsWith('Windup')&&enemy.bossTimer===0){
+      if(enemy.bossMove==='wardenChargeWindup'){enemy.bossMove='wardenCharge';enemy.bossTimer=.58;enemy.chargeDirection=Math.sign(this.player.x-enemy.x)||1;}
+      else if(enemy.bossMove==='wardenLeapWindup'){enemy.bossMove='wardenLeap';enemy.bossTimer=1;enemy.vy=-430;enemy.vx=Math.sign(this.player.x-enemy.x)*155;}
+      else{this.spawnVaultVolley(enemy);enemy.bossMove='wardenRecover';enemy.bossTimer=.7;}
+    }else if(enemy.bossMove==='wardenCharge'){enemy.vx=enemy.chargeDirection*245;if(enemy.bossTimer===0){enemy.bossMove='wardenRecover';enemy.bossTimer=.55;enemy.vx=0;}}
+    else if(enemy.bossMove==='wardenLeap'&&enemy.onGround){this.bossShockwave={x:enemy.x+enemy.w/2,y:arena.floorY,radius:0,maxRadius:190,time:.45,hit:false,color:'#75f5ff'};enemy.bossMove='wardenRecover';enemy.bossTimer=.65;enemy.vx=0;this.shake=12;}
+    else if(enemy.bossMove==='wardenRecover'&&enemy.bossTimer===0){enemy.bossMove='idle';enemy.bossTimer=.4;}
+    enemy.vy+=900*dt;this.moveActor(enemy,dt);enemy.x=clamp(enemy.x,arena.x,arena.rightGateX-enemy.w);
+  }
   aim(){return{x:this.player.aimX,y:this.player.aimY};}
-  enemyTargetable(enemy){if(!enemy.isMiniBoss)return true;const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);return Boolean(arena?.active&&!arena.cleared);}
+  enemyTargetable(enemy){if(enemy.isVaultBoss)return this.vaultBossArena.active&&!this.vaultBossArena.cleared;if(!enemy.isMiniBoss)return true;const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);return Boolean(arena?.active&&!arena.cleared);}
   attackDirection(){return{x:this.player.attackAimX,y:this.player.attackAimY};}
   specialDirection(){return{x:this.player.specialAimX,y:this.player.specialAimY};}
   attackBox(){return directionalBox(this.player,this.attackDirection(),ATTACK_RANGE.primary,30);}
@@ -154,11 +184,14 @@ export class Game {
   canRest(){const p=this.player,station=this.restArea.station,dx=(p.x+p.w/2)-(station.x+station.w/2),dy=(p.y+p.h/2)-(station.y+station.h/2);return this.bossArena.cleared&&Math.hypot(dx,dy)<=station.interactionRadius;}
   tryRest(){if(!this.canRest())return false;const p=this.player,station=this.restArea.station;p.lives=3;p.invuln=0;p.vx=0;p.vy=0;p.restFlash=1;const checkpointX=clamp(station.x+station.w+24,this.restArea.x+16,this.restArea.x+this.restArea.w-p.w-16);this.safePosition={x:checkpointX,y:this.restArea.floorY-p.h};this.burst(station.x+station.w/2,station.y+station.h/2,'#d6ff3f',30);return true;}
   tryInteract(){
+    const merchant=this.nearbyMerchant();
+    if(merchant?.service==='damageUpgrade')return this.buyDamageUpgrade(merchant);
     if(this.nearMerchantExit()){const p=this.player,returnPosition=this.merchantRoom.returnPosition;p.x=returnPosition.x;p.y=returnPosition.y;p.vx=0;p.vy=0;this.safePosition={...returnPosition};this.merchantRoom.activeMerchant=null;this.merchantRoom.returnPosition=null;return true;}
     const door=this.nearbyMerchantDoor();
     if(door&&this.merchantDoorUnlocked(door)){const p=this.player;this.merchantRoom.returnPosition={x:p.x,y:p.y};this.merchantRoom.activeMerchant=door;p.x=this.merchantRoom.spawn.x;p.y=this.merchantRoom.spawn.y;p.vx=0;p.vy=0;this.safePosition={...this.merchantRoom.spawn};return true;}
     return this.tryRest();
   }
+  buyDamageUpgrade(merchant){const p=this.player;if(p.damageUpgrades>=1||p.scrap<merchant.cost)return false;p.scrap-=merchant.cost;p.damageUpgrades++;p.primaryDamage++;this.rewardToast={text:'SLASH DAMAGE +1',detail:`${merchant.name} INSTALLED AN EDGE COIL`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffffff',34);return true;}
   unlockAbility(name){if(name in this.player.abilities){this.player.abilities[name]=true;if(name==='doubleJump'&&this.player.onGround)this.player.jumps=2;return true;}return false;}
   gainElectricity(amount=ELECTRICITY_PER_HIT){this.player.electricity=clamp(this.player.electricity+amount,0,ELECTRICITY_MAX);}
   hitTarget(target,damage,hitSet,electricity=ELECTRICITY_PER_HIT){
@@ -168,13 +201,14 @@ export class Game {
     if(target.kind==='junk'&&damage<(target.minimumDamage??1)){target.hitFlash=.18;this.burst(target.x+target.w/2,target.y+target.h/2,'#ffffff',5);return;}
     target.health-=damage;target.hitFlash=.18;this.burst(target.x+target.w/2,target.y+target.h/2,target.kind==='junk'?'#d9a441':'#ff493f',12);
     if(target.health<=0&&!target.dead){
-      target.dead=true;const reward=target.kind==='junk'?target.scrapValue:target.isMiniBoss?target.rewardScrap:(SCRAP_VALUES[target.type]??5);this.player.scrap+=reward;
-      if(target.type==='boss'){this.bossArena.cleared=true;this.bossArena.active=false;this.bossProjectiles=[];this.bossShockwave=null;}
+      target.dead=true;const reward=target.kind==='junk'?target.scrapValue:target.isMiniBoss||target.isVaultBoss?target.rewardScrap:(SCRAP_VALUES[target.type]??5);this.player.scrap+=reward;
+      if(target.type==='boss'){this.bossArena.cleared=true;this.bossArena.active=false;this.bossProjectiles=[];this.bossShockwave=null;const barriers=this.platforms.filter(block=>block.destructibleAfterBoss);this.platforms=this.platforms.filter(block=>!block.destructibleAfterBoss);for(const barrier of barriers)this.burst(barrier.x+barrier.w/2,barrier.y+barrier.h/2,'#ff493f',45);}
+      if(target.isVaultBoss){this.vaultBossArena.cleared=true;this.vaultBossArena.active=false;this.bossProjectiles=[];this.bossShockwave=null;this.rewardToast={text:`+${reward} SCRAP`,detail:`${target.name} DEFEATED // VOLT CORE RELEASED`,time:3};}
       if(target.isMiniBoss){const arena=this.miniBossArenas.find(item=>item.id===target.arenaId);if(arena){arena.cleared=true;arena.active=false;}this.rewardToast={text:`+${reward} SCRAP`,detail:`${target.name} DEFEATED`,time:3};}
-      this.burst(target.x+target.w/2,target.y+target.h/2,'#d6ff3f',target.kind==='junk'?36:target.type==='boss'?70:target.isMiniBoss?48:20);
+      this.burst(target.x+target.w/2,target.y+target.h/2,'#d6ff3f',target.kind==='junk'?36:target.type==='boss'||target.isVaultBoss?70:target.isMiniBoss?48:20);
     }
   }
-  resolvePrimaryAttack(){const p=this.player,box=this.attackBox();for(const e of this.enemies)if(!e.dead&&this.enemyTargetable(e)&&overlaps(box,e))this.hitTarget(e,1,p.attackHits);for(const c of this.conduits)if(overlaps(box,c))this.hitTarget(c,0,p.attackHits);for(const pile of this.junkPiles)if(!pile.dead&&overlaps(box,pile))this.hitTarget(pile,1,p.attackHits,0);}
+  resolvePrimaryAttack(){const p=this.player,box=this.attackBox();for(const e of this.enemies)if(!e.dead&&this.enemyTargetable(e)&&overlaps(box,e))this.hitTarget(e,p.primaryDamage,p.attackHits);for(const c of this.conduits)if(overlaps(box,c))this.hitTarget(c,0,p.attackHits);for(const pile of this.junkPiles)if(!pile.dead&&overlaps(box,pile))this.hitTarget(pile,1,p.attackHits,0);}
   updateCombat(){
     const p=this.player;
     if(p.specialTime<=0)return;
@@ -188,6 +222,7 @@ export class Game {
     const p=this.player;
     for(const e of this.enemies){if(e.dead)continue;e.phase+=dt;
       if(e.type==='boss'){this.updateBoss(e,dt);if(overlaps(p,e))this.damagePlayer('enemy',e.x+e.w/2);continue;}
+      if(e.isVaultBoss){this.updateVaultBoss(e,dt);if(overlaps(p,e))this.damagePlayer('enemy',e.x+e.w/2);continue;}
       if(e.isMiniBoss){this.updateMiniBoss(e,dt);if(overlaps(p,e))this.damagePlayer('enemy',e.x+e.w/2);continue;}
       const distance=Math.hypot((p.x+p.w/2)-(e.x+e.w/2),(p.y+p.h/2)-(e.y+e.h/2));
       if(e.type==='drone'){
@@ -234,6 +269,10 @@ export class Game {
   spawnBossVolley(boss){
     const sx=boss.x+boss.w/2,sy=boss.y+boss.h*.35,tx=this.player.x+this.player.w/2,ty=this.player.y+this.player.h/2,base=Math.atan2(ty-sy,tx-sx);
     for(const offset of[-.2,0,.2]){const angle=base+offset,speed=230;this.bossProjectiles.push({x:sx-7,y:sy-7,w:14,h:14,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:4,dead:false});}
+  }
+  spawnVaultVolley(boss){
+    const sx=boss.x+boss.w/2,sy=boss.y+boss.h*.35,tx=this.player.x+this.player.w/2,ty=this.player.y+this.player.h/2,base=Math.atan2(ty-sy,tx-sx);
+    for(const offset of[-.42,-.21,0,.21,.42]){const angle=base+offset,speed=205;this.bossProjectiles.push({x:sx-6,y:sy-6,w:12,h:12,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.2,dead:false,color:'#75f5ff'});}
   }
   updateBossHazards(dt){
     for(const bolt of this.bossProjectiles){if(bolt.dead)continue;bolt.x+=bolt.vx*dt;bolt.y+=bolt.vy*dt;bolt.life-=dt;if(this.platforms.some(block=>overlaps(bolt,block)))bolt.dead=true;if(!bolt.dead&&overlaps(bolt,this.player)){bolt.dead=true;this.damagePlayer('enemy',bolt.x);}}

@@ -29,8 +29,16 @@ function begin() {
   } else if (debugSpawn === 'rest') {
     const boss=game.boss();boss.dead=true;boss.health=0;
     game.bossArena.cleared=true;
+    game.platforms=game.platforms.filter(block=>!block.destructibleAfterBoss);
     game.player.x=game.restArea.station.x+game.restArea.station.w+40;
     game.player.y=game.restArea.floorY-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'postboss') {
+    const boss=game.boss();boss.dead=true;boss.health=0;
+    game.bossArena.cleared=true;
+    game.platforms=game.platforms.filter(block=>!block.destructibleAfterBoss);
+    game.player.x=7100;
+    game.player.y=250-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'explore') {
     game.player.x=1660;
@@ -41,11 +49,16 @@ function begin() {
     game.player.y=930-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'mini') {
-    game.player.x=2940;
-    game.player.y=1120-game.player.h;
+    const arena=game.miniBossArenas[0];
+    game.player.x=arena.x+80;
+    game.player.y=arena.floorY-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'vault-boss') {
+    game.player.x=game.vaultBossArena.x+60;
+    game.player.y=game.vaultBossArena.floorY-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'volt') {
-    const arena=game.miniBossArenas[0],miniBoss=game.miniBoss(arena.id);arena.cleared=true;miniBoss.dead=true;miniBoss.health=0;
+    const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;
     const pickup=game.pickups.find(item=>item.id==='volt-core');
     game.player.x=pickup.x;
     game.player.y=pickup.y;
@@ -64,6 +77,23 @@ function begin() {
     game.unlockAbility('wallClimb');
     game.player.x=8290;
     game.player.y=-180;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'gauntlet') {
+    game.player.x=9750;
+    game.player.y=650-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'exchange') {
+    game.player.x=14295;
+    game.player.y=660-game.player.h;
+    game.player.scrap=120;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'forge-room') {
+    const forge=game.merchants.find(merchant=>merchant.id==='merchant-forge');
+    game.merchantRoom.activeMerchant=forge;
+    game.merchantRoom.returnPosition={x:14295,y:660-game.player.h};
+    game.player.x=game.merchantRoom.merchant.x-80;
+    game.player.y=game.merchantRoom.merchant.y;
+    game.player.scrap=120;
     game.safePosition={x:game.player.x,y:game.player.y};
   }
   playing = true;

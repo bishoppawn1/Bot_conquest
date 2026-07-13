@@ -5,14 +5,14 @@ import {
   ENEMY_SPAWNS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
   LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
   PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_GATES, REGIONS,
-  REST_AREA, TRAPS, WALL_BLOCKS, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
+  REST_AREA, TRAPS, VAULT_BOSS_ARENA, WALL_BLOCKS, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
 } from '../src/level.js';
 
 const intersects=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 const horizontalGap=(a,b)=>Math.max(0,b.x-(a.x+a.w),a.x-(b.x+b.w));
 
 test('the map occupies a genuine two-dimensional playfield',()=>{
-  assert.equal(WORLD_WIDTH,9600);
+  assert.equal(WORLD_WIDTH,14500);
   assert.equal(WORLD_TOP,-1000);
   assert.equal(WORLD_HEIGHT,2200);
   assert.ok(PLATFORMS.some(block=>block.x+block.w===WORLD_WIDTH));
@@ -43,7 +43,8 @@ test('the main floor stays reversible while the Sunken Vault descends and rises'
   assert.deepEqual(vaultFoundations.map(block=>block.y),[680,750,820,750,680]);
   assert.ok(Math.max(...vaultFoundations.map(block=>block.y))-Math.min(...vaultFoundations.map(block=>block.y))>=140);
   assert.ok(TRAPS.every(trap=>trap.x+trap.w<=2360||trap.x>=3550),'the vault descent must not hide spike softlocks');
-  assert.deepEqual(TRAPS.map(trap=>[trap.x,trap.w]),[[1200,90],[2270,90],[4850,100],[5790,100],[7190,160],[8330,70]]);
+  assert.deepEqual(TRAPS.slice(0,6).map(trap=>[trap.x,trap.w]),[[1200,90],[2270,90],[4850,100],[5790,100],[7190,160],[8330,70]]);
+  assert.equal(TRAPS.filter(trap=>trap.x>=9600&&trap.x<12700).length,4);
 });
 
 test('recesses are unlabeled rooms framed by ceilings and mostly solid floors',()=>{
@@ -64,7 +65,7 @@ test('small end alcoves and structural walls remain physically framed',()=>{
   const pockets=RECESSES.filter(recess=>recess.pocket);
   assert.equal(pockets.length,2);
   assert.equal(POCKET_BLOCKS.length,2);
-  assert.equal(WALL_BLOCKS.filter(block=>block.x<100||block.x>9500).length,2);
+  assert.equal(WALL_BLOCKS.filter(block=>block.x<100||block.x>14400).length,2);
   for(const pocket of pockets){
     assert.ok(FOUNDATION_BLOCKS.some(block=>block.y===pocket.floorY&&block.x<=pocket.x&&block.x+block.w>=pocket.x+pocket.w));
     assert.ok(POCKET_BLOCKS.some(block=>block.y+block.h===pocket.ceilingY&&block.x<=pocket.x&&block.x+block.w>=pocket.x+pocket.w));
@@ -76,7 +77,7 @@ test('three substantial regions require later movement abilities',()=>{
   assert.deepEqual(new Set(ABILITY_GATED_BLOCKS.map(block=>block.requires)),new Set(['doubleJump','dash','wallClimb']));
   assert.equal(new Set(ABILITY_GATED_BLOCKS.map(block=>block.region)).size,3);
   assert.equal(ABILITY_GATED_BLOCKS.filter(block=>block.gateEntry).length,3);
-  assert.ok(ABILITY_GATED_BLOCKS.reduce((sum,block)=>sum+block.w,0)>BRANCH_BLOCKS.reduce((sum,block)=>sum+block.w,0)*.5);
+  assert.ok(ABILITY_GATED_BLOCKS.reduce((sum,block)=>sum+block.w,0)>2500);
   const byId=id=>PLATFORMS.find(block=>block.id===id);
   assert.ok(byId('assembly-cross').y-byId('double-entry').y>164,'double-jump entrance is reachable with the basic jump');
   assert.ok(horizontalGap(byId('foundry-high'),byId('dash-entry'))>300,'dash entrance is reachable with an ordinary leap');
@@ -93,12 +94,12 @@ test('named regions are contiguous and connected by visible gates',()=>{
   }
 });
 
-test('the concourse is the merchant hub while scattered merchants remain',()=>{
-  const hub=REGIONS.find(region=>region.merchantHub);
-  const hubMerchants=MERCHANT_SPAWNS.filter(merchant=>merchant.region===hub.id&&merchant.hub);
-  assert.ok(hubMerchants.length>MERCHANT_SPAWNS.length/2);
+test('merchant doors cluster in the concourse while the Grand Exchange has a damage forge',()=>{
+  const hubMerchants=MERCHANT_SPAWNS.filter(merchant=>merchant.region==='concourse'&&merchant.hub);
+  assert.ok(hubMerchants.length>=3);
   assert.ok(MERCHANT_SPAWNS.filter(merchant=>!merchant.hub).length>=2);
-  assert.ok(new Set(MERCHANT_SPAWNS.map(merchant=>merchant.region)).size>=3);
+  assert.ok(new Set(MERCHANT_SPAWNS.map(merchant=>merchant.region)).size>=4);
+  const forge=MERCHANT_SPAWNS.find(merchant=>merchant.service==='damageUpgrade');assert.equal(forge.region,'exchange');assert.equal(forge.cost,100);
 });
 
 test('ability cores use the generic pickup format',()=>{
@@ -106,7 +107,7 @@ test('ability cores use the generic pickup format',()=>{
   assert.ok(PICKUP_SPAWNS.every(pickup=>pickup.kind==='ability'&&pickup.name&&pickup.key&&pickup.color));
   const vault=PICKUP_SPAWNS.find(pickup=>pickup.id==='vault-core'),volt=PICKUP_SPAWNS.find(pickup=>pickup.id==='volt-core');
   assert.equal(vault.ability,'wallClimb');assert.equal(vault.requiresBossClear,true);assert.ok(vault.x>7190&&vault.x<REST_AREA.x+REST_AREA.w);
-  assert.equal(volt.ability,'electricJab');assert.equal(volt.color,'#75f5ff');assert.ok(volt.x>=2360&&volt.x<3550);
+  assert.equal(volt.ability,'electricJab');assert.equal(volt.color,'#75f5ff');assert.equal(volt.requiresVaultBossClear,true);assert.ok(volt.x>VAULT_BOSS_ARENA.x&&volt.x<VAULT_BOSS_ARENA.rightGateX);
   assert.ok(PICKUP_SPAWNS.every(pickup=>PLATFORMS.every(block=>!intersects(pickup,block))));
 });
 
@@ -121,8 +122,8 @@ test('the boss arena remains a large uncluttered chamber',()=>{
 });
 
 test('starting-kit platforms form varied room networks with combat',()=>{
-  assert.equal(BRANCH_BLOCKS.length,20);
-  assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.zone)).size>=6);
+  assert.equal(BRANCH_BLOCKS.length,33);
+  assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.zone)).size>=9);
   assert.ok(BRANCH_BLOCKS.every(block=>!('step' in block)&&!('branch' in block)&&!block.requires));
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.w)).size>=12);
   const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS];
@@ -131,11 +132,11 @@ test('starting-kit platforms form varied room networks with combat',()=>{
   assert.ok(supportedEnemies.length>=12,'upper and lower exploration spaces need their own encounters');
 });
 
-test('the lower vault has a contained mini-boss floor and a staged escape',()=>{
+test('the lower vault has a contained full-boss floor and a staged escape',()=>{
   assert.equal(LOWER_BLOCKS.length,5);
   const floor=LOWER_BLOCKS.find(block=>block.id==='under-cache'),threshold=LOWER_BLOCKS.find(block=>block.id==='under-threshold');
-  assert.equal(floor.y,1120);assert.equal(floor.x+floor.w,MINI_BOSS_ARENAS[0].gateX);
-  assert.equal(threshold.x,MINI_BOSS_ARENAS[0].gateX+MINI_BOSS_ARENAS[0].gateWidth);
+  assert.equal(floor.y,1120);assert.equal(floor.x+floor.w,VAULT_BOSS_ARENA.rightGateX);
+  assert.equal(threshold.x,VAULT_BOSS_ARENA.rightGateX+VAULT_BOSS_ARENA.gateWidth);
   assert.deepEqual(LOWER_BLOCKS.filter(block=>block.id.startsWith('under-exit-')).map(block=>block.y),[1020,920,820]);
 });
 
@@ -195,7 +196,13 @@ test('interior obstacles preserve reversible recovery floor',()=>{
 
 test('placed gameplay objects are not embedded inside solid geometry',()=>{
   const miniBosses=MINI_BOSS_ARENAS.map(arena=>arena.enemy);
-  for(const object of [...ENEMY_SPAWNS,...miniBosses,...CONDUITS,...JUNK_PILES,...PICKUP_SPAWNS,BOSS_ARENA.boss,REST_AREA.station])assert.ok(PLATFORMS.every(block=>!intersects(object,block)),`object at ${object.x},${object.y} is embedded in a block`);
+  for(const object of [...ENEMY_SPAWNS,...miniBosses,...CONDUITS,...JUNK_PILES,...PICKUP_SPAWNS,BOSS_ARENA.boss,VAULT_BOSS_ARENA.boss,REST_AREA.station])assert.ok(PLATFORMS.every(block=>!intersects(object,block)),`object at ${object.x},${object.y} is embedded in a block`);
+});
+
+test('the three new regions have distinct traversal identities',()=>{
+  const gauntlet=REGIONS.find(region=>region.id==='gauntlet'),drift=REGIONS.find(region=>region.id==='drift'),exchange=REGIONS.find(region=>region.id==='exchange');
+  assert.ok(gauntlet&&drift&&exchange);assert.ok(TRAPS.filter(trap=>trap.x>=gauntlet.x&&trap.x<gauntlet.x+gauntlet.w).length>=3);
+  assert.ok(BRANCH_BLOCKS.filter(block=>block.zone==='drift').length>=4);assert.ok(exchange.w>=1800);assert.ok(BRANCH_BLOCKS.filter(block=>block.zone==='exchange').length>=4);
 });
 
 test('the limited electricity economy remains intact',()=>{

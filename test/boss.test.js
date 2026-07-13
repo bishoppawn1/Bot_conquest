@@ -26,5 +26,5 @@ test('the boss cycles through charge, slam shockwave, and projectile volley',()=
 });
 
 test('defeating the boss awards scrap and retracts the arena gates',()=>{
-  const game=new Game(),boss=game.boss();game.bossArena.active=true;game.bossArena.gateProgress=1;boss.health=1;game.hitTarget(boss,1,new Set(),0);assert.equal(boss.dead,true);assert.equal(game.bossArena.cleared,true);assert.equal(game.player.scrap,SCRAP_VALUES.boss);assert.equal(game.bossProjectiles.length,0);for(let index=0;index<30;index++)game.updateBossArena(1/60);assert.equal(game.bossArena.gateProgress,0);assert.equal(game.bossGates().length,0);
+  const game=new Game(),boss=game.boss(),barriers=game.platforms.filter(block=>block.destructibleAfterBoss);assert.equal(barriers.length,2);game.bossArena.active=true;game.bossArena.gateProgress=1;boss.health=1;game.hitTarget(boss,1,new Set(),0);assert.equal(boss.dead,true);assert.equal(game.bossArena.cleared,true);assert.equal(game.player.scrap,SCRAP_VALUES.boss);assert.equal(game.bossProjectiles.length,0);assert.equal(game.platforms.some(block=>block.destructibleAfterBoss),false);for(let index=0;index<30;index++)game.updateBossArena(1/60);assert.equal(game.bossArena.gateProgress,0);assert.equal(game.bossGates().length,0);
 });

@@ -16,6 +16,8 @@ test('the post-boss white core unlocks wall climb on contact',()=>{
 test('the blue Sunken Vault core unlocks Volt Jab and opens its tutorial popup',()=>{
   const game=new Game();game.enemies=[];const pickup=game.pickups.find(item=>item.id==='volt-core');
   game.player.x=pickup.x;game.player.y=pickup.y;tick(game);
+  assert.equal(pickup.collected,false);assert.equal(game.player.abilities.electricJab,false);
+  game.vaultBossArena.cleared=true;tick(game);
   assert.equal(pickup.collected,true);assert.equal(game.player.abilities.electricJab,true);
   assert.equal(game.abilityPopup.name,'VOLT JAB');assert.equal(game.abilityPopup.key,'F');assert.ok(game.abilityPopup.time>4);
 });
