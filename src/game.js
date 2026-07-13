@@ -16,7 +16,7 @@ export class Game {
     this.spawn={...SPAWN};
     this.safePosition={...this.spawn};
     this.respawnPoint={...this.spawn};this.recoveryCorpse=null;this.inventoryOpen=false;this.inventoryPage=1;this.inventorySelection=0;this.inventoryPages=['map','status','materials','items'];this.mappedRegions=new Set();
-    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:1,lives:3,scrap:0,electricity:0,materials:{titanium:0,uranium:0},purchasedItems:[],primaryDamage:1,damageUpgrades:0,abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
+    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:0,lives:3,scrap:0,electricity:0,materials:{titanium:0,uranium:0},purchasedItems:[],primaryDamage:1,damageUpgrades:0,abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
     this.platforms=PLATFORMS.map(platform=>({...platform}));
     this.traps=TRAPS.map(trap=>({...trap}));
     this.recesses=RECESSES.map(recess=>({...recess}));
@@ -72,6 +72,7 @@ export class Game {
     this.prev={...this.input};
   }
   moveActor(a,dt,isPlayer=false){
+    const wasGrounded=a.onGround;
     const colliders=isPlayer?[...this.platforms,...this.junkPiles.filter(pile=>!pile.dead),...this.bossGates(),...this.vaultBossGates(),...this.miniBossGates()]:this.platforms;
     a.x+=a.vx*dt;a.onWall=0;
     for(const b of colliders)if(overlaps(a,b)){
@@ -81,6 +82,7 @@ export class Game {
     for(const b of colliders)if(overlaps(a,b)){
       if(a.vy>=0){a.y=b.y-a.h;a.vy=0;a.onGround=true;if(isPlayer)a.jumps=a.abilities.doubleJump?2:1;}else{a.y=b.y+b.h;a.vy=0;}
     }
+    if(isPlayer&&wasGrounded&&!a.onGround)a.jumps=Math.min(a.jumps,a.abilities.doubleJump?1:0);
   }
   wallSide(actor){const inset=4,left={x:actor.x-3,y:actor.y+inset,w:3,h:actor.h-inset*2},right={x:actor.x+actor.w,y:actor.y+inset,w:3,h:actor.h-inset*2};if(this.platforms.some(block=>overlaps(left,block)))return-1;if(this.platforms.some(block=>overlaps(right,block)))return 1;return 0;}
   regionAt(x){return this.regions?.find(region=>x>=region.x&&x<region.x+region.w)??null;}
@@ -307,7 +309,7 @@ export class Game {
   destroyPlayer(cause){
     const p=this.player,recovery=cause==='enemy'?{x:p.x,y:p.y+p.h-22}:{x:this.safePosition.x,y:this.safePosition.y+p.h-22};
     this.recoveryCorpse={kind:'corpse',x:clamp(recovery.x,0,WORLD_WIDTH-50),y:recovery.y,w:50,h:22,health:3,maxHealth:3,scrapValue:p.scrap,dead:false,hitFlash:0};
-    p.scrap=0;p.electricity=0;p.lives=3;p.x=this.respawnPoint.x;p.y=this.respawnPoint.y;p.vx=0;p.vy=0;p.invuln=1;p.dashTime=0;p.wallJumpTime=0;p.attackTime=0;p.specialTime=0;p.specialType=null;p.healTime=0;p.onWall=0;p.onGround=false;p.jumps=p.abilities.doubleJump?2:1;this.safePosition={...this.respawnPoint};this.resetUnclearedEncounters();this.respawnOrdinaryEnemies();this.rewardToast={text:'SHELL REBUILT',detail:'RECOVER YOUR WRECKAGE TO RECLAIM SCRAP',time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffffff',30);
+    p.scrap=0;p.electricity=0;p.lives=3;p.x=this.respawnPoint.x;p.y=this.respawnPoint.y;p.vx=0;p.vy=0;p.invuln=1;p.dashTime=0;p.wallJumpTime=0;p.attackTime=0;p.specialTime=0;p.specialType=null;p.healTime=0;p.onWall=0;p.onGround=false;p.jumps=p.abilities.doubleJump?1:0;this.safePosition={...this.respawnPoint};this.resetUnclearedEncounters();this.respawnOrdinaryEnemies();this.rewardToast={text:'SHELL REBUILT',detail:'RECOVER YOUR WRECKAGE TO RECLAIM SCRAP',time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffffff',30);
   }
   damagePlayer(cause='enemy',sourceX=0){const p=this.player;if(p.invuln>0)return;this.cancelHeal();p.lives--;this.shake=12;this.burst(p.x+20,p.y+20,'#ff493f',22);if(p.lives<=0){this.destroyPlayer(cause);return;}if(cause==='spike'||cause==='fall'){const reset=cause==='spike'?this.safePosition:this.spawn;p.x=reset.x;p.y=reset.y;p.vx=0;p.vy=0;p.invuln=.6;}else{p.invuln=1.2;p.vx=(p.x<sourceX?-1:1)*360;p.vy=-300;}}
   burst(x,y,color,count){for(let i=0;i<count;i++)this.particles.push({x,y,vx:(Math.random()-.5)*260,vy:(Math.random()-.5)*260,life:.25+Math.random()*.35,color});}

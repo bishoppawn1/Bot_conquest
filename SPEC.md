@@ -32,6 +32,8 @@ Three mechanical legs connect body-mounted anchors to actual nearby platform sur
 
 There is no restart key or persistent restart control. Losing all three shells rebuilds the bot at the last activated save point, or at the initial spawn before any station has been activated.
 
+The basic jump is grounded: running or walking beyond a platform edge consumes it, so it cannot be delayed until the bot is already airborne. After double jump is unlocked, leaving an edge without jumping preserves exactly one airborne jump, the same allowance that remains after a normal grounded jump.
+
 The basic slash supports left, right, up, and down. Its aim is captured when the attack begins. Pressing Space immediately evaluates the complete 105-unit directional hitbox once. Its only presentation is a 0.09-second straight white slash facing forward; it never extends, retracts, curves, or resembles a pointer.
 
 ### Ability pickups
