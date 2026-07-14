@@ -44,11 +44,11 @@ function begin() {
     Object.assign(game.player,{x:500,y:624,lives:1,scrap:73,electricity:48,invuln:0});
     game.damagePlayer('enemy',600);
   } else if (debugSpawn === 'inventory') {
-    Object.assign(game.player,{scrap:860,primaryDamage:5,damageUpgrades:2,healthUpgrades:1,energyUpgrades:1,internalSlotUpgrades:1,materials:{titanium:4,uranium:1},purchasedItems:[{id:'edge-coil-1',kind:'upgrade',name:'EDGE COIL MK 1',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'edge-coil-2',kind:'upgrade',name:'EDGE COIL MK 2',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'shell-capacity-1',kind:'upgrade',name:'SHELL CAPACITY MK 1',detail:'+1 MAX SHELL'},{id:'capacitor-bank-1',kind:'upgrade',name:'CAPACITOR BANK MK 1',detail:'+25 MAX ELECTRICITY'},{id:'internal-bay-1',kind:'upgrade',name:'INTERNAL BAY 1',detail:'REDUCED-EFFECT MODIFIER SLOT'},{id:'modifier-aegis-filament',modifierId:'aegis-filament',kind:'modifier',name:'AEGIS FILAMENT',equippedSlot:'internal-1'},{id:'modifier-reactive-governor',modifierId:'reactive-governor',kind:'modifier',name:'REACTIVE GOVERNOR',equippedSlot:'legs'},{id:'modifier-extender-arm',modifierId:'extender-arm',kind:'modifier',name:'EXTENDER ARM',equippedSlot:'weapon'}]});
+    Object.assign(game.player,{scrap:860,primaryDamage:5,damageUpgrades:2,healthUpgrades:1,energyUpgrades:1,internalSlotUpgrades:1,materials:{titanium:4,uranium:1},purchasedItems:[{id:'edge-coil-1',kind:'upgrade',name:'EDGE COIL MK 1',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'edge-coil-2',kind:'upgrade',name:'EDGE COIL MK 2',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'shell-capacity-1',kind:'upgrade',name:'SHELL CAPACITY MK 1',detail:'+1 MAX SHELL'},{id:'capacitor-bank-1',kind:'upgrade',name:'CAPACITOR BANK MK 1',detail:'+25 MAX ELECTRICITY'},{id:'internal-bay-1',kind:'upgrade',name:'INTERNAL BAY 1',detail:'REDUCED-EFFECT MODIFIER SLOT'},{id:'modifier-aegis-filament',modifierId:'aegis-filament',kind:'modifier',name:'AEGIS FILAMENT',equippedSlot:'internal-1'},{id:'modifier-reactive-governor',modifierId:'reactive-governor',kind:'modifier',name:'REACTIVE GOVERNOR',equippedSlot:'legs'},{id:'modifier-extender-arm',modifierId:'extender-arm',kind:'modifier',name:'EXTENDER ARM',equippedSlot:'weapon'},{id:'relic-feedback-dynamo',relicId:'feedback-dynamo',kind:'relic',name:'FEEDBACK DYNAMO',detail:'PASSIVE RELIC // TAKING DAMAGE RESTORES 12 ELECTRICITY'},{id:'relic-arc-retort',relicId:'arc-retort',kind:'relic',name:'ARC RETORT',detail:'PASSIVE RELIC // TAKING DAMAGE HITS NEARBY ENEMIES FOR 2'}]});
     game.player.body.internalSlots.push({id:'internal-1',part:'internal',label:'INTERNAL BAY 1',efficiency:.3});game.recomputeBodyStats();game.player.lives=4;game.player.electricity=125;game.player.shield=1;
     for(const region of ['verge','vault','foundry','bastion'])game.mappedRegions.add(region);game.inventoryOpen=true;
     if(debugPanel==='map'||debugPanel==='overview'||debugPanel==='nomap'){game.inventoryPage=0;game.mapOverview=debugPanel==='overview';if(debugPanel==='nomap')game.mapRegionIndex=5;}
-    else if(debugPanel==='materials')game.inventoryPage=2;else if(debugPanel==='items')game.inventoryPage=3;
+    else if(debugPanel==='materials')game.inventoryPage=2;else if(debugPanel==='items'||debugPanel==='relics'){game.inventoryPage=3;if(debugPanel==='relics')game.inventorySelection=game.player.purchasedItems.length-1;}
   } else if (debugSpawn === 'explore') {
     game.player.x=1660;
     game.player.y=140-game.player.h;
@@ -60,8 +60,14 @@ function begin() {
   } else if (debugSpawn === 'deep-vault') {
     game.unlockAbility('wallClimb');
     const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();
-    game.player.x=3145;
-    game.player.y=1080-game.player.h;
+    game.player.x=2890;
+    game.player.y=1120-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'deep-gallery') {
+    game.unlockAbility('wallClimb');
+    const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();
+    const landing=game.platforms.find(block=>block.id==='vault-deep-drop-one');game.player.x=landing.x+80;
+    game.player.y=landing.y-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'vault-upper') {
     game.unlockAbility('wallClimb');
@@ -109,7 +115,7 @@ function begin() {
     for(const enemy of game.enemies)if(!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isDepthBoss&&!enemy.isMiniBoss&&Math.hypot(enemy.originX+enemy.w/2-(door.x+door.w/2),enemy.originY+enemy.h/2-(door.y+door.h/2))<=door.clearRadius)enemy.dead=true;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'merchant-room') {
-    const serviceIds={health:'merchant-shells',energy:'merchant-salvage',internal:'merchant-foundry',modifier:'merchant-parts'},merchantId=serviceIds[debugPanel]??'merchant-parts';game.merchantRoom.activeMerchant=game.merchants.find(merchant=>merchant.id===merchantId);
+    const serviceIds={health:'merchant-shells',energy:'merchant-salvage',internal:'merchant-foundry',modifier:'merchant-parts',response:'merchant-response',relic:'merchant-response',curator:'merchant-curator'},merchantId=serviceIds[debugPanel]??'merchant-parts';game.merchantRoom.activeMerchant=game.merchants.find(merchant=>merchant.id===merchantId);
     game.merchantRoom.returnPosition={x:game.merchantRoom.activeMerchant.x+15,y:game.merchantRoom.activeMerchant.y+game.merchantRoom.activeMerchant.h-game.player.h};
     game.player.x=game.merchantRoom.merchant.x-80;
     game.player.y=game.merchantRoom.merchant.y;

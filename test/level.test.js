@@ -14,8 +14,8 @@ const horizontalGap=(a,b)=>Math.max(0,b.x-(a.x+a.w),a.x-(b.x+b.w));
 test('the map occupies a genuine two-dimensional playfield',()=>{
   assert.equal(WORLD_WIDTH,14500);
   assert.equal(WORLD_TOP,-1000);
-  assert.equal(WORLD_BOTTOM,2240);
-  assert.equal(WORLD_HEIGHT,3240);
+  assert.equal(WORLD_BOTTOM,2700);
+  assert.equal(WORLD_HEIGHT,3700);
   assert.ok(PLATFORMS.some(block=>block.x+block.w===WORLD_WIDTH));
   assert.ok(LOWER_BLOCKS.some(block=>block.y>=1080),'the map needs playable space below the main floor');
   assert.ok(ABILITY_GATED_BLOCKS.some(block=>block.y<=-650),'the map needs substantial upper space');
@@ -104,7 +104,7 @@ test('major upgrade merchants are discoveries beyond the merged Core Bastion',()
   assert.ok(discoveries.filter(merchant=>merchant.x>=9600).length>=2,'major merchants should be spread into later eastern regions');
   assert.ok(new Set(MERCHANT_SPAWNS.map(merchant=>merchant.region)).size>=4);
   const forge=MERCHANT_SPAWNS.find(merchant=>merchant.service==='damageUpgrade');assert.equal(forge.region,'exchange');assert.deepEqual(forge.upgradeCosts,FORGE_UPGRADE_COSTS);assert.ok(FORGE_UPGRADE_COSTS.length>=3&&FORGE_UPGRADE_COSTS[0]>=500);
-  for(const merchant of MERCHANT_SPAWNS){assert.ok(PLATFORMS.every(block=>!intersects(merchant,block)),`${merchant.id} overlaps a solid block`);assert.ok(PLATFORMS.some(block=>block.y===merchant.y+merchant.h&&block.x<=merchant.x&&block.x+block.w>=merchant.x+merchant.w),`${merchant.id} has no supporting surface`);}
+  for(const merchant of MERCHANT_SPAWNS){assert.ok(PLATFORMS.every(block=>!intersects(merchant,block)),`${merchant.id} overlaps a solid block`);assert.ok(ENEMY_SPAWNS.every(enemy=>!intersects(merchant,enemy)),`${merchant.id} overlaps an enemy spawn`);assert.ok(PLATFORMS.some(block=>block.y===merchant.y+merchant.h&&block.x<=merchant.x&&block.x+block.w>=merchant.x+merchant.w),`${merchant.id} has no supporting surface`);}
 });
 
 test('ability and map cores use the generic pickup format',()=>{
@@ -164,9 +164,9 @@ test('the lower vault has a contained full-boss floor and a staged escape',()=>{
 
 test('the Sunken Vault has a Wall-Climb loft and a much deeper Dash-locked return',()=>{
   assert.ok(VAULT_UPPER_BLOCKS.some(block=>block.y<0));assert.ok(VAULT_UPPER_BLOCKS.some(block=>block.kind==='wall'&&block.requires==='wallClimb'));
-  assert.ok(VAULT_DEEP_BLOCKS.some(block=>block.y>=1800));assert.equal(DEPTH_BOSS_ARENA.floorY,2090);assert.ok(DEPTH_BOSS_ARENA.boss.health>VAULT_BOSS_ARENA.boss.health);
+  assert.ok(VAULT_DEEP_BLOCKS.some(block=>block.y>=2100));assert.equal(DEPTH_BOSS_ARENA.floorY,2550);assert.ok(DEPTH_BOSS_ARENA.boss.health>VAULT_BOSS_ARENA.boss.health);
   assert.ok(DEPTH_ACCESS_BLOCKS.some(block=>block.kind==='wall'&&block.requires==='wallClimb'));assert.ok(DEPTH_RETURN_BLOCKS.length>=5);assert.ok(DEPTH_RETURN_BLOCKS.every(block=>block.requires==='dash'));
-  const drops=VAULT_DEEP_BLOCKS.filter(block=>block.id.startsWith('vault-deep-drop'));for(let index=1;index<drops.length;index++)assert.ok(drops[index].y-drops[index-1].y>=230,'the descent should remain irreversible with the basic jump');
+  const climbWalls=VAULT_DEEP_BLOCKS.filter(block=>block.kind==='wall'&&block.requires==='wallClimb'),galleries=VAULT_DEEP_BLOCKS.filter(block=>block.id?.includes('gallery'));assert.equal(climbWalls.length,2);assert.ok(climbWalls.every(block=>block.h>=200));assert.equal(galleries.length,2);assert.ok(galleries.reduce((sum,block)=>sum+block.w,0)>=700);assert.ok(DEPTH_BOSS_ARENA.floorY-VAULT_BOSS_ARENA.floorY>=1400);
 });
 
 test('walkable surfaces leave enough headroom for the bot',()=>{

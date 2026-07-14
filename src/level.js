@@ -1,6 +1,6 @@
 export const WORLD_WIDTH = 14500;
 export const WORLD_TOP = -1000;
-export const WORLD_BOTTOM = 2240;
+export const WORLD_BOTTOM = 2700;
 export const WORLD_HEIGHT = WORLD_BOTTOM-WORLD_TOP;
 
 export const SPAWN = { x:180, y:624 };
@@ -129,31 +129,36 @@ export const VAULT_UPPER_BLOCKS = [
 ];
 
 // Once Wall Climb is owned and the Abyss Warden is dead, the low hatch above
-// this lip retracts. Climbing the short lip exposes a 90-unit shaft; crossing
-// it commits the player to three 240-unit drops ending at the Rift Stalker.
+// this wall retracts. The player must climb over it to reach a broad 200-unit
+// opening; the chamber below then zig-zags through two more climb galleries.
 export const DEPTH_ACCESS_BLOCKS = [
-  {id:'vault-depth-floor-west',x:2860,y:1120,w:210,h:80,kind:'lower'},
-  {id:'vault-depth-access',x:3070,y:1000,w:50,h:120,kind:'wall',requires:'wallClimb',region:'vault-depth',gateEntry:true},
-  {id:'vault-depth-floor-east',x:3210,y:1120,w:120,h:80,kind:'lower'}
+  {id:'vault-depth-floor-west',x:2860,y:1120,w:130,h:80,kind:'lower'},
+  {id:'vault-depth-access',x:2990,y:1000,w:60,h:120,kind:'wall',requires:'wallClimb',region:'vault-depth',gateEntry:true},
+  {id:'vault-depth-floor-east',x:3250,y:1120,w:80,h:80,kind:'lower'}
 ];
 
 export const VAULT_DEEP_BLOCKS = [
-  {id:'vault-deep-drop-one',x:3000,y:1360,w:210,h:50,kind:'vault-depth'},
-  {id:'vault-deep-drop-two',x:3310,y:1600,w:240,h:50,kind:'vault-depth'},
-  {id:'vault-deep-drop-three',x:3000,y:1840,w:230,h:50,kind:'vault-depth'},
-  {id:'depth-boss-left-wall',x:2380,y:1690,w:60,h:400,kind:'wall'},
-  {id:'depth-boss-floor',x:2440,y:2090,w:1110,h:150,kind:'foundation'}
+  {id:'vault-deep-drop-one',x:3000,y:1480,w:300,h:50,kind:'vault-depth'},
+  {id:'vault-deep-climb-west',x:2940,y:1280,w:60,h:200,kind:'wall',requires:'wallClimb',region:'vault-depth'},
+  {id:'vault-deep-gallery-west',x:2600,y:1280,w:340,h:50,kind:'vault-depth',requires:'wallClimb',region:'vault-depth'},
+  {id:'vault-deep-drop-two',x:2460,y:1800,w:320,h:50,kind:'vault-depth'},
+  {id:'vault-deep-climb-east',x:2780,y:1580,w:60,h:220,kind:'wall',requires:'wallClimb',region:'vault-depth'},
+  {id:'vault-deep-gallery-east',x:2840,y:1580,w:380,h:50,kind:'vault-depth',requires:'wallClimb',region:'vault-depth'},
+  {id:'vault-deep-drop-three',x:3170,y:2110,w:320,h:50,kind:'vault-depth'},
+  {id:'depth-boss-left-wall',x:2380,y:2130,w:60,h:420,kind:'wall'},
+  {id:'depth-boss-floor',x:2440,y:2550,w:1110,h:150,kind:'foundation'}
 ];
 
 // These surfaces rise only after the Rift Stalker dies. The two alternating
 // 270-unit gaps require Dash, after which the route rejoins the open hatch.
 export const DEPTH_RETURN_BLOCKS = [
-  {id:'depth-return-one',x:2480,y:1950,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
-  {id:'depth-return-two',x:2910,y:1820,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
-  {id:'depth-return-three',x:2480,y:1690,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
-  {id:'depth-return-four',x:2780,y:1560,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
-  {id:'depth-return-five',x:2780,y:1430,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
-  {id:'depth-return-hatch',x:3130,y:1230,w:80,h:50,kind:'vault-depth-return',requires:'dash'}
+  {id:'depth-return-one',x:2480,y:2410,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-two',x:2910,y:2280,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-three',x:2480,y:2150,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-four',x:2860,y:1950,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-five',x:3230,y:1780,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-climb',x:3390,y:1380,w:60,h:400,kind:'wall',requires:'dash'},
+  {id:'depth-return-hatch',x:3260,y:1380,w:130,h:50,kind:'vault-depth-return',requires:'dash'}
 ];
 
 // Small alcoves exist only at the outer ends of the world, where their back
@@ -209,10 +214,10 @@ export const VAULT_BOSS_ARENA = {
 
 export const DEPTH_BOSS_ARENA = {
   id:'rift-stalker',name:'RIFT STALKER',region:'vault',
-  x:2440,y:1870,w:1030,h:220,floorY:2090,triggerY:1900,
-  rightGateX:3470,gateY:1870,gateWidth:40,gateHeight:220,
+  x:2440,y:2330,w:1030,h:220,floorY:2550,triggerY:2360,
+  rightGateX:3470,gateY:2330,gateWidth:40,gateHeight:220,
   rewardScrap:180,
-  boss:{type:'depthBoss',x:2680,y:2018,w:88,h:72,health:48}
+  boss:{type:'depthBoss',x:2680,y:2478,w:88,h:72,health:48}
 };
 
 export const MINI_BOSS_ARENAS = [
@@ -257,7 +262,7 @@ export const REGION_GATES = [
 export const PICKUP_SPAWNS = [
   {id:'volt-core',kind:'ability',ability:'electricJab',x:3260,y:1080,w:24,h:24,color:'#75f5ff',name:'VOLT JAB',key:'F',description:'Spend electricity to fire a long powered jab.',requiresVaultBossClear:true},
   {id:'vault-core',kind:'ability',ability:'wallClimb',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'WALL CLIMB',key:'W + A / D',description:'Hold W on a wall; press away to jump at any height.',requiresBossClear:true},
-  {id:'dash-core',kind:'ability',ability:'dash',x:2570,y:2066,w:24,h:24,color:'#d6ff3f',name:'DASH DRIVE',key:'SHIFT',description:'Burst across the deep return gaps.',requiresDepthBossClear:true},
+  {id:'dash-core',kind:'ability',ability:'dash',x:2570,y:2526,w:24,h:24,color:'#d6ff3f',name:'DASH DRIVE',key:'SHIFT',description:'Burst across the deep return gaps.',requiresDepthBossClear:true},
   {id:'map-west',kind:'map',x:1080,y:256,w:24,h:24,color:'#d6ff3f',name:'WESTERN SURVEY',regions:['verge','vault']},
   {id:'map-central',kind:'map',x:4740,y:356,w:24,h:24,color:'#d6ff3f',name:'CENTRAL SURVEY',regions:['foundry','bastion']},
   {id:'map-east',kind:'map',x:11020,y:326,w:24,h:24,color:'#d6ff3f',name:'EASTERN SURVEY',regions:['crown','gauntlet','drift','exchange']}
@@ -274,14 +279,29 @@ export const BODY_MODIFIERS = Object.freeze([
   {id:'extender-arm',name:'EXTENDER ARM',cost:950,effects:{core:{maxElectricity:8,label:'+8 CAPACITY'},legs:{moveSpeed:30,label:'+30 MOVE SPEED'},weapon:{attackRange:40,label:'+40 CUTTER RANGE'},internal:{attackRange:12,label:'+12 CUTTER RANGE'}}}
 ]);
 
+// Relics are permanent passive merchant items with distinct conditional
+// effects. They do not occupy body-modifier mounts.
+export const RELICS = Object.freeze([
+  {id:'mender-loop',name:'MENDER LOOP',cost:750,detail:'REPAIR COST -5 ELECTRICITY',effects:{healCostReduction:5}},
+  {id:'impact-damper',name:'IMPACT DAMPER',cost:900,detail:'50% LESS KNOCKBACK AFTER DAMAGE',effects:{knockbackReduction:.5}},
+  {id:'feedback-dynamo',name:'FEEDBACK DYNAMO',cost:850,detail:'TAKING DAMAGE RESTORES 12 ELECTRICITY',effects:{damageElectricity:12}},
+  {id:'execution-coil',name:'EXECUTION COIL',cost:1050,detail:'ENEMY KILLS RESTORE 8 ELECTRICITY',effects:{killElectricity:8}},
+  {id:'arc-retort',name:'ARC RETORT',cost:1100,detail:'TAKING DAMAGE HITS NEARBY ENEMIES FOR 2',effects:{retaliationDamage:2,retaliationRadius:120}},
+  {id:'kinetic-memory',name:'KINETIC MEMORY',cost:1250,detail:'AFTER DAMAGE, NEXT CUTTER SLASH DEALS +2',effects:{nextSlashDamage:2}},
+  {id:'salvage-lens',name:'SALVAGE LENS',cost:800,detail:'ORDINARY ENEMY KILLS DROP +3 SCRAP',effects:{ordinaryScrapBonus:3}},
+  {id:'corpse-key',name:'CORPSE KEY',cost:950,detail:'RECOVERY WRECKS HAVE 1 HEALTH',effects:{corpseHealthReduction:2}}
+]);
+
 // Merchant terminals lead to one sealed, enemy-free interior. A terminal
 // remains locked until its explicitly local enemy group is defeated.
 export const MERCHANT_SPAWNS = [
   {id:'merchant-parts',name:'PARTS BROKER',x:9010,y:-770,w:80,h:120,region:'crown',hub:false,color:'#75f5ff',clearRadius:210,service:'modifierShop',stock:['aegis-filament','reactive-governor','extender-arm']},
-  {id:'merchant-shells',name:'SHELL ARCHIVE',x:13700,y:60,w:80,h:120,region:'exchange',hub:false,color:'#d6ff3f',clearRadius:210,service:'healthUpgrade',upgradeCosts:HEALTH_UPGRADE_COSTS},
-  {id:'merchant-salvage',name:'CAPACITOR EXCHANGE',x:11120,y:250,w:80,h:120,region:'gauntlet',hub:false,color:'#ffb85c',clearRadius:210,service:'energyUpgrade',upgradeCosts:ENERGY_UPGRADE_COSTS},
+  {id:'merchant-shells',name:'SHELL ARCHIVE',x:13700,y:60,w:80,h:120,region:'exchange',hub:false,color:'#d6ff3f',clearRadius:210,service:'healthUpgrade',upgradeCosts:HEALTH_UPGRADE_COSTS,relicStock:['mender-loop','impact-damper']},
+  {id:'merchant-salvage',name:'CAPACITOR EXCHANGE',x:11120,y:250,w:80,h:120,region:'gauntlet',hub:false,color:'#ffb85c',clearRadius:210,service:'energyUpgrade',upgradeCosts:ENERGY_UPGRADE_COSTS,relicStock:['feedback-dynamo','execution-coil']},
   {id:'merchant-verge',name:'VERGE TINKER',x:2160,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:210},
   {id:'merchant-foundry',name:'INNER FOUNDRY',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:210,service:'internalSlot',upgradeCosts:INTERNAL_SLOT_COSTS},
+  {id:'merchant-response',name:'RESPONSE FORGE',x:12450,y:240,w:80,h:120,region:'drift',hub:false,color:'#ff786f',clearRadius:180,service:'relicShop',relicStock:['arc-retort','kinetic-memory']},
+  {id:'merchant-curator',name:'SALVAGE CURATOR',x:12880,y:330,w:80,h:120,region:'exchange',hub:false,color:'#d9a441',clearRadius:180,service:'relicShop',relicStock:['salvage-lens','corpse-key']},
   {id:'merchant-forge',name:'EDGE FORGE',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:210,service:'damageUpgrade',upgradeCosts:FORGE_UPGRADE_COSTS}
 ];
 
@@ -312,7 +332,8 @@ export const RECESSES = [
   {x:2660,y:-930,w:580,h:330,floorY:-600,ceilingY:-930,merchantRoom:true},
   {x:9650,y:-20,w:1600,h:670,floorY:650,ceilingY:-20,openSide:'right'},
   {x:11450,y:-510,w:1100,h:1130,floorY:620,ceilingY:-510,openSide:'left'},
-  {x:12750,y:-700,w:1700,h:1360,floorY:660,ceilingY:-700,openSide:'left'}
+  {x:12750,y:-700,w:1700,h:1360,floorY:660,ceilingY:-700,openSide:'left'},
+  {x:2400,y:1120,w:1150,h:1430,floorY:2550,ceilingY:1120,openSide:'top',deepVault:true}
 ];
 
 export const PLATFORMS = [
@@ -353,6 +374,8 @@ export const ENEMY_SPAWNS = [
   {type:'drone',x:1450,y:300,w:42,h:30},
   {type:'roller',x:2450,y:652,w:46,h:28,patrol:true,patrolRange:45},
   {type:'crawler',x:2760,y:890,w:30,h:40,patrol:true,patrolRange:60},
+  {type:'crawler',x:2670,y:1240,w:30,h:40,patrol:true,patrolRange:70},
+  {type:'hopper',x:2880,y:1535,w:34,h:45},
   {type:'brute',x:3000,y:757,w:58,h:63},
   {type:'drone',x:2860,y:650,w:42,h:30},
   {type:'crawler',x:2640,y:260,w:30,h:40,patrol:true,patrolRange:55},
@@ -394,7 +417,7 @@ export const JUNK_PILES = [
   {x:500,y:544,w:76,h:46,health:5,scrapValue:24},
   {x:740,y:404,w:76,h:46,health:5,scrapValue:26},
   {x:1500,y:94,w:82,h:46,health:5,scrapValue:28},
-  {x:2960,y:994,w:84,h:46,health:6,scrapValue:32},
+  {id:'vault-hatch-junk',x:2960,y:994,w:84,h:46,health:6,scrapValue:32},
   {x:2800,y:884,w:88,h:46,health:6,scrapValue:34},
   {x:3820,y:-46,w:86,h:46,health:6,scrapValue:36},
   {x:4500,y:-276,w:90,h:46,health:6,scrapValue:0,material:{type:'titanium',amount:1}},
