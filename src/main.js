@@ -59,6 +59,18 @@ function begin() {
     game.player.x=1660;
     game.player.y=140-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'expansion-west') {
+    const landing=game.platforms.find(block=>block.id==='verge-substation-west');
+    game.player.x=landing.x+landing.w-game.player.w-10;
+    game.player.y=landing.y-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'bastion-tower') {
+    const boss=game.boss(),landing=game.platforms.find(block=>block.id==='bastion-tower-one');
+    boss.dead=true;boss.health=0;game.bossArena.cleared=true;
+    game.platforms=game.platforms.filter(block=>!block.destructibleAfterBoss);
+    game.player.x=landing.x+landing.w-game.player.w-10;
+    game.player.y=landing.y-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'lower') {
     game.player.x=2720;
     game.player.y=930-game.player.h;
@@ -82,6 +94,11 @@ function begin() {
     game.unlockAbility('wallClimb');
     game.player.x=8890;
     game.player.y=-1450-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'expansion-crown') {
+    const landing=game.platforms.find(block=>block.id==='crown-shaft-west');
+    game.unlockAbility('wallClimb');game.player.x=landing.x+landing.w-game.player.w-10;
+    game.player.y=landing.y-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'crown-boss') {
     game.unlockAbility('wallClimb');
@@ -171,6 +188,11 @@ function begin() {
     game.player.y=660-game.player.h;
     game.player.scrap=6000;
     game.player.materials={titanium:10,uranium:10};
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'expansion-east') {
+    const landing=game.platforms.find(block=>block.id==='exchange-upper-entry');
+    game.player.x=landing.x+landing.w-game.player.w-10;
+    game.player.y=landing.y-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'forge-room') {
     const forge=game.merchants.find(merchant=>merchant.id==='merchant-forge');

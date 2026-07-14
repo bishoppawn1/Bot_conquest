@@ -67,7 +67,8 @@ test('the starting jump physically connects the scattered exploration platforms'
   assert.ok(canControlledDrop('vault-ledge','vault-span'));
   assert.ok(canTraverse('vault-span','vault-ledge'));
   assert.ok(canTraverse('foundry-mid','foundry-west'));
-  assert.ok(canTraverse('foundry-west','foundry-step'));
+  assert.ok(canTraverse('foundry-west','foundry-cooling-high'));
+  assert.ok(canTraverse('foundry-cooling-high','foundry-west'));
   assert.ok(canControlledDrop('vault-span','under-cache'),'the Vault boss entrance does not drop safely into its room');
   assert.equal(PLATFORMS.some(block=>block.id==='vault-high'),false,'the old hiding ledge must not obscure the deep-route hatch');
   assert.ok(canTraverse('under-cache','under-threshold',{clearMini:true}),'the cleared Vault boss room has no exit');
@@ -80,6 +81,23 @@ test('the starting jump physically connects the scattered exploration platforms'
   assert.ok(canStagedJump('under-exit-mid','under-exit-high'),'the exit ascent cannot reach its upper platform');
   assert.ok(canControlledDrop('under-exit-high','under-exit-mid'),'the upper exit platform has no safe return drop');
   assert.ok(canStagedJump('under-exit-high','vault-exit'),'the mini-boss escape cannot rejoin the main route');
+});
+test('the expanded region routes remain reversible',()=>{
+  const routes=[
+    ['verge-substation-west','verge-substation-mid','verge-substation-high','verge-substation-return'],
+    ['vault-flood-shelf-low','vault-flood-shelf-mid','vault-flood-shelf-east'],
+    ['foundry-cooling-west','foundry-cooling-high'],
+    ['foundry-approach-low','foundry-approach-high'],
+    ['bastion-tower-one','bastion-tower-two','bastion-tower-three','bastion-tower-four','bastion-tower-five','bastion-tower-six','bastion-tower-crown'],
+    ['crown-lower-west','crown-lower-mid'],
+    ['gauntlet-service-west','gauntlet-service-high','gauntlet-needle-perch'],
+    ['drift-west-gallery','drift-west-high','drift-upper-west','drift-ceiling-cache'],
+    ['exchange-upper-entry','exchange-upper-west','exchange-archive-west','exchange-archive-mid','exchange-archive-east','exchange-archive-crown']
+  ];
+  for(const route of routes)for(let index=1;index<route.length;index++){
+    assert.equal(canTraverse(route[index-1],route[index]),true,`${route[index-1]} cannot reach ${route[index]}`);
+    assert.equal(canTraverse(route[index],route[index-1]),true,`${route[index]} cannot return to ${route[index-1]}`);
+  }
 });
 test('every main-floor gap is physically jumpable in both directions',()=>{
   for(let index=0;index<FOUNDATION_BLOCKS.length-1;index++)for(const direction of[1,-1]){

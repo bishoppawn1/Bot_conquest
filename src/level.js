@@ -246,6 +246,74 @@ export const DASH_POCKET_BLOCKS = [
   {id:'dash-exchange-cache',x:14220,y:20,w:230,h:50,kind:'dash-pocket',requires:'dash',region:'exchange'}
 ];
 
+// Every named region now contains an additional multi-platform exploration
+// route. These networks fill previously unused vertical volume, reconnect to
+// established surfaces, and preserve the existing lower progression spine.
+export const REGION_EXPANSION_BLOCKS = [
+  {id:'verge-substation-west',x:110,y:330,w:260,h:45,kind:'region-expansion',region:'verge'},
+  {id:'verge-substation-mid',x:390,y:190,w:210,h:50,kind:'region-expansion',region:'verge'},
+  {id:'verge-substation-high',x:720,y:80,w:250,h:45,kind:'region-expansion',region:'verge'},
+  {id:'verge-substation-return',x:1000,y:180,w:180,h:45,kind:'region-expansion',region:'verge'},
+  {id:'verge-assembly-pocket',x:1320,y:360,w:210,h:45,kind:'region-expansion',region:'verge'},
+  {id:'verge-east-watch',x:2110,y:130,w:180,h:45,kind:'region-expansion',region:'verge'},
+
+  {id:'vault-flood-shelf-west',x:2360,y:560,w:100,h:45,kind:'region-expansion',region:'vault'},
+  {id:'vault-flood-shelf-mid',x:3140,y:450,w:180,h:45,kind:'region-expansion',region:'vault'},
+  {id:'vault-flood-shelf-low',x:2940,y:600,w:180,h:45,kind:'region-expansion',region:'vault'},
+  {id:'vault-flood-shelf-east',x:3370,y:520,w:100,h:45,kind:'region-expansion',region:'vault'},
+  {id:'vault-upper-side-west',x:2380,y:100,w:160,h:45,kind:'region-expansion',region:'vault',requires:'wallClimb'},
+  {id:'vault-upper-side-east',x:3210,y:80,w:180,h:50,kind:'region-expansion',region:'vault',requires:'wallClimb'},
+
+  {id:'foundry-cooling-west',x:3600,y:400,w:220,h:45,kind:'region-expansion',region:'foundry'},
+  {id:'foundry-cooling-high',x:3840,y:250,w:210,h:45,kind:'region-expansion',region:'foundry'},
+  {id:'foundry-cooling-low',x:4050,y:500,w:180,h:45,kind:'region-expansion',region:'foundry'},
+  {id:'foundry-crane-perch',x:4690,y:240,w:150,h:45,kind:'region-expansion',region:'foundry'},
+  {id:'foundry-approach-low',x:5000,y:520,w:180,h:45,kind:'region-expansion',region:'foundry'},
+  {id:'foundry-approach-high',x:5190,y:370,w:120,h:45,kind:'region-expansion',region:'foundry'},
+  {id:'foundry-east-watch',x:5620,y:100,w:170,h:45,kind:'region-expansion',region:'foundry'},
+
+  {id:'bastion-tower-one',x:5980,y:100,w:220,h:50,kind:'region-expansion',region:'bastion'},
+  {id:'bastion-tower-two',x:6280,y:-40,w:240,h:50,kind:'region-expansion',region:'bastion'},
+  {id:'bastion-tower-three',x:6600,y:-180,w:220,h:45,kind:'region-expansion',region:'bastion'},
+  {id:'bastion-tower-four',x:6900,y:-320,w:210,h:50,kind:'region-expansion',region:'bastion'},
+  {id:'bastion-tower-five',x:6580,y:-460,w:220,h:50,kind:'region-expansion',region:'bastion'},
+  {id:'bastion-tower-six',x:6280,y:-600,w:220,h:50,kind:'region-expansion',region:'bastion'},
+  {id:'bastion-tower-crown',x:5980,y:-740,w:220,h:50,kind:'region-expansion',region:'bastion'},
+
+  {id:'crown-lower-west',x:8400,y:350,w:180,h:45,kind:'region-expansion',region:'crown'},
+  {id:'crown-lower-mid',x:8600,y:200,w:180,h:45,kind:'region-expansion',region:'crown'},
+  {id:'crown-lower-east',x:9140,y:420,w:180,h:45,kind:'region-expansion',region:'crown'},
+  {id:'crown-lower-watch',x:9360,y:80,w:180,h:45,kind:'region-expansion',region:'crown'},
+  {id:'crown-shaft-west',x:8420,y:-1030,w:260,h:50,kind:'region-expansion',region:'crown',requires:'wallClimb'},
+  {id:'crown-shaft-mid',x:8740,y:-1170,w:220,h:50,kind:'region-expansion',region:'crown',requires:'wallClimb'},
+  {id:'crown-shaft-east',x:9320,y:-1100,w:240,h:50,kind:'region-expansion',region:'crown',requires:'wallClimb'},
+  {id:'crown-shaft-cache',x:8420,y:-1310,w:220,h:50,kind:'region-expansion',region:'crown',requires:'wallClimb'},
+
+  {id:'gauntlet-service-west',x:9600,y:450,w:180,h:45,kind:'region-expansion',region:'gauntlet'},
+  {id:'gauntlet-service-high',x:9780,y:300,w:120,h:45,kind:'region-expansion',region:'gauntlet'},
+  {id:'gauntlet-needle-perch',x:9600,y:150,w:180,h:45,kind:'region-expansion',region:'gauntlet'},
+  {id:'gauntlet-service-mid',x:10390,y:430,w:170,h:45,kind:'region-expansion',region:'gauntlet'},
+  {id:'gauntlet-service-east',x:10620,y:320,w:180,h:45,kind:'region-expansion',region:'gauntlet'},
+  {id:'gauntlet-capacitor-roof',x:11130,y:190,w:170,h:45,kind:'region-expansion',region:'gauntlet'},
+  {id:'gauntlet-exit-watch',x:11200,y:480,w:150,h:45,kind:'region-expansion',region:'gauntlet'},
+
+  {id:'drift-west-gallery',x:11440,y:280,w:240,h:45,kind:'region-expansion',region:'drift'},
+  {id:'drift-west-high',x:11680,y:130,w:180,h:45,kind:'region-expansion',region:'drift'},
+  {id:'drift-upper-west',x:11440,y:-20,w:240,h:45,kind:'region-expansion',region:'drift'},
+  {id:'drift-east-gallery',x:12400,y:170,w:170,h:45,kind:'region-expansion',region:'drift'},
+  {id:'drift-upper-mid',x:12180,y:30,w:180,h:45,kind:'region-expansion',region:'drift'},
+  {id:'drift-upper-east',x:12480,y:-150,w:170,h:45,kind:'region-expansion',region:'drift'},
+  {id:'drift-ceiling-cache',x:11680,y:-170,w:220,h:45,kind:'region-expansion',region:'drift'},
+
+  {id:'exchange-upper-entry',x:13040,y:300,w:240,h:45,kind:'region-expansion',region:'exchange'},
+  {id:'exchange-upper-west',x:13240,y:150,w:200,h:45,kind:'region-expansion',region:'exchange'},
+  {id:'exchange-archive-west',x:13000,y:0,w:200,h:45,kind:'region-expansion',region:'exchange'},
+  {id:'exchange-archive-mid',x:13300,y:-150,w:220,h:45,kind:'region-expansion',region:'exchange'},
+  {id:'exchange-archive-east',x:13580,y:-300,w:220,h:45,kind:'region-expansion',region:'exchange'},
+  {id:'exchange-archive-crown',x:13380,y:-450,w:200,h:45,kind:'region-expansion',region:'exchange'},
+  {id:'exchange-floor-market',x:14100,y:520,w:140,h:45,kind:'region-expansion',region:'exchange'}
+];
+
 export const BOSS_ARENA = {
   x:5890,y:350,w:1300,h:250,floorY:600,
   triggerX:6000,leftGateX:5905,rightGateX:7133,gateWidth:42,
@@ -418,6 +486,7 @@ export const PLATFORMS = [
   ...CROWN_UPPER_BLOCKS,
   ...FIELD_ANNEX_BLOCKS,
   ...DASH_POCKET_BLOCKS,
+  ...REGION_EXPANSION_BLOCKS,
   ...MERCHANT_ROOM_BLOCKS
 ];
 
@@ -434,7 +503,26 @@ export const TRAPS = [
   {id:'gauntlet-east-spikes',x:10710,y:480,w:60,h:20,platform:'gauntlet-east-perch'},
   {id:'gauntlet-overlook-spikes',x:11030,y:350,w:70,h:20,platform:'gauntlet-overlook'},
   {x:11300,y:680,w:100,h:150},
-  {x:12600,y:690,w:100,h:110}
+  {x:12600,y:690,w:100,h:110},
+  {id:'verge-substation-spikes',x:800,y:60,w:70,h:20,platform:'verge-substation-high'},
+  {id:'verge-watch-spikes',x:2150,y:110,w:60,h:20,platform:'verge-east-watch'},
+  {id:'vault-flood-spikes',x:3190,y:430,w:60,h:20,platform:'vault-flood-shelf-mid'},
+  {id:'vault-upper-side-spikes',x:2430,y:80,w:60,h:20,platform:'vault-upper-side-west'},
+  {id:'foundry-cooling-spikes',x:3890,y:230,w:70,h:20,platform:'foundry-cooling-high'},
+  {id:'foundry-watch-spikes',x:5680,y:80,w:60,h:20,platform:'foundry-east-watch'},
+  {id:'bastion-tower-two-spikes',x:6360,y:-60,w:70,h:20,platform:'bastion-tower-two'},
+  {id:'bastion-tower-four-spikes',x:6960,y:-340,w:70,h:20,platform:'bastion-tower-four'},
+  {id:'bastion-tower-six-spikes',x:6350,y:-620,w:70,h:20,platform:'bastion-tower-six'},
+  {id:'crown-lower-spikes',x:8650,y:180,w:70,h:20,platform:'crown-lower-mid'},
+  {id:'crown-shaft-spikes',x:8810,y:-1190,w:70,h:20,platform:'crown-shaft-mid'},
+  {id:'gauntlet-service-west-spikes',x:9660,y:430,w:70,h:20,platform:'gauntlet-service-west'},
+  {id:'gauntlet-service-mid-spikes',x:10440,y:410,w:70,h:20,platform:'gauntlet-service-mid'},
+  {id:'gauntlet-service-east-spikes',x:10680,y:300,w:70,h:20,platform:'gauntlet-service-east'},
+  {id:'gauntlet-capacitor-spikes',x:11200,y:170,w:60,h:20,platform:'gauntlet-capacitor-roof'},
+  {id:'drift-upper-spikes',x:12230,y:10,w:70,h:20,platform:'drift-upper-mid'},
+  {id:'exchange-upper-spikes',x:13290,y:130,w:70,h:20,platform:'exchange-upper-west'},
+  {id:'exchange-archive-spikes',x:13650,y:-320,w:70,h:20,platform:'exchange-archive-east'},
+  {id:'exchange-market-spikes',x:14170,y:500,w:60,h:20,platform:'exchange-floor-market'}
 ];
 
 export const GAUNTLET_HAZARDS = Object.freeze([
@@ -487,7 +575,71 @@ export const ENEMY_SPAWNS = [
   {type:'roller',x:13320,y:632,w:46,h:28,patrol:true,patrolRange:100},
   {type:'hopper',x:13450,y:615,w:34,h:45},
   {type:'brute',x:13650,y:597,w:58,h:63},
-  {type:'drone',x:13650,y:260,w:42,h:30}
+  {type:'drone',x:13650,y:260,w:42,h:30},
+
+  {type:'crawler',x:150,y:290,w:30,h:40,patrol:true,patrolRange:70},
+  {type:'drone',x:610,y:90,w:42,h:30},
+  {type:'roller',x:860,y:52,w:46,h:28,patrol:true,patrolRange:65,patrolDirection:-1},
+  {type:'crawler',x:1370,y:320,w:30,h:40,patrol:true,patrolRange:55},
+  {type:'hopper',x:2170,y:85,w:34,h:45},
+
+  {type:'crawler',x:2390,y:520,w:30,h:40,patrol:true,patrolRange:30},
+  {type:'roller',x:2990,y:572,w:46,h:28,patrol:true,patrolRange:60},
+  {type:'hopper',x:3400,y:475,w:34,h:45},
+  {type:'drone',x:3110,y:380,w:42,h:30},
+  {type:'crawler',x:2410,y:60,w:30,h:40,patrol:true,patrolRange:45},
+  {type:'brute',x:3320,y:17,w:58,h:63},
+
+  {type:'crawler',x:3650,y:360,w:30,h:40,patrol:true,patrolRange:65},
+  {type:'hopper',x:3920,y:205,w:34,h:45},
+  {type:'roller',x:4730,y:212,w:46,h:28,patrol:true,patrolRange:45},
+  {type:'brute',x:5200,y:307,w:58,h:63},
+  {type:'drone',x:5300,y:260,w:42,h:30},
+  {type:'crawler',x:5650,y:60,w:30,h:40,patrol:true,patrolRange:50},
+
+  {type:'crawler',x:6030,y:60,w:30,h:40,patrol:true,patrolRange:65},
+  {type:'hopper',x:6340,y:-85,w:34,h:45},
+  {type:'roller',x:6660,y:-208,w:46,h:28,patrol:true,patrolRange:55},
+  {type:'brute',x:6950,y:-383,w:58,h:63},
+  {type:'drone',x:6500,y:-350,w:42,h:30},
+  {type:'crawler',x:6640,y:-500,w:30,h:40,patrol:true,patrolRange:55},
+  {type:'hopper',x:6340,y:-645,w:34,h:45},
+  {type:'roller',x:6060,y:-768,w:46,h:28,patrol:true,patrolRange:60,patrolDirection:-1},
+
+  {type:'crawler',x:8440,y:310,w:30,h:40,patrol:true,patrolRange:55},
+  {type:'hopper',x:8650,y:155,w:34,h:45},
+  {type:'roller',x:9180,y:392,w:46,h:28,patrol:true,patrolRange:45},
+  {type:'roller',x:9410,y:52,w:46,h:28,patrol:true,patrolRange:50},
+  {type:'crawler',x:8480,y:-1070,w:30,h:40,patrol:true,patrolRange:70},
+  {type:'hopper',x:8790,y:-1215,w:34,h:45},
+  {type:'drone',x:9400,y:-1260,w:42,h:30},
+
+  {type:'crawler',x:9610,y:410,w:30,h:40,patrol:true,patrolRange:20},
+  {type:'hopper',x:9820,y:255,w:34,h:45},
+  {type:'roller',x:9650,y:122,w:46,h:28,patrol:true,patrolRange:45},
+  {type:'brute',x:10430,y:367,w:58,h:63},
+  {type:'crawler',x:10640,y:280,w:30,h:40,patrol:true,patrolRange:50},
+  {type:'drone',x:10880,y:150,w:42,h:30},
+  {type:'roller',x:11150,y:162,w:46,h:28,patrol:true,patrolRange:45},
+  {type:'hopper',x:11240,y:435,w:34,h:45},
+
+  {type:'crawler',x:11470,y:240,w:30,h:40,patrol:true,patrolRange:55},
+  {type:'roller',x:11720,y:102,w:46,h:28,patrol:true,patrolRange:55},
+  {type:'hopper',x:11480,y:-65,w:34,h:45},
+  {type:'crawler',x:12420,y:130,w:30,h:40,patrol:true,patrolRange:45},
+  {type:'brute',x:12220,y:-33,w:58,h:63},
+  {type:'drone',x:12000,y:-180,w:42,h:30},
+  {type:'roller',x:12520,y:-178,w:46,h:28,patrol:true,patrolRange:45},
+  {type:'hopper',x:11850,y:-215,w:34,h:45},
+
+  {type:'crawler',x:13080,y:260,w:30,h:40,patrol:true,patrolRange:45},
+  {type:'hopper',x:13290,y:105,w:34,h:45},
+  {type:'roller',x:13050,y:-28,w:46,h:28,patrol:true,patrolRange:55},
+  {type:'brute',x:13350,y:-213,w:58,h:63},
+  {type:'drone',x:13500,y:-100,w:42,h:30},
+  {type:'crawler',x:13620,y:-340,w:30,h:40,patrol:true,patrolRange:55},
+  {type:'hopper',x:13430,y:-495,w:34,h:45},
+  {type:'roller',x:14100,y:492,w:46,h:28,patrol:true,patrolRange:35}
 ];
 
 export const CONDUITS = [
@@ -520,5 +672,13 @@ export const JUNK_PILES = [
   {x:10280,y:344,w:82,h:46,health:6,scrapValue:38},
   {x:12160,y:294,w:82,h:46,health:6,scrapValue:45},
   {x:13560,y:274,w:88,h:46,health:7,scrapValue:50},
-  {x:14000,y:384,w:90,h:46,health:7,scrapValue:55}
+  {x:14000,y:384,w:90,h:46,health:7,scrapValue:55},
+  {id:'verge-substation-cache',x:1040,y:134,w:80,h:46,health:5,scrapValue:34},
+  {id:'vault-upper-side-junk',x:3210,y:34,w:84,h:46,health:7,scrapValue:52},
+  {id:'foundry-watch-cache',x:5660,y:54,w:80,h:46,health:6,scrapValue:44},
+  {id:'bastion-tower-cache',x:6020,y:-786,w:86,h:46,health:7,scrapValue:58},
+  {id:'crown-shaft-junk',x:8460,y:-1356,w:86,h:46,health:7,scrapValue:56},
+  {id:'gauntlet-capacitor-cache',x:11140,y:144,w:82,h:46,health:7,scrapValue:54},
+  {id:'drift-ceiling-junk',x:11720,y:-216,w:84,h:46,health:6,scrapValue:48},
+  {id:'exchange-archive-junk',x:13490,y:-496,w:86,h:46,health:8,scrapValue:68}
 ];

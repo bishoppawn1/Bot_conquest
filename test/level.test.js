@@ -4,7 +4,7 @@ import {
   ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, CROWN_BOSS_ARENA, CROWN_UPPER_BLOCKS, DASH_POCKET_BLOCKS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
   ENEMY_SPAWNS, FIELD_ANNEX_BLOCKS, FORGE_UPGRADE_COSTS, FORGE_UPGRADE_RECIPES, FOUNDATION_BLOCKS, GAUNTLET_HAZARDS, INTERIOR_BLOCKS, JUNK_PILES,
   LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
-  PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_GATES, REGIONS,
+  PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_EXPANSION_BLOCKS, REGION_GATES, REGIONS,
   REST_AREA, TRAPS, VAULT_BOSS_ARENA, VAULT_DEEP_BLOCKS, VAULT_UPPER_BLOCKS, WALL_BLOCKS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
 } from '../src/level.js';
 
@@ -23,7 +23,7 @@ test('the map occupies a genuine two-dimensional playfield',()=>{
 });
 
 test('suspended platforms vary in width and thickness',()=>{
-  const suspended=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...DASH_POCKET_BLOCKS,...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex')];
+  const suspended=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...DASH_POCKET_BLOCKS,...REGION_EXPANSION_BLOCKS,...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex')];
   assert.ok(FOUNDATION_BLOCKS.filter(block=>!block.id.startsWith('vault-')).every(block=>block.h>=120));
   assert.ok(FOUNDATION_BLOCKS.filter(block=>block.id.startsWith('vault-')).every(block=>block.h===60));
   assert.ok(suspended.every(block=>block.h>=40&&block.h<=80));
@@ -43,9 +43,9 @@ test('the main floor stays reversible while the Sunken Vault descends and rises'
   const vaultFoundations=FOUNDATION_BLOCKS.filter(block=>block.id?.startsWith('vault-'));
   assert.deepEqual(vaultFoundations.map(block=>block.y),[680,750,820,750,680]);
   assert.ok(Math.max(...vaultFoundations.map(block=>block.y))-Math.min(...vaultFoundations.map(block=>block.y))>=140);
-  assert.ok(TRAPS.every(trap=>trap.x+trap.w<=2360||trap.x>=3550),'the vault descent must not hide spike softlocks');
+  assert.ok(TRAPS.every(trap=>trap.x+trap.w<=2360||trap.x>=3550||trap.y<650||trap.y>=1120),'the main Vault descent must not hide spike softlocks');
   assert.deepEqual(TRAPS.slice(0,6).map(trap=>[trap.x,trap.w]),[[1200,90],[2270,90],[4850,100],[5790,100],[7190,160],[8330,70]]);
-  assert.equal(TRAPS.filter(trap=>trap.x>=9600&&trap.x<11400).length,6);
+  assert.ok(TRAPS.filter(trap=>trap.x>=9600&&trap.x<11400).length>=10);
 });
 
 test('recesses are unlabeled rooms framed by ceilings and mostly solid floors',()=>{
@@ -108,6 +108,20 @@ test('Dash creates optional pockets across ordinary regions',()=>{
   for(const region of new Set(DASH_POCKET_BLOCKS.map(block=>block.region)))assert.ok(DASH_POCKET_BLOCKS.filter(block=>block.region===region).length>=2,`${region} lacks a real Dash pocket`);
 });
 
+test('every named region has a substantial populated expansion route',()=>{
+  assert.equal(REGION_EXPANSION_BLOCKS.length,55);
+  for(const region of REGIONS){
+    const blocks=REGION_EXPANSION_BLOCKS.filter(block=>block.region===region.id),enemies=ENEMY_SPAWNS.filter(enemy=>enemy.x+enemy.w/2>=region.x&&enemy.x+enemy.w/2<region.x+region.w),regionTraps=TRAPS.filter(trap=>trap.x+trap.w/2>=region.x&&trap.x+trap.w/2<region.x+region.w&&trap.platform);
+    assert.ok(blocks.length>=6,`${region.name} needs a multi-platform expansion`);
+    assert.ok(Math.max(...blocks.map(block=>block.y))-Math.min(...blocks.map(block=>block.y))>=200,`${region.name} expansion is too flat`);
+    assert.ok(enemies.length>=5,`${region.name} needs more exploration encounters`);
+    assert.ok(regionTraps.length>=1,`${region.name} needs at least one platform hazard`);
+  }
+  for(const trap of TRAPS.filter(trap=>trap.platform)){
+    const support=PLATFORMS.find(block=>block.id===trap.platform);assert.ok(support,`${trap.id} has no named support`);assert.equal(trap.y+trap.h,support.y);assert.ok(trap.x>=support.x&&trap.x+trap.w<=support.x+support.w);assert.ok(Math.max(trap.x-support.x,support.x+support.w-(trap.x+trap.w))>=50,`${trap.id} leaves no safe landing side`);
+  }
+});
+
 test('named regions are contiguous and connected by visible gates',()=>{
   assert.equal(REGIONS.length,8);assert.equal(REGIONS.some(region=>region.id==='concourse'),false);
   const bastion=REGIONS.find(region=>region.id==='bastion');assert.equal(bastion.x+bastion.w,8400);
@@ -151,10 +165,7 @@ test('rare material salvage is sparse and hidden on ability-gated routes',()=>{
 test('the boss arena remains a large uncluttered chamber',()=>{
   assert.ok(BOSS_ARENA.w>=1200&&BOSS_ARENA.h>=240);
   assert.ok(INTERIOR_BLOCKS.every(block=>!intersects(block,BOSS_ARENA)));
-  for(const object of [...ENEMY_SPAWNS,...CONDUITS,...JUNK_PILES]){
-    const center=object.x+object.w/2;
-    assert.ok(center<BOSS_ARENA.x||center>BOSS_ARENA.x+BOSS_ARENA.w,`ordinary object at ${object.x} clutters the boss arena`);
-  }
+  for(const object of [...ENEMY_SPAWNS,...CONDUITS,...JUNK_PILES])assert.equal(intersects(object,BOSS_ARENA),false,`ordinary object at ${object.x},${object.y} clutters the boss chamber`);
   assert.equal(BOSS_ARENA.boss.y+BOSS_ARENA.boss.h,BOSS_ARENA.floorY);
 });
 
@@ -163,7 +174,7 @@ test('starting-kit platforms form varied room networks with combat',()=>{
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.zone)).size>=9);
   assert.ok(BRANCH_BLOCKS.every(block=>!('step' in block)&&!('branch' in block)&&!block.requires));
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.w)).size>=12);
-  const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS,...FIELD_ANNEX_BLOCKS,...DASH_POCKET_BLOCKS];
+  const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS,...FIELD_ANNEX_BLOCKS,...DASH_POCKET_BLOCKS,...REGION_EXPANSION_BLOCKS];
   const combatants=[...ENEMY_SPAWNS,...MINI_BOSS_ARENAS.map(arena=>arena.enemy)];
   const supportedEnemies=combatants.filter(enemy=>enemy.type!=='drone'&&combatSurfaces.some(block=>enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w&&enemy.y+enemy.h===block.y));
   assert.ok(supportedEnemies.length>=12,'upper and lower exploration spaces need their own encounters');
@@ -175,7 +186,7 @@ test('main-route ground encounters have room to fight away from spike-and-step p
     const support=PLATFORMS.find(block=>enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w&&enemy.y+enemy.h===block.y);
     if(!support||!FOUNDATION_BLOCKS.includes(support))continue;
     const nearbyStep=INTERIOR_BLOCKS.find(block=>block.y+block.h===support.y&&(Math.abs(block.x-(enemy.x+enemy.w))<110||Math.abs(enemy.x-(block.x+block.w))<110));
-    const nearbyTrap=TRAPS.find(trap=>Math.abs(trap.x-(enemy.x+enemy.w))<110||Math.abs(enemy.x-(trap.x+trap.w))<110);
+    const nearbyTrap=TRAPS.find(trap=>Math.abs(trap.y-support.y)<160&&(Math.abs(trap.x-(enemy.x+enemy.w))<110||Math.abs(enemy.x-(trap.x+trap.w))<110));
     assert.ok(!(nearbyStep&&nearbyTrap),`ground enemy at ${enemy.x} is pinned between a step and spikes`);
   }
 });
@@ -197,7 +208,7 @@ test('the Sunken Vault has a Wall-Climb loft and a much deeper Dash-locked retur
 
 test('walkable surfaces leave enough headroom for the bot',()=>{
   const botWidth=50,botHeight=36;
-  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper'),...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex'),...DASH_POCKET_BLOCKS]){
+  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper'),...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex'),...DASH_POCKET_BLOCKS,...REGION_EXPANSION_BLOCKS]){
     const blockers=PLATFORMS.filter(block=>block!==surface&&block.y<surface.y&&block.y+block.h>surface.y-botHeight)
       .map(block=>[Math.max(surface.x,block.x),Math.min(surface.x+surface.w,block.x+block.w)])
       .filter(([start,end])=>end>start).sort((a,b)=>a[0]-b[0]);
