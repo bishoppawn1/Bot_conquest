@@ -251,7 +251,8 @@ export class Game {
       if(enemy.bossMove==='stalkerDashWindup'){
         const playerLeft=this.player.x+this.player.w/2<arena.x+arena.w/2;enemy.x=playerLeft?arena.rightGateX-enemy.w-26:arena.x+26;enemy.y=arena.floorY-enemy.h;enemy.vy=0;enemy.chargeDirection=playerLeft?-1:1;enemy.bossMove='stalkerDash';enemy.bossTimer=1.35;
       }else if(enemy.bossMove==='stalkerDropWindup'){
-        enemy.x=clamp(this.player.x+this.player.w/2-enemy.w/2,arena.x+18,arena.rightGateX-enemy.w-18);enemy.y=arena.y+28;enemy.vx=0;enemy.vy=0;enemy.onGround=false;enemy.bossMove='stalkerDropHover';enemy.bossTimer=.5;
+        enemy.x=clamp(this.player.x+this.player.w/2-enemy.w/2,arena.x+18,arena.rightGateX-enemy.w-18);enemy.y=arena.y-enemy.h;enemy.vx=0;enemy.vy=0;enemy.onGround=false;enemy.bossMove='stalkerDropHover';enemy.bossTimer=.5;
+        return;
       }else{this.spawnDepthTracker(enemy);enemy.bossMove='stalkerRecover';enemy.bossTimer=.75;}
     }else if(enemy.bossMove==='stalkerDash'){
       enemy.vx=enemy.chargeDirection*520;if(enemy.bossTimer===0||enemy.x<=arena.x||enemy.x+enemy.w>=arena.rightGateX){enemy.bossMove='stalkerRecover';enemy.bossTimer=.6;enemy.vx=0;}

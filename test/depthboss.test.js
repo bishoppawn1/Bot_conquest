@@ -40,7 +40,7 @@ test('the Rift Stalker cycles through dash, overhead drop, and tracking bolt mov
 
 test('the Rift Stalker visibly hovers for half a second before its downward smash',()=>{
   const game=new Game(),boss=game.depthBoss();game.depthBossArena.active=true;boss.active=true;boss.bossMove='stalkerDropWindup';boss.bossTimer=0;game.player.x=3140;game.updateDepthBoss(boss,1/60);
-  assert.equal(boss.bossMove,'stalkerDropHover');const hoverY=boss.y;for(let frame=0;frame<28;frame++){game.updateDepthBoss(boss,1/60);assert.equal(boss.bossMove,'stalkerDropHover');assert.equal(boss.y,hoverY);assert.equal(boss.vy,0);}
+  assert.equal(boss.bossMove,'stalkerDropHover');const hoverY=boss.y;assert.equal(hoverY,game.depthBossArena.y-boss.h);assert.ok(game.depthBossArena.floorY-(hoverY+boss.h)>=200);for(let frame=0;frame<28;frame++){game.updateDepthBoss(boss,1/60);assert.equal(boss.bossMove,'stalkerDropHover');assert.equal(boss.y,hoverY);assert.equal(boss.vy,0);}
   for(let frame=0;frame<3&&boss.bossMove==='stalkerDropHover';frame++)game.updateDepthBoss(boss,1/60);assert.equal(boss.bossMove,'stalkerDrop');assert.ok(boss.vy>0);
 });
 
