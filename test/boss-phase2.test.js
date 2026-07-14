@@ -4,11 +4,22 @@ import { Game } from '../src/game.js';
 
 const enterPhaseTwo=(game,boss)=>{boss.health=boss.maxHealth/2;assert.equal(game.updateBossPhase(boss),2);assert.equal(boss.phase,2);assert.equal(game.rewardToast.text,'PHASE 2');};
 
-test('phase two triggers once without particles or resetting an active boss attack timer',()=>{
+test('phase two triggers once without particles, attack resets, or invulnerability',()=>{
   const game=new Game(),boss=game.boss();game.bossArena.active=true;Object.assign(boss,{health:boss.maxHealth/2,bossMove:'bossCharge',bossTimer:.2,chargeDirection:1,onGround:true});let bursts=0;game.burst=()=>bursts++;
-  game.updateBoss(boss,1/60);assert.equal(boss.phase,2);assert.equal(bursts,0);assert.ok(boss.bossTimer<.2);assert.equal(boss.vx,340);assert.equal(game.enemyTargetable(boss),false);
-  Object.assign(game.player,{x:boss.x-70,y:boss.y+20,aimX:1,aimY:0,attackAimX:1,attackAimY:0,attackHits:new Set()});const shieldedHealth=boss.health;game.resolvePrimaryAttack();assert.equal(boss.health,shieldedHealth);
-  for(let frame=0;frame<50;frame++)game.updateBoss(boss,1/60);assert.equal(bursts,0);assert.equal(game.enemyTargetable(boss),true);
+  game.updateBoss(boss,1/60);assert.equal(boss.phase,2);assert.equal(bursts,0);assert.ok(boss.bossTimer<.2);assert.equal(boss.vx,340);assert.equal(game.enemyTargetable(boss),true);
+  Object.assign(game.player,{x:boss.x-70,y:boss.y+20,aimX:1,aimY:0,attackAimX:1,attackAimY:0,attackHits:new Set()});const transitionHealth=boss.health;game.resolvePrimaryAttack();assert.equal(boss.health,transitionHealth-game.player.primaryDamage);assert.equal(bursts,1,'only the successful hit should emit a burst');
+  for(let frame=0;frame<50;frame++)game.updateBoss(boss,1/60);assert.equal(bursts,1);assert.equal(game.enemyTargetable(boss),true);
+});
+
+test('every active boss remains targetable on the phase-two transition frame',()=>{
+  const cases=[
+    {setup:game=>{game.bossArena.active=true;return game.boss();}},
+    {setup:game=>{game.vaultBossArena.active=true;return game.vaultBoss();}},
+    {setup:game=>{game.depthBossArena.active=true;return game.depthBoss();}},
+    {setup:game=>{game.crownBossArena.active=true;const boss=game.crownBoss();boss.bossMove='crownExpose';return boss;}},
+    {setup:game=>{const arena=game.miniBossArenas[0];arena.active=true;return game.miniBoss(arena.id);}}
+  ];
+  for(const entry of cases){const game=new Game(),boss=entry.setup(game);boss.health=boss.maxHealth/2;game.updateBossPhase(boss);assert.equal(game.enemyTargetable(boss),true,`${boss.name??boss.type} became invulnerable in phase two`);}
 });
 
 test('full bosses choose seeded-random attacks without immediate repeats',()=>{

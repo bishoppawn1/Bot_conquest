@@ -275,7 +275,7 @@ export class Game {
     if(!arena.active&&!arena.cleared&&inside&&onRoomFloor){arena.active=true;boss.active=true;boss.bossMove='idle';boss.bossTimer=.55;}
     const target=arena.active&&!arena.cleared&&!boss.dead?1:0;arena.gateProgress+=Math.sign(target-arena.gateProgress)*Math.min(Math.abs(target-arena.gateProgress),dt*4);
   }
-  updateBossPhase(enemy,dt=1/60){if(enemy.phase!==2&&enemy.health<=enemy.maxHealth/2){enemy.phase=2;enemy.phaseShieldTime=.6;this.rewardToast={text:'PHASE 2',detail:`${enemy.name??'HEAVY CORE'} OVERDRIVE ENGAGED`,time:2.4};}enemy.phaseShieldTime=Math.max(0,(enemy.phaseShieldTime??0)-dt);return enemy.phase??1;}
+  updateBossPhase(enemy){if(enemy.phase!==2&&enemy.health<=enemy.maxHealth/2){enemy.phase=2;this.rewardToast={text:'PHASE 2',detail:`${enemy.name??'HEAVY CORE'} OVERDRIVE ENGAGED`,time:2.4};}return enemy.phase??1;}
   updateMiniBoss(enemy,dt){
     const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);
     if(!arena?.active||arena.cleared){enemy.active=false;enemy.vx=0;enemy.vy+=900*dt;this.moveActor(enemy,dt);return;}
@@ -324,7 +324,7 @@ export class Game {
     enemy.vy+=900*dt;this.moveActor(enemy,dt);enemy.x=clamp(enemy.x,arena.x,arena.rightGateX-enemy.w);
   }
   aim(){return{x:this.player.aimX,y:this.player.aimY};}
-  enemyTargetable(enemy){if((enemy.isBoss||enemy.isVaultBoss||enemy.isDepthBoss||enemy.isCrownBoss||enemy.isMiniBoss)&&(enemy.phaseShieldTime??0)>0)return false;if(enemy.isVaultBoss)return this.vaultBossArena.active&&!this.vaultBossArena.cleared;if(enemy.isDepthBoss)return this.depthBossArena.active&&!this.depthBossArena.cleared;if(enemy.isCrownBoss)return this.crownBossArena.active&&!this.crownBossArena.cleared&&enemy.bossMove==='crownExpose';if(!enemy.isMiniBoss)return true;const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);return Boolean(arena?.active&&!arena.cleared);}
+  enemyTargetable(enemy){if(enemy.isVaultBoss)return this.vaultBossArena.active&&!this.vaultBossArena.cleared;if(enemy.isDepthBoss)return this.depthBossArena.active&&!this.depthBossArena.cleared;if(enemy.isCrownBoss)return this.crownBossArena.active&&!this.crownBossArena.cleared&&enemy.bossMove==='crownExpose';if(!enemy.isMiniBoss)return true;const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);return Boolean(arena?.active&&!arena.cleared);}
   attackDirection(){return{x:this.player.attackAimX,y:this.player.attackAimY};}
   specialDirection(){return{x:this.player.specialAimX,y:this.player.specialAimY};}
   attackBox(){return directionalBox(this.player,this.attackDirection(),this.player.primaryRange,30);}
@@ -517,9 +517,9 @@ export class Game {
   }
   respawnOrdinaryEnemies(){const protectedEnemies=this.enemies.filter(enemy=>enemy.isBoss||enemy.isVaultBoss||enemy.isDepthBoss||enemy.isCrownBoss||enemy.isMiniBoss);this.enemies=[...ENEMY_SPAWNS.map(spawn=>this.enemy(spawn)),...protectedEnemies];}
   resetUnclearedEncounters(){
-    const resetBoss=(arena,boss,gateKey)=>{if(!arena.active||arena.cleared||!boss)return;arena.active=false;arena[gateKey]=0;Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,bossMove:'dormant',bossTimer:0,bossMoveIndex:0,bossRngState:undefined,lastBossMove:null,phase:1,phaseShieldTime:0});};
-    resetBoss(this.bossArena,this.boss(),'gateProgress');resetBoss(this.vaultBossArena,this.vaultBoss(),'leftGateProgress');resetBoss(this.crownBossArena,this.crownBoss(),'gateProgress');const crownBoss=this.crownBoss();if(crownBoss&&!this.crownBossArena.cleared)Object.assign(crownBoss,{anchorIndex:0,pendingAnchor:0,crownTargetX:0});if(this.depthBossArena.active&&!this.depthBossArena.cleared){const boss=this.depthBoss();this.depthBossArena.active=false;if(boss)Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,bossMove:'dormant',bossTimer:0,bossMoveIndex:0,bossRngState:undefined,lastBossMove:null,phase:1,phaseShieldTime:0});}
-    for(const arena of this.miniBossArenas){const boss=this.miniBoss(arena.id);if(!arena.active||arena.cleared||!boss)continue;arena.active=false;arena.gateProgress=0;Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,windup:0,chargeTime:0,chargeCooldown:0,phase:1,phaseShieldTime:0});}
+    const resetBoss=(arena,boss,gateKey)=>{if(!arena.active||arena.cleared||!boss)return;arena.active=false;arena[gateKey]=0;Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,bossMove:'dormant',bossTimer:0,bossMoveIndex:0,bossRngState:undefined,lastBossMove:null,phase:1});};
+    resetBoss(this.bossArena,this.boss(),'gateProgress');resetBoss(this.vaultBossArena,this.vaultBoss(),'leftGateProgress');resetBoss(this.crownBossArena,this.crownBoss(),'gateProgress');const crownBoss=this.crownBoss();if(crownBoss&&!this.crownBossArena.cleared)Object.assign(crownBoss,{anchorIndex:0,pendingAnchor:0,crownTargetX:0});if(this.depthBossArena.active&&!this.depthBossArena.cleared){const boss=this.depthBoss();this.depthBossArena.active=false;if(boss)Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,bossMove:'dormant',bossTimer:0,bossMoveIndex:0,bossRngState:undefined,lastBossMove:null,phase:1});}
+    for(const arena of this.miniBossArenas){const boss=this.miniBoss(arena.id);if(!arena.active||arena.cleared||!boss)continue;arena.active=false;arena.gateProgress=0;Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,windup:0,chargeTime:0,chargeCooldown:0,phase:1});}
     this.bossProjectiles=[];this.bossExplosions=[];this.bossShockwave=null;this.crownHazards=[];
   }
   destroyPlayer(cause){
