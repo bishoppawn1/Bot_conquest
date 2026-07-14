@@ -16,6 +16,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - New runs start with the basic jump, slash, and repair. `E` spends 30 electricity and starts a 0.7-second repair channel; the missing shell returns only when it completes. Damage interrupts the channel without refunding electricity, and repair cannot begin during post-hit invulnerability.
 - The basic jump can begin only while supported on the ground. Walking or running off a platform consumes that grounded jump immediately. Once double jump is unlocked, leaving a platform without jumping preserves exactly one airborne jump.
 - Double jump, dash, wall movement, electric field, and electric jab remain implemented but locked for pickups. Dash is now granted by the deep-Vault `dash-core`; use `game.unlockAbility(name)` when progression grants one.
+- The cyan `field-core` appears only after the Crown Dynamo is defeated. It unlocks the circular Field attack, raises electricity to at least the 40 required for one use, and teaches `Q` beside the Field-only Crownworks annex seal.
 - The blue `volt-core` in the Sunken Vault unlocks electric jab and opens a large temporary tutorial popup showing `F`. It remains unavailable inside the Abyss Warden arena until that full boss is dead. The nearby tutorial conduit contains exactly the 24 electricity required for one jab, and the following `vault-volt-seal` requires that attack.
 - The white post-boss `vault-core` appears only after the Heavy Core is cleared; touching it unlocks `wallClimb`. Hold `W` against a wall to climb continuously. Press `D` away from a left wall or `A` away from a right wall to jump off at the bot's current height. Never teleport the bot to a wall top.
 - Once unlocked, `Q` creates the circular field, `F` uses electric jab, and `Shift` dashes.
@@ -53,6 +54,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - The Abyss Warden is a twenty-four-health full boss protecting Volt Jab. Its full-height right exit seal exists before activation, so the reward can never be reached backward from the escape route. Dropping into the chamber activates a second entry seal. It cycles through a telegraphed charge, a leaping shockwave, and a five-bolt volley.
 - The Cache Scrapper is an optional twelve-health mini boss in Quiet Drift. It awards three titanium, remains outside the required foundation route, and never grants an ability.
 - The Rift Stalker is a forty-eight-health full boss at the bottom of the extended Sunken Vault. It protects Dash and cycles through a cross-room dash, a teleporting overhead drop, and one fast, briefly tracking projectile that disappears without exploding on impact.
+- The Crown Dynamo is a thirty-health full boss in upper Crownworks. It relocates between two high anchors and is vulnerable only during its exposed phase, so the player must use the chamber's climbable perches to reach it. It protects Field and cycles through a floor sweep, targeted column, and four-bolt volley.
 - Activating a save station or losing the final shell reconstructs every ordinary enemy from `ENEMY_SPAWNS`. Defeated full bosses and mini bosses remain defeated for the run.
 - Enemy types should continue to vary in size, silhouette, health, speed, and movement style.
 
@@ -83,6 +85,8 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - The five `vault-*` foundations descend from Y 680 to Y 820 and rise again in 70-unit increments. The original branch continues down to the Abyss Warden floor at Y 1120. Every pre-Warden drop must remain reversible with the basic jump; only the clearly framed boss drop is one-way. After the Warden is dead and both Volt Jab and Wall Climb are owned, the Warden floor can open into an irreversible exploration route to Y 2550.
 - `VAULT_UPPER_BLOCKS` forms a Wall-Climb-gated loft above the Sunken Vault. `VAULT_DEEP_BLOCKS` forms the contained post-Warden descent and Rift Stalker floor. `DEPTH_RETURN_BLOCKS` appear after the Rift Stalker dies; their Dash gaps and final two Wall-Climb ascents are physically tested all the way back to the Warden floor.
 - `OVERHEAD_BLOCKS` and the first eight `RECESSES` form the original hollow rooms. Crownworks' split overhead mass leaves one contained Wall-Climb shaft into `CROWN_UPPER_BLOCKS`, a full upper chamber with heavy roof and side walls, broad floor masses, brace-supported perches, encounters, salvage, and a reversible return. The map also extends through Shard Gauntlet, Quiet Drift, and Grand Exchange chambers to X 14500.
+- `FIELD_ANNEX_BLOCKS` forms the substantial enclosed route west of the Crown Dynamo arena. It appears as solid world geometry from the start but is accessible only after Field destroys `crown-field-seal`; preserve its two height layers, ordinary encounters, salvage, and reversible return.
+- `DASH_POCKET_BLOCKS` adds optional backtracking clusters in Rusted Verge, Ember Foundry, Shard Gauntlet, and Grand Exchange. Their entry spans must require Dash, lead to safe standing space and salvage, and never alter the basic-jump foundation route.
 - `POCKET_BLOCKS` form the two end-alcove ceilings. `WALL_BLOCKS` also includes the short Crownworks climbing wall, the destructible Heavy Core roof bulkheads, and the left wall of the Abyss Warden room. The Crownworks entry wall must never become a floor-to-ceiling barrier; its right side launches onto `wall-entry` after Wall Climb is unlocked.
 - Suspended platforms are normally 40–60 units thick to preserve air and visibility. The two deep Vault floor masses may be 80 units thick. Foundations stay 120+ units thick except the five 60-unit Sunken Vault foundations, which preserve traversal clearance; ceilings remain massive structural forms.
 - No two entries in `PLATFORMS` may geometrically overlap. Touching faces are allowed; intersecting rectangles, buried surfaces, and objects spawned inside solids are forbidden.
@@ -126,10 +130,17 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 
 ## Rift Stalker arena
 
-- `DEPTH_BOSS_ARENA` is the third full boss encounter. Its right exit gate exists whenever the arena is uncleared, and the dormant boss cannot be targeted before the player drops into the trigger volume.
+- `DEPTH_BOSS_ARENA` is the third deep-world full boss encounter. Its right exit gate exists whenever the arena is uncleared, and the dormant boss cannot be targeted before the player drops into the trigger volume.
 - The route can open only when the Abyss Warden is cleared, Wall Climb is owned, and the collected `volt-core` has granted Electric Jab. The player must be standing on the safe west part of `under-cache`, so the hatch can never retract remotely or beneath a player in its center. Opening it replaces the intact Warden floor with two safe floor pieces, an entrance wall, and a 200-unit hatch. The route then alternates mandatory wall climbs and broad galleries before reaching the arena floor at Y 2550.
 - The Rift Stalker has 48 health, awards 180 scrap, and cycles deterministically through a 520-unit-per-second cross-room dash, a relocation above the player with a distinct 0.5-second stationary hover before its ground slam, and a fast briefly tracking bolt. The bolt disappears without exploding when it hits the player, a platform, or an arena gate.
 - Killing the Rift Stalker permanently opens its gate, releases `dash-core`, removes the temporary east containment wall, and adds `DEPTH_RETURN_BLOCKS`. The return route uses Dash spans followed by two climb walls with bot-width crest clearance, and must reconnect physically to `under-threshold` on the Warden floor.
+
+## Crown Dynamo arena
+
+- `CROWN_BOSS_ARENA` is the full boss encounter at the top of the Crownworks Wall-Climb route. Entering either floor side closes two horizontal gate pieces across the central shaft; the shaft must reopen after victory so the route remains reversible.
+- The Crown Dynamo has 30 health, awards 140 scrap, and alternates between two high anchor positions. It is targetable only during its 1.25-second exposed phase and must remain unreachable by an upward starting slash from the floor.
+- Its deterministic cycle is a cross-floor sweep, a targeted vertical column with a visible dashed telegraph, and a four-bolt volley. Killing it clears every active Crown hazard and releases `field-core`.
+- Collecting `field-core` supplies at least 40 electricity. Only the circular Field attack may destroy `crown-field-seal`; primary attacks and Volt Jab must leave it intact.
 
 ## Mini-boss arenas
 
@@ -189,6 +200,8 @@ Use `http://127.0.0.1:4175/?debug=vault-boss` for the active Abyss Warden room, 
 Use `http://127.0.0.1:4175/?debug=vault-upper` for the Wall-Climb loft, `http://127.0.0.1:4175/?debug=deep-vault` for the opened post-Warden hatch, `http://127.0.0.1:4175/?debug=deep-gallery` for both mandatory climb galleries, `http://127.0.0.1:4175/?debug=depth-boss` for the active Rift Stalker, and `http://127.0.0.1:4175/?debug=dash` for the released Dash core and return platforms.
 
 Use `http://127.0.0.1:4175/?debug=crown-upper` to inspect the enclosed Crownworks upper chamber and its climbable salvage perches.
+
+Use `http://127.0.0.1:4175/?debug=crown-boss` for the active Crown Dynamo, `http://127.0.0.1:4175/?debug=field-annex` for its cleared Field-gated annex, and `http://127.0.0.1:4175/?debug=dash-routes` for the distributed Dash backtracking pockets.
 
 Use `http://127.0.0.1:4175/?debug=merchant` to verify an unlocked merchant door and its separate interior.
 

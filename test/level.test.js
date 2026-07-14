@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, CROWN_UPPER_BLOCKS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
-  ENEMY_SPAWNS, FORGE_UPGRADE_COSTS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
+  ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, CROWN_BOSS_ARENA, CROWN_UPPER_BLOCKS, DASH_POCKET_BLOCKS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
+  ENEMY_SPAWNS, FIELD_ANNEX_BLOCKS, FORGE_UPGRADE_COSTS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
   LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
   PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_GATES, REGIONS,
   REST_AREA, TRAPS, VAULT_BOSS_ARENA, VAULT_DEEP_BLOCKS, VAULT_UPPER_BLOCKS, WALL_BLOCKS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
@@ -23,7 +23,7 @@ test('the map occupies a genuine two-dimensional playfield',()=>{
 });
 
 test('suspended platforms vary in width and thickness',()=>{
-  const suspended=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS];
+  const suspended=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...DASH_POCKET_BLOCKS,...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex')];
   assert.ok(FOUNDATION_BLOCKS.filter(block=>!block.id.startsWith('vault-')).every(block=>block.h>=120));
   assert.ok(FOUNDATION_BLOCKS.filter(block=>block.id.startsWith('vault-')).every(block=>block.h===60));
   assert.ok(suspended.every(block=>block.h>=40&&block.h<=80));
@@ -95,9 +95,17 @@ test('Crownworks opens into a contained upper chamber instead of ending at its c
   assert.ok(CROWN_UPPER_BLOCKS.filter(block=>block.kind==='wall').length>=5);assert.ok(CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper').reduce((sum,block)=>sum+block.w,0)>=1500);
   const threshold=CROWN_UPPER_BLOCKS.filter(block=>block.id?.includes('climb'))[0],opening=OVERHEAD_BLOCKS.filter(block=>block.id?.startsWith('crown-threshold')).sort((a,b)=>a.x-b.x),openingWidth=opening[1].x-(opening[0].x+opening[0].w);
   assert.ok(opening.every(block=>!intersects(block,threshold)));assert.ok(openingWidth>=220,'the ceiling opening should leave a bot-width passage around the climb wall');
-  const upperEnemies=ENEMY_SPAWNS.filter(enemy=>enemy.y<-1300),upperJunk=JUNK_PILES.filter(pile=>pile.y<-1600&&!pile.material);
-  assert.ok(upperEnemies.length>=3);assert.ok(upperEnemies.filter(enemy=>enemy.type!=='drone').every(enemy=>CROWN_UPPER_BLOCKS.some(block=>enemy.y+enemy.h===block.y&&enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w)));
-  assert.ok(upperJunk.length>=2);assert.ok(upperJunk.every(pile=>CROWN_UPPER_BLOCKS.some(block=>pile.y+pile.h===block.y&&pile.x>=block.x&&pile.x+pile.w<=block.x+block.w)));
+  assert.equal(CROWN_BOSS_ARENA.x,8400);assert.equal(CROWN_BOSS_ARENA.floorY,-1450);assert.ok(CROWN_BOSS_ARENA.anchors.length>=2);
+});
+
+test('Field opens a substantial annex beyond the Crownworks boss',()=>{
+  const floor=FIELD_ANNEX_BLOCKS.find(block=>block.id==='field-annex-floor'),seal=JUNK_PILES.find(pile=>pile.id==='crown-field-seal');assert.ok(floor&&seal);assert.equal(seal.requires,'field');assert.equal(seal.y+seal.h,floor.y);assert.ok(FIELD_ANNEX_BLOCKS.reduce((sum,block)=>sum+block.w,0)>2500);
+  const annexEnemies=ENEMY_SPAWNS.filter(enemy=>enemy.x>=7410&&enemy.x<8340),annexJunk=JUNK_PILES.filter(pile=>!pile.gate&&pile.x>=7410&&pile.x<8340);assert.ok(annexEnemies.length>=3);assert.ok(annexJunk.length>=2);
+});
+
+test('Dash creates optional pockets across ordinary regions',()=>{
+  assert.ok(DASH_POCKET_BLOCKS.length>=9);assert.deepEqual(new Set(DASH_POCKET_BLOCKS.map(block=>block.region)),new Set(['verge','foundry','gauntlet','exchange']));assert.ok(DASH_POCKET_BLOCKS.filter(block=>block.requires==='dash').length>=8);
+  for(const region of new Set(DASH_POCKET_BLOCKS.map(block=>block.region)))assert.ok(DASH_POCKET_BLOCKS.filter(block=>block.region===region).length>=2,`${region} lacks a real Dash pocket`);
 });
 
 test('named regions are contiguous and connected by visible gates',()=>{
@@ -123,12 +131,13 @@ test('major upgrade merchants are discoveries beyond the merged Core Bastion',()
 });
 
 test('ability and map cores use the generic pickup format',()=>{
-  const abilities=PICKUP_SPAWNS.filter(pickup=>pickup.kind==='ability'),maps=PICKUP_SPAWNS.filter(pickup=>pickup.kind==='map');assert.equal(abilities.length,3);assert.equal(maps.length,3);
+  const abilities=PICKUP_SPAWNS.filter(pickup=>pickup.kind==='ability'),maps=PICKUP_SPAWNS.filter(pickup=>pickup.kind==='map');assert.equal(abilities.length,4);assert.equal(maps.length,3);
   assert.ok(abilities.every(pickup=>pickup.name&&pickup.key&&pickup.color));assert.deepEqual(new Set(maps.flatMap(pickup=>pickup.regions)),new Set(REGIONS.map(region=>region.id)));
   const vault=PICKUP_SPAWNS.find(pickup=>pickup.id==='vault-core'),volt=PICKUP_SPAWNS.find(pickup=>pickup.id==='volt-core');
   assert.equal(vault.ability,'wallClimb');assert.equal(vault.requiresBossClear,true);assert.ok(vault.x>7190&&vault.x<REST_AREA.x+REST_AREA.w);
   assert.equal(volt.ability,'electricJab');assert.equal(volt.color,'#75f5ff');assert.equal(volt.requiresVaultBossClear,true);assert.ok(volt.x>VAULT_BOSS_ARENA.x&&volt.x<VAULT_BOSS_ARENA.rightGateX);
   const dash=PICKUP_SPAWNS.find(pickup=>pickup.id==='dash-core');assert.equal(dash.ability,'dash');assert.equal(dash.requiresDepthBossClear,true);assert.ok(dash.x>DEPTH_BOSS_ARENA.x&&dash.x<DEPTH_BOSS_ARENA.rightGateX);
+  const field=PICKUP_SPAWNS.find(pickup=>pickup.id==='field-core');assert.equal(field.ability,'field');assert.equal(field.requiresCrownBossClear,true);assert.equal(field.minimumElectricity,40);
   assert.ok(PICKUP_SPAWNS.every(pickup=>PLATFORMS.every(block=>!intersects(pickup,block))));
 });
 
@@ -152,7 +161,7 @@ test('starting-kit platforms form varied room networks with combat',()=>{
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.zone)).size>=9);
   assert.ok(BRANCH_BLOCKS.every(block=>!('step' in block)&&!('branch' in block)&&!block.requires));
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.w)).size>=12);
-  const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS];
+  const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS,...FIELD_ANNEX_BLOCKS,...DASH_POCKET_BLOCKS];
   const combatants=[...ENEMY_SPAWNS,...MINI_BOSS_ARENAS.map(arena=>arena.enemy)];
   const supportedEnemies=combatants.filter(enemy=>enemy.type!=='drone'&&combatSurfaces.some(block=>enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w&&enemy.y+enemy.h===block.y));
   assert.ok(supportedEnemies.length>=12,'upper and lower exploration spaces need their own encounters');
@@ -186,7 +195,7 @@ test('the Sunken Vault has a Wall-Climb loft and a much deeper Dash-locked retur
 
 test('walkable surfaces leave enough headroom for the bot',()=>{
   const botWidth=50,botHeight=36;
-  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper')]){
+  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper'),...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex'),...DASH_POCKET_BLOCKS]){
     const blockers=PLATFORMS.filter(block=>block!==surface&&block.y<surface.y&&block.y+block.h>surface.y-botHeight)
       .map(block=>[Math.max(surface.x,block.x),Math.min(surface.x+surface.w,block.x+block.w)])
       .filter(([start,end])=>end>start).sort((a,b)=>a[0]-b[0]);
@@ -219,7 +228,7 @@ test('full-height bulkheads seal both approaches to the boss arena roof',()=>{
 });
 
 test('the post-boss rest area remains uncluttered',()=>{
-  const centerInside=object=>object.x+object.w/2>REST_AREA.x&&object.x+object.w/2<REST_AREA.x+REST_AREA.w;
+  const centerInside=object=>object.x+object.w/2>REST_AREA.x&&object.x+object.w/2<REST_AREA.x+REST_AREA.w&&object.y+object.h/2>REST_AREA.y&&object.y+object.h/2<REST_AREA.y+REST_AREA.h;
   assert.equal(REST_AREA.station.y+REST_AREA.station.h,REST_AREA.floorY);
   assert.ok([...ENEMY_SPAWNS,...CONDUITS,...JUNK_PILES].every(object=>!centerInside(object)));
 });

@@ -79,7 +79,7 @@ test('electric jab reaches farther in the locked aim direction',()=>{
 });
 
 test('ordinary enemies need two or three starting slashes while brutes need more',()=>{
-  const game=new Game(),ordinary=game.enemies.filter(enemy=>!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isDepthBoss&&!enemy.isMiniBoss);assert.equal(game.player.primaryDamage,3);assert.ok(ordinary.length>0);assert.ok(ordinary.filter(enemy=>enemy.type!=='brute').every(enemy=>enemy.health===6||enemy.health===9));assert.ok(ordinary.filter(enemy=>enemy.type==='brute').every(enemy=>enemy.health===12));
+  const game=new Game(),ordinary=game.enemies.filter(enemy=>!enemy.isBoss&&!enemy.isVaultBoss&&!enemy.isDepthBoss&&!enemy.isCrownBoss&&!enemy.isMiniBoss);assert.equal(game.player.primaryDamage,3);assert.ok(ordinary.length>0);assert.ok(ordinary.filter(enemy=>enemy.type!=='brute').every(enemy=>enemy.health===6||enemy.health===9));assert.ok(ordinary.filter(enemy=>enemy.type==='brute').every(enemy=>enemy.health===12));
 });
 
 test('basic slash retains the full 105-unit range',()=>{

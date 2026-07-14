@@ -82,6 +82,21 @@ function begin() {
     game.player.x=8890;
     game.player.y=-1450-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'crown-boss') {
+    game.unlockAbility('wallClimb');
+    game.player.x=8600;
+    game.player.y=game.crownBossArena.floorY-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};game.updateCrownBossArena(1);
+  } else if (debugSpawn === 'field-annex') {
+    const crownBoss=game.crownBoss(),field=game.pickups.find(item=>item.id==='field-core');game.crownBossArena.cleared=true;crownBoss.dead=true;crownBoss.health=0;field.collected=true;game.unlockAbility('field');game.player.electricity=40;
+    game.player.x=8420;
+    game.player.y=-1450-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'dash-routes') {
+    game.unlockAbility('dash');
+    game.player.x=970;
+    game.player.y=300-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'depth-boss') {
     openDebugDepth();
     game.player.x=2920;

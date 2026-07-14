@@ -208,7 +208,7 @@ export const ABILITY_GATED_BLOCKS = [
 // combat and salvage perches without turning the chamber into a staircase.
 export const CROWN_UPPER_BLOCKS = [
   {id:'crown-upper-roof',x:8400,y:-1900,w:1200,h:100,kind:'ceiling'},
-  {id:'crown-upper-west-wall',x:8340,y:-1900,w:60,h:500,kind:'wall'},
+  {id:'crown-upper-west-wall',x:8340,y:-1900,w:60,h:160,kind:'wall'},
   {id:'crown-upper-east-wall',x:9600,y:-1900,w:60,h:500,kind:'wall'},
   {id:'crown-upper-floor-west',x:8400,y:-1450,w:650,h:50,kind:'crown-upper',requires:'wallClimb',region:'relay-crown'},
   {id:'crown-upper-climb',x:9135,y:-1450,w:60,h:800,kind:'wall',requires:'wallClimb',region:'relay-crown',gateEntry:true},
@@ -217,6 +217,34 @@ export const CROWN_UPPER_BLOCKS = [
   {id:'crown-upper-west-brace',x:8760,y:-1640,w:60,h:190,kind:'wall',requires:'wallClimb',region:'relay-crown'},
   {id:'crown-upper-east-perch',x:9200,y:-1680,w:280,h:50,kind:'crown-upper',requires:'wallClimb',region:'relay-crown'},
   {id:'crown-upper-east-brace',x:9480,y:-1680,w:60,h:230,kind:'wall',requires:'wallClimb',region:'relay-crown'}
+];
+
+// Defeating the Crown Dynamo releases Field. Its first use breaks the seal at
+// the west edge of Crownworks and opens this enclosed annex as a permanent
+// loop above Core Bastion.
+export const FIELD_ANNEX_BLOCKS = [
+  {id:'field-annex-roof',x:7410,y:-1900,w:930,h:100,kind:'ceiling',requires:'field'},
+  {id:'field-annex-west-wall',x:7350,y:-1900,w:60,h:500,kind:'wall',requires:'field'},
+  {id:'field-annex-floor',x:7410,y:-1450,w:930,h:50,kind:'field-annex',requires:'field'},
+  {id:'field-annex-west-perch',x:7480,y:-1640,w:280,h:50,kind:'field-annex',requires:'field'},
+  {id:'field-annex-west-brace',x:7760,y:-1640,w:60,h:190,kind:'wall',requires:'field'},
+  {id:'field-annex-east-brace',x:7920,y:-1700,w:60,h:250,kind:'wall',requires:'field'},
+  {id:'field-annex-east-perch',x:7980,y:-1700,w:270,h:50,kind:'field-annex',requires:'field'}
+];
+
+// Dash is a world-wide backtracking tool rather than a reward used only in
+// the deep Vault. Each cluster begins from an existing normal route, crosses
+// one gap beyond the basic jump, and ends in a safe optional pocket.
+export const DASH_POCKET_BLOCKS = [
+  {id:'dash-verge-landing',x:480,y:250,w:220,h:50,kind:'dash-pocket',requires:'dash',region:'verge'},
+  {id:'dash-verge-cache',x:250,y:90,w:230,h:50,kind:'dash-pocket',requires:'dash',region:'verge'},
+  {id:'dash-foundry-span',x:4920,y:-100,w:220,h:50,kind:'dash-pocket',requires:'dash',region:'foundry'},
+  {id:'dash-foundry-return',x:5300,y:20,w:220,h:50,kind:'dash-pocket',requires:'dash',region:'foundry'},
+  {id:'dash-gauntlet-launch',x:10820,y:220,w:200,h:50,kind:'dash-pocket',region:'gauntlet',dashLaunch:true},
+  {id:'dash-gauntlet-landing',x:10420,y:220,w:160,h:50,kind:'dash-pocket',requires:'dash',region:'gauntlet'},
+  {id:'dash-gauntlet-cache',x:10040,y:70,w:260,h:50,kind:'dash-pocket',requires:'dash',region:'gauntlet'},
+  {id:'dash-exchange-landing',x:14220,y:180,w:220,h:50,kind:'dash-pocket',requires:'dash',region:'exchange'},
+  {id:'dash-exchange-cache',x:14220,y:20,w:230,h:50,kind:'dash-pocket',requires:'dash',region:'exchange'}
 ];
 
 export const BOSS_ARENA = {
@@ -240,6 +268,15 @@ export const DEPTH_BOSS_ARENA = {
   rightGateX:3470,gateY:2330,gateWidth:40,gateHeight:220,
   rewardScrap:180,
   boss:{type:'depthBoss',x:2680,y:2478,w:88,h:72,health:48}
+};
+
+export const CROWN_BOSS_ARENA = {
+  id:'crown-dynamo',name:'CROWN DYNAMO',region:'crown',
+  x:8400,y:-1800,w:1200,h:350,floorY:-1450,triggerY:-1710,
+  leftGate:{x:9050,y:-1450,w:85,h:50},rightGate:{x:9195,y:-1450,w:75,h:50},
+  rewardScrap:140,
+  anchors:[{x:8550,y:-1750},{x:9290,y:-1790}],
+  boss:{type:'crownBoss',x:8550,y:-1750,w:96,h:70,health:30}
 };
 
 export const MINI_BOSS_ARENAS = [
@@ -285,6 +322,7 @@ export const PICKUP_SPAWNS = [
   {id:'volt-core',kind:'ability',ability:'electricJab',x:3260,y:1080,w:24,h:24,color:'#75f5ff',name:'VOLT JAB',key:'F',description:'Spend electricity to fire a long powered jab.',requiresVaultBossClear:true},
   {id:'vault-core',kind:'ability',ability:'wallClimb',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'WALL CLIMB',key:'W + A / D',description:'Hold W on a wall; press away to jump at any height.',requiresBossClear:true},
   {id:'dash-core',kind:'ability',ability:'dash',x:2570,y:2526,w:24,h:24,color:'#d6ff3f',name:'DASH DRIVE',key:'SHIFT',description:'Burst across the deep return gaps.',requiresDepthBossClear:true},
+  {id:'field-core',kind:'ability',ability:'field',x:8875,y:-1490,w:24,h:24,color:'#75f5ff',name:'ELECTRIC FIELD',key:'Q',description:'Spend 40 electricity to strike every target around you.',requiresCrownBossClear:true,minimumElectricity:40},
   {id:'map-west',kind:'map',x:1080,y:256,w:24,h:24,color:'#d6ff3f',name:'WESTERN SURVEY',regions:['verge','vault']},
   {id:'map-central',kind:'map',x:4740,y:356,w:24,h:24,color:'#d6ff3f',name:'CENTRAL SURVEY',regions:['foundry','bastion']},
   {id:'map-east',kind:'map',x:11020,y:326,w:24,h:24,color:'#d6ff3f',name:'EASTERN SURVEY',regions:['crown','gauntlet','drift','exchange']}
@@ -356,7 +394,8 @@ export const RECESSES = [
   {x:11450,y:-510,w:1100,h:1130,floorY:620,ceilingY:-510,openSide:'left'},
   {x:12750,y:-700,w:1700,h:1360,floorY:660,ceilingY:-700,openSide:'left'},
   {x:2400,y:1120,w:1150,h:1430,floorY:2550,ceilingY:1120,openSide:'top',deepVault:true},
-  {x:8400,y:-1800,w:1200,h:350,floorY:-1450,ceilingY:-1800,openSide:'bottom',crownUpper:true}
+  {x:8400,y:-1800,w:1200,h:350,floorY:-1450,ceilingY:-1800,openSide:'bottom',crownUpper:true},
+  {x:7410,y:-1800,w:930,h:350,floorY:-1450,ceilingY:-1800,openSide:'right',fieldAnnex:true}
 ];
 
 export const PLATFORMS = [
@@ -371,6 +410,8 @@ export const PLATFORMS = [
   ...WALL_BLOCKS,
   ...ABILITY_GATED_BLOCKS,
   ...CROWN_UPPER_BLOCKS,
+  ...FIELD_ANNEX_BLOCKS,
+  ...DASH_POCKET_BLOCKS,
   ...MERCHANT_ROOM_BLOCKS
 ];
 
@@ -419,9 +460,9 @@ export const ENEMY_SPAWNS = [
   {type:'hopper',x:8800,y:-515,w:34,h:45},
   {type:'brute',x:9400,y:-588,w:58,h:63},
   {type:'drone',x:9000,y:0,w:42,h:30},
-  {type:'crawler',x:8560,y:-1490,w:30,h:40,patrol:true,patrolRange:150},
-  {type:'brute',x:9320,y:-1513,w:58,h:63},
-  {type:'drone',x:8850,y:-1750,w:42,h:30},
+  {type:'crawler',x:7540,y:-1490,w:30,h:40,patrol:true,patrolRange:120},
+  {type:'brute',x:8150,y:-1513,w:58,h:63},
+  {type:'drone',x:7820,y:-1775,w:42,h:30},
   {type:'hopper',x:9700,y:605,w:34,h:45},
   {type:'drone',x:10300,y:500,w:42,h:30},
   {type:'roller',x:10780,y:622,w:46,h:28,patrol:true,patrolRange:100},
@@ -451,8 +492,13 @@ export const JUNK_PILES = [
   {x:5600,y:264,w:80,h:46,health:5,scrapValue:28},
   {x:8940,y:54,w:78,h:46,health:5,scrapValue:30},
   {x:9040,y:-696,w:92,h:46,health:7,scrapValue:0,material:{type:'uranium',amount:1}},
-  {x:8500,y:-1686,w:86,h:46,health:6,scrapValue:42},
-  {x:9370,y:-1726,w:90,h:46,health:7,scrapValue:48},
+  {x:7500,y:-1686,w:86,h:46,health:6,scrapValue:42},
+  {x:8060,y:-1746,w:90,h:46,health:7,scrapValue:48},
+  {id:'crown-field-seal',x:8340,y:-1740,w:60,h:290,health:1,scrapValue:25,gate:true,requires:'field'},
+  {x:320,y:44,w:82,h:46,health:6,scrapValue:36},
+  {x:5010,y:-146,w:86,h:46,health:6,scrapValue:40},
+  {x:10090,y:24,w:84,h:46,health:6,scrapValue:42},
+  {x:14280,y:-26,w:88,h:46,health:7,scrapValue:48},
   {id:'vault-volt-seal',x:3370,y:740,w:50,h:80,health:2,scrapValue:20,minimumDamage:2,gate:true,requires:'electricJab'},
   {x:9300,y:500,w:120,h:90,health:8,scrapValue:60,minimumDamage:2,gate:true},
   {x:10280,y:344,w:82,h:46,health:6,scrapValue:38},
