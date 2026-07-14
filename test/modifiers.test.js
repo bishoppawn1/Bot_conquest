@@ -34,10 +34,10 @@ test('modifier health and core-capacity bonuses stay scarce',()=>{
 
 test('Aegis Filament skips the cutter and changes meaning on each compatible mount',()=>{
   const game=new Game(),item=buyModifier(game,'aegis-filament');game.inventoryPage=3;game.inventorySelection=0;
-  assert.equal(game.cycleSelectedModifier(),true);assert.equal(item.equippedSlot,'shell');assert.equal(game.player.maxLives,4);
-  game.cycleSelectedModifier();assert.equal(item.equippedSlot,'core');assert.equal(game.player.maxLives,3);assert.equal(game.player.maxElectricity,110);
-  game.cycleSelectedModifier();assert.equal(item.equippedSlot,'legs');assert.equal(game.player.maxElectricity,100);assert.equal(game.player.moveSpeed,PLAYER_MOVE_SPEED+18);
-  game.cycleSelectedModifier();assert.equal(item.equippedSlot,null);assert.equal(game.player.moveSpeed,PLAYER_MOVE_SPEED);assert.ok(!game.compatibleModifierSlots(item).some(slot=>slot.part==='weapon'));
+  assert.equal(game.beginEquipmentPlacement(),true);assert.equal(game.selectedEquipmentTarget().id,'shell');assert.equal(game.confirmEquipmentPlacement(),true);assert.equal(item.equippedSlot,'shell');assert.equal(game.player.maxLives,4);
+  game.beginEquipmentPlacement();game.moveEquipmentTarget(1);game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,'core');assert.equal(game.player.maxLives,3);assert.equal(game.player.maxElectricity,110);
+  game.beginEquipmentPlacement();game.moveEquipmentTarget(1);game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,'legs');assert.equal(game.player.maxElectricity,100);assert.equal(game.player.moveSpeed,PLAYER_MOVE_SPEED+18);
+  game.beginEquipmentPlacement();game.moveEquipmentTarget(1);assert.equal(game.selectedEquipmentTarget().part,'storage');game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,null);assert.equal(game.player.moveSpeed,PLAYER_MOVE_SPEED);assert.ok(!game.compatibleModifierSlots(item).some(slot=>slot.part==='weapon'));
 });
 
 test('an internal Aegis Filament creates one repair shield that absorbs one enemy hit',()=>{
@@ -59,6 +59,10 @@ test('Extender Arm modifies Fusion Cutter range and has a reduced internal profi
   const foundry=game.merchants.find(merchant=>merchant.service==='internalSlot');game.player.scrap=10000;game.buyInternalSlot(foundry);item.equippedSlot='internal-1';game.recomputeBodyStats();assert.equal(game.player.primaryRange,117);assert.match(game.modifierPlacementDetail(item),/INTERNAL BAY 1.*12 CUTTER RANGE/);
 });
 
-test('O moves the selected modifier while the ITEMS screen is open',()=>{
-  const game=new Game();buyModifier(game,'aegis-filament');game.inventoryOpen=true;game.inventoryPage=3;game.inventorySelection=0;press(game,'rest');assert.equal(game.player.purchasedItems[0].equippedSlot,'shell');assert.equal(game.player.maxLives,4);
+test('Q selects a modifier and confirms an arrow-selected slot in ITEMS',()=>{
+  const game=new Game();buyModifier(game,'aegis-filament');game.inventoryOpen=true;game.inventoryPage=3;game.inventorySelection=0;press(game,'rest');assert.equal(game.player.purchasedItems[0].equippedSlot,null);press(game,'field');assert.equal(game.equipmentItemIndex,0);assert.equal(game.selectedEquipmentTarget().id,'shell');press(game,'right');assert.equal(game.selectedEquipmentTarget().id,'core');press(game,'field');assert.equal(game.player.purchasedItems[0].equippedSlot,'core');assert.equal(game.player.maxElectricity,110);assert.equal(game.equipmentItemIndex,null);
+});
+
+test('placing a modifier into an occupied diagram slot returns the old part to storage',()=>{
+  const game=new Game(),aegis=buyModifier(game,'aegis-filament'),reactive=buyModifier(game,'reactive-governor');aegis.equippedSlot='shell';game.recomputeBodyStats();game.inventoryPage=3;game.inventorySelection=1;assert.equal(game.beginEquipmentPlacement(),true);assert.equal(game.selectedEquipmentTarget().id,'shell');assert.equal(game.confirmEquipmentPlacement(),true);assert.equal(reactive.equippedSlot,'shell');assert.equal(aegis.equippedSlot,null);assert.equal(game.player.maxLives,3);
 });

@@ -16,7 +16,7 @@ export class Game {
     this.prev={...this.input}; this.particles=[];this.bossProjectiles=[];this.bossExplosions=[];this.bossShockwave=null;this.abilityPopup=null;this.rewardToast=null;
     this.spawn={...SPAWN};
     this.safePosition={...this.spawn};
-    this.respawnPoint={...this.spawn};this.recoveryCorpse=null;this.inventoryOpen=false;this.inventoryPage=1;this.inventorySelection=0;this.inventoryPages=['map','status','materials','items'];this.mappedRegions=new Set();this.mapOverview=false;this.mapRegionIndex=0;this.merchantMenuOpen=false;this.merchantMenuSelection=0;
+    this.respawnPoint={...this.spawn};this.recoveryCorpse=null;this.inventoryOpen=false;this.inventoryPage=1;this.inventorySelection=0;this.inventoryPages=['map','status','materials','items'];this.equipmentItemIndex=null;this.equipmentSlotIndex=0;this.mappedRegions=new Set();this.mapOverview=false;this.mapRegionIndex=0;this.merchantMenuOpen=false;this.merchantMenuSelection=0;
     this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:0,lives:3,maxLives:3,shield:0,maxShield:0,scrap:0,electricity:0,maxElectricity:ELECTRICITY_MAX,materials:{titanium:0,uranium:0},purchasedItems:[],primaryDamage:3,primaryRange:ATTACK_RANGE.primary,pendingRelicDamage:0,damageUpgrades:0,healthUpgrades:0,energyUpgrades:0,internalSlotUpgrades:0,baseMoveSpeed:PLAYER_MOVE_SPEED,moveSpeed:PLAYER_MOVE_SPEED,damageSpeedBonus:0,damageSpeedDuration:0,damageEnergyGain:0,postHitInvulnerabilityBonus:0,reactiveSpeedTime:0,body:{id:'standard-body',name:'STANDARD BODY',slots:[{id:'shell',part:'shell',label:'SHELL MOUNT',efficiency:1},{id:'core',part:'core',label:'CORE MOUNT',efficiency:1},{id:'legs',part:'legs',label:'LEG MOUNT',efficiency:1},{id:'weapon',part:'weapon',label:'FUSION CUTTER',efficiency:1}],internalSlots:[]},abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
     this.platforms=PLATFORMS.map(platform=>({...platform}));
     this.traps=TRAPS.map(trap=>({...trap}));
@@ -54,14 +54,17 @@ export class Game {
     for(const item of p.purchasedItems.filter(entry=>entry.kind==='modifier'&&entry.equippedSlot)){const slot=this.bodySlots().find(candidate=>candidate.id===item.equippedSlot),effect=this.modifierEffect(item,slot);if(!effect)continue;maxLives+=effect.maxLives??0;maxElectricity+=effect.maxElectricity??0;baseMoveSpeed+=effect.moveSpeed??0;primaryRange+=effect.attackRange??0;maxShield+=effect.healShield??0;damageSpeedBonus+=effect.damageSpeedBonus??0;damageSpeedDuration=Math.max(damageSpeedDuration,effect.damageSpeedDuration??0);damageEnergyGain+=effect.damageEnergy??0;postHitInvulnerabilityBonus+=effect.postHitInvulnerability??0;}
     Object.assign(p,{maxLives,maxElectricity,baseMoveSpeed,primaryRange,maxShield,damageSpeedBonus,damageSpeedDuration,damageEnergyGain,postHitInvulnerabilityBonus});p.moveSpeed=baseMoveSpeed+(p.reactiveSpeedTime>0?damageSpeedBonus:0);p.lives=Math.min(p.lives,p.maxLives);p.electricity=Math.min(p.electricity,p.maxElectricity);p.shield=Math.min(p.shield,p.maxShield);return{maxLives,maxElectricity,moveSpeed:p.moveSpeed,primaryRange,maxShield,damageSpeedBonus,damageEnergyGain};
   }
-  modifierPlacementDetail(item){if(!item.equippedSlot)return'UNEQUIPPED // O INSTALL';const slot=this.bodySlots().find(candidate=>candidate.id===item.equippedSlot),effect=this.modifierEffect(item,slot);return`${slot?.label??'UNKNOWN SLOT'} // ${effect?.label??'NO EFFECT'}`;}
+  modifierPlacementDetail(item){if(!item.equippedSlot)return'IN STORAGE // Q INSTALL';const slot=this.bodySlots().find(candidate=>candidate.id===item.equippedSlot),effect=this.modifierEffect(item,slot);return`${slot?.label??'UNKNOWN SLOT'} // ${effect?.label??'NO EFFECT'}`;}
   inventoryItemRows(){const items=this.player.purchasedItems;return items.length?items.map(item=>[item.name,item.kind==='modifier'?this.modifierPlacementDetail(item):item.detail??'PERMANENT UPGRADE']):[['NO PURCHASES','MERCHANT ITEMS WILL APPEAR HERE']];}
+  selectedInventoryItem(){return this.player.purchasedItems[this.inventorySelection]??null;}
+  equipmentTargets(item=this.player.purchasedItems[this.equipmentItemIndex]){return item?.kind==='modifier'?[...this.compatibleModifierSlots(item),{id:null,part:'storage',label:'STORAGE'}]:[];}
+  selectedEquipmentTarget(){return this.equipmentTargets()[this.equipmentSlotIndex]??null;}
+  beginEquipmentPlacement(){const item=this.selectedInventoryItem();if(item?.kind!=='modifier')return false;this.equipmentItemIndex=this.inventorySelection;const targets=this.equipmentTargets(item),current=item.equippedSlot?targets.findIndex(slot=>slot.id===item.equippedSlot):0;this.equipmentSlotIndex=current<0?0:current;return true;}
+  cancelEquipmentPlacement(){this.equipmentItemIndex=null;this.equipmentSlotIndex=0;return true;}
+  moveEquipmentTarget(delta){const targets=this.equipmentTargets();if(!targets.length)return false;this.equipmentSlotIndex=(this.equipmentSlotIndex+delta+targets.length)%targets.length;return true;}
+  confirmEquipmentPlacement(){const item=this.player.purchasedItems[this.equipmentItemIndex],target=this.selectedEquipmentTarget();if(item?.kind!=='modifier'||!target)return false;if(target.id===null)item.equippedSlot=null;else{const occupant=this.player.purchasedItems.find(entry=>entry.kind==='modifier'&&entry.equippedSlot===target.id&&entry!==item);if(occupant)occupant.equippedSlot=null;item.equippedSlot=target.id;}this.recomputeBodyStats();this.rewardToast={text:target.id===null?'MODIFIER STORED':'MODIFIER INSTALLED',detail:target.id===null?item.name:this.modifierPlacementDetail(item),time:2.4};this.cancelEquipmentPlacement();return true;}
+  equipmentTooltip(){const item=this.selectedInventoryItem();if(!item)return{name:'NO ITEM SELECTED',detail:'ACQUIRED EQUIPMENT AND PASSIVES APPEAR HERE',prompt:''};if(item.kind!=='modifier')return{name:item.name,detail:item.detail??'PERMANENT UPGRADE',prompt:item.kind==='relic'?'PASSIVE EFFECT // ALWAYS ACTIVE':'PERMANENT BODY UPGRADE'};const target=this.equipmentItemIndex===this.inventorySelection?this.selectedEquipmentTarget():null,effect=target?.id?this.modifierEffect(item,target):null;return{name:item.name,detail:target?(target.id?`${target.label} // ${effect?.label??'INCOMPATIBLE'}`:'MOVE TO STORAGE'):this.modifierPlacementDetail(item),prompt:target?'ARROWS CHOOSE SLOT // Q PLACE':'Q SELECT MODIFIER'};}
   inventoryEntryCount(){const page=this.inventoryPages[this.inventoryPage];if(page==='status')return 4;if(page==='materials')return 2;if(page==='items')return Math.max(1,this.player.purchasedItems.length);return 1;}
-  cycleSelectedModifier(){
-    const item=this.player.purchasedItems[this.inventorySelection];if(item?.kind!=='modifier')return false;const slots=this.compatibleModifierSlots(item),current=slots.findIndex(slot=>slot.id===item.equippedSlot),next=current<0?0:current+1<slots.length?current+1:-1;
-    if(next<0)item.equippedSlot=null;else{const target=slots[next],occupant=this.player.purchasedItems.find(entry=>entry.kind==='modifier'&&entry.equippedSlot===target.id&&entry!==item);if(occupant)occupant.equippedSlot=null;item.equippedSlot=target.id;}
-    this.recomputeBodyStats();this.rewardToast={text:next<0?'MODIFIER REMOVED':'MODIFIER INSTALLED',detail:next<0?item.name:this.modifierPlacementDetail(item),time:2.4};return true;
-  }
   selectCurrentMapRegion(){const index=this.regions.findIndex(region=>region.id===this.regionId);this.mapRegionIndex=index<0?0:index;}
   moveMapSelection(dx,dy){const columns=3,index=this.mapRegionIndex,row=Math.floor(index/columns),column=index%columns,nextRow=clamp(row+dy,0,Math.ceil(this.regions.length/columns)-1),nextColumn=clamp(column+dx,0,columns-1),next=nextRow*columns+nextColumn;if(next<this.regions.length)this.mapRegionIndex=next;}
   setInput(input){Object.assign(this.input,input);}
@@ -74,7 +77,7 @@ export class Game {
       else{const rows=this.merchantCatalog();if(this.pressed('jump'))this.merchantMenuSelection=Math.max(0,this.merchantMenuSelection-1);if(this.pressed('down'))this.merchantMenuSelection=Math.min(rows.length-1,this.merchantMenuSelection+1);if(this.pressed('rest'))this.purchaseSelectedMerchantItem();}
       p.vx=0;p.vy=0;this.prev={...this.input};return;
     }
-    const toggledInventory=this.pressed('inventory');if(toggledInventory){this.inventoryOpen=!this.inventoryOpen;p.vx=0;p.vy=0;if(this.inventoryOpen){this.mapOverview=false;this.selectCurrentMapRegion();}}
+    const toggledInventory=this.pressed('inventory');if(toggledInventory){this.inventoryOpen=!this.inventoryOpen;this.cancelEquipmentPlacement();p.vx=0;p.vy=0;if(this.inventoryOpen){this.mapOverview=false;this.selectCurrentMapRegion();}}
     if(this.inventoryOpen){
       if(!toggledInventory){
         const page=this.inventoryPages[this.inventoryPage];
@@ -82,10 +85,14 @@ export class Game {
           if(this.pressed('field'))this.mapOverview=!this.mapOverview;
           else if(this.mapOverview){if(this.pressed('left'))this.moveMapSelection(-1,0);if(this.pressed('right'))this.moveMapSelection(1,0);if(this.pressed('jump'))this.moveMapSelection(0,-1);if(this.pressed('down'))this.moveMapSelection(0,1);}
           else if(this.pressed('right')){this.inventoryPage=1;this.inventorySelection=0;}
+        }else if(page==='items'&&this.equipmentItemIndex!==null){
+          if(this.pressed('field'))this.confirmEquipmentPlacement();
+          else if(this.pressed('left')||this.pressed('jump'))this.moveEquipmentTarget(-1);
+          else if(this.pressed('right')||this.pressed('down'))this.moveEquipmentTarget(1);
         }else{
-          if(page==='items'&&this.pressed('rest'))this.cycleSelectedModifier();
-          if(this.pressed('left')){this.inventoryPage=Math.max(0,this.inventoryPage-1);this.inventorySelection=0;if(this.inventoryPages[this.inventoryPage]==='map'){this.mapOverview=false;this.selectCurrentMapRegion();}}
-          if(this.pressed('right')){this.inventoryPage=Math.min(this.inventoryPages.length-1,this.inventoryPage+1);this.inventorySelection=0;}
+          if(page==='items'&&this.pressed('field'))this.beginEquipmentPlacement();
+          if(this.pressed('left')){this.inventoryPage=Math.max(0,this.inventoryPage-1);this.inventorySelection=0;this.cancelEquipmentPlacement();if(this.inventoryPages[this.inventoryPage]==='map'){this.mapOverview=false;this.selectCurrentMapRegion();}}
+          if(this.pressed('right')){this.inventoryPage=Math.min(this.inventoryPages.length-1,this.inventoryPage+1);this.inventorySelection=0;this.cancelEquipmentPlacement();}
           if(this.pressed('jump'))this.inventorySelection=Math.max(0,this.inventorySelection-1);
           if(this.pressed('down'))this.inventorySelection=Math.min(this.inventoryEntryCount()-1,this.inventorySelection+1);
         }
@@ -291,7 +298,7 @@ export class Game {
   merchantCatalog(merchant=this.merchantRoom.activeMerchant){
     if(!merchant)return[];
     const p=this.player,tierState=(index,owned)=>index<owned?'owned':index===owned?'available':'locked',relicRows=(merchant.relicStock??[]).map(id=>this.relicDefinition(id)).filter(Boolean).map(definition=>({id:definition.id,kind:'relic',name:definition.name,detail:`RELIC // ${definition.detail}`,cost:definition.cost,state:this.ownsRelic(definition.id)?'owned':'available',definition}));
-    if(merchant.service==='damageUpgrade')return merchant.upgradeCosts.map((cost,index)=>({id:`edge-coil-${index+1}`,name:`EDGE COIL MK ${index+1}`,detail:`PERMANENT +1 PRIMARY DAMAGE // ${3+index} TO ${4+index}`,cost,state:tierState(index,p.damageUpgrades)}));
+    if(merchant.service==='damageUpgrade')return[...merchant.upgradeCosts.map((cost,index)=>({id:`edge-coil-${index+1}`,name:`EDGE COIL MK ${index+1}`,detail:`PERMANENT +1 PRIMARY DAMAGE // ${3+index} TO ${4+index}`,cost,state:tierState(index,p.damageUpgrades)})),...relicRows];
     if(merchant.service==='healthUpgrade')return[...merchant.upgradeCosts.map((cost,index)=>({id:`shell-capacity-${index+1}`,name:`SHELL CAPACITY MK ${index+1}`,detail:'PERMANENT +1 MAXIMUM SHELL',cost,state:tierState(index,p.healthUpgrades)})),...relicRows];
     if(merchant.service==='energyUpgrade')return[...merchant.upgradeCosts.map((cost,index)=>({id:`capacitor-bank-${index+1}`,name:`CAPACITOR BANK MK ${index+1}`,detail:'PERMANENT +25 MAXIMUM ELECTRICITY',cost,state:tierState(index,p.energyUpgrades)})),...relicRows];
     if(merchant.service==='internalSlot')return merchant.upgradeCosts.map((cost,index)=>({id:`internal-bay-${index+1}`,name:`INTERNAL BAY ${index+1}`,detail:'EXTRA MODIFIER SLOT // INTERNAL EFFECTS GREATLY REDUCED',cost,state:tierState(index,p.internalSlotUpgrades)}));

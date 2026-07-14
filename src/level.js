@@ -299,14 +299,14 @@ export const RELICS = Object.freeze([
 // Merchant terminals lead to one sealed, enemy-free interior. A terminal
 // remains locked until its explicitly local enemy group is defeated.
 export const MERCHANT_SPAWNS = [
-  {id:'merchant-parts',name:'PARTS BROKER',x:9010,y:-770,w:80,h:120,region:'crown',hub:false,color:'#75f5ff',clearRadius:210,service:'modifierShop',stock:['aegis-filament','reactive-governor','extender-arm']},
-  {id:'merchant-shells',name:'SHELL ARCHIVE',x:13700,y:60,w:80,h:120,region:'exchange',hub:false,color:'#d6ff3f',clearRadius:210,service:'healthUpgrade',upgradeCosts:HEALTH_UPGRADE_COSTS,relicStock:['mender-loop','impact-damper']},
-  {id:'merchant-salvage',name:'CAPACITOR EXCHANGE',x:11120,y:250,w:80,h:120,region:'gauntlet',hub:false,color:'#ffb85c',clearRadius:210,service:'energyUpgrade',upgradeCosts:ENERGY_UPGRADE_COSTS,relicStock:['feedback-dynamo','execution-coil']},
+  {id:'merchant-parts',name:'PARTS BROKER',specialty:'BODY MODIFICATION // PLACEMENT-BASED BUILDS',x:9010,y:-770,w:80,h:120,region:'crown',hub:false,color:'#75f5ff',clearRadius:210,service:'modifierShop',stock:['aegis-filament','reactive-governor','extender-arm']},
+  {id:'merchant-shells',name:'SHELL ARCHIVE',specialty:'SURVIVABILITY // REPAIR + DAMAGE RESPONSE',x:13700,y:60,w:80,h:120,region:'exchange',hub:false,color:'#d6ff3f',clearRadius:210,service:'healthUpgrade',upgradeCosts:HEALTH_UPGRADE_COSTS,relicStock:['mender-loop','impact-damper']},
+  {id:'merchant-salvage',name:'CAPACITOR EXCHANGE',specialty:'CHARGE ECONOMY // DAMAGE + KILL RECOVERY',x:11120,y:250,w:80,h:120,region:'gauntlet',hub:false,color:'#ffb85c',clearRadius:210,service:'energyUpgrade',upgradeCosts:ENERGY_UPGRADE_COSTS,relicStock:['feedback-dynamo','execution-coil']},
   {id:'merchant-verge',name:'VERGE TINKER',x:2160,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:210},
-  {id:'merchant-foundry',name:'INNER FOUNDRY',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:210,service:'internalSlot',upgradeCosts:INTERNAL_SLOT_COSTS},
-  {id:'merchant-response',name:'RESPONSE FORGE',x:12450,y:240,w:80,h:120,region:'drift',hub:false,color:'#ff786f',clearRadius:180,service:'relicShop',relicStock:['arc-retort','kinetic-memory']},
-  {id:'merchant-curator',name:'SALVAGE CURATOR',x:12880,y:330,w:80,h:120,region:'exchange',hub:false,color:'#d9a441',clearRadius:180,service:'relicShop',relicStock:['salvage-lens','corpse-key']},
-  {id:'merchant-forge',name:'EDGE FORGE',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:210,service:'damageUpgrade',upgradeCosts:FORGE_UPGRADE_COSTS}
+  {id:'merchant-foundry',name:'INNER FOUNDRY',specialty:'INTERNAL CAPACITY // FLEXIBLE REDUCED-EFFECT BUILDS',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:210,service:'internalSlot',upgradeCosts:INTERNAL_SLOT_COSTS},
+  {id:'merchant-response',name:'RESPONSE FORGE',specialty:'COUNTERATTACK SYSTEMS // DAMAGE RETALIATION',x:12450,y:240,w:80,h:120,region:'drift',hub:false,color:'#ff786f',clearRadius:180,service:'relicShop',relicStock:['arc-retort']},
+  {id:'merchant-curator',name:'SALVAGE CURATOR',specialty:'RECOVERY ECONOMY // SCRAP + WRECK RETRIEVAL',x:12880,y:330,w:80,h:120,region:'exchange',hub:false,color:'#d9a441',clearRadius:180,service:'relicShop',relicStock:['salvage-lens','corpse-key']},
+  {id:'merchant-forge',name:'EDGE FORGE',specialty:'CUTTER OUTPUT // DAMAGE + STORED IMPACT',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:210,service:'damageUpgrade',upgradeCosts:FORGE_UPGRADE_COSTS,relicStock:['kinetic-memory']}
 ];
 
 export const MERCHANT_ROOM = {

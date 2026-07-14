@@ -53,7 +53,7 @@ function begin() {
     game.player.body.internalSlots.push({id:'internal-1',part:'internal',label:'INTERNAL BAY 1',efficiency:.3});game.recomputeBodyStats();game.player.lives=4;game.player.electricity=125;game.player.shield=1;
     for(const region of ['verge','vault','foundry','bastion'])game.mappedRegions.add(region);game.inventoryOpen=true;
     if(debugPanel==='map'||debugPanel==='overview'||debugPanel==='nomap'){game.inventoryPage=0;game.mapOverview=debugPanel==='overview';if(debugPanel==='nomap')game.mapRegionIndex=5;}
-    else if(debugPanel==='materials')game.inventoryPage=2;else if(debugPanel==='items'||debugPanel==='relics'){game.inventoryPage=3;if(debugPanel==='relics')game.inventorySelection=game.player.purchasedItems.length-1;}
+    else if(debugPanel==='materials')game.inventoryPage=2;else if(debugPanel==='items'||debugPanel==='relics'||debugPanel==='placement'){game.inventoryPage=3;if(debugPanel==='relics')game.inventorySelection=game.player.purchasedItems.length-1;if(debugPanel==='placement'){game.inventorySelection=game.player.purchasedItems.findIndex(item=>item.modifierId==='aegis-filament');game.beginEquipmentPlacement();}}
   } else if (debugSpawn === 'explore') {
     game.player.x=1660;
     game.player.y=140-game.player.h;

@@ -8,9 +8,9 @@ const buyRelic=(game,id)=>{
   game.player.scrap=10000;assert.equal(game.buyRelicOffer(merchant,definition),true);return game.player.purchasedItems.at(-1);
 };
 
-test('relic shops distribute eight distinct passive items across four merchants',()=>{
+test('specialized merchants distribute eight distinct passive items',()=>{
   const game=new Game(),sellers=game.merchants.filter(merchant=>merchant.relicStock?.length);
-  assert.equal(RELICS.length,8);assert.equal(sellers.length,4);assert.deepEqual(new Set(sellers.flatMap(merchant=>merchant.relicStock)),new Set(RELICS.map(relic=>relic.id)));
+  assert.equal(RELICS.length,8);assert.equal(sellers.length,5);assert.deepEqual(new Set(sellers.flatMap(merchant=>merchant.relicStock)),new Set(RELICS.map(relic=>relic.id)));
   assert.equal(new Set(RELICS.map(relic=>JSON.stringify(relic.effects))).size,RELICS.length);
   assert.ok(RELICS.every(relic=>relic.cost>=750&&relic.detail));
 });
@@ -20,6 +20,13 @@ test('Shell Archive and Capacitor Exchange mix relics into their upgrade catalog
   assert.equal(game.merchantCatalog(shells).length,5);assert.equal(game.merchantCatalog(capacitors).length,5);
   assert.deepEqual(game.merchantCatalog(shells).slice(-2).map(row=>row.kind),['relic','relic']);assert.deepEqual(game.merchantCatalog(capacitors).slice(-2).map(row=>row.kind),['relic','relic']);
   game.merchantRoom.activeMerchant=shells;game.player.scrap=1000;game.openMerchantMenu(shells);game.merchantMenuSelection=3;assert.equal(game.purchaseSelectedMerchantItem(),true);assert.equal(game.player.purchasedItems[0].kind,'relic');assert.equal(game.merchantCatalog(shells)[3].state,'owned');
+});
+
+test('each core upgrade merchant carries passives aligned with its specialty',()=>{
+  const game=new Game(),shells=game.merchants.find(item=>item.id==='merchant-shells'),capacitors=game.merchants.find(item=>item.id==='merchant-salvage'),forge=game.merchants.find(item=>item.id==='merchant-forge');
+  assert.deepEqual(shells.relicStock,['mender-loop','impact-damper']);assert.match(shells.specialty,/SURVIVABILITY/);
+  assert.deepEqual(capacitors.relicStock,['feedback-dynamo','execution-coil']);assert.match(capacitors.specialty,/CHARGE ECONOMY/);
+  assert.deepEqual(forge.relicStock,['kinetic-memory']);assert.match(forge.specialty,/CUTTER OUTPUT/);assert.equal(game.merchantCatalog(forge).at(-1).id,'kinetic-memory');
 });
 
 test('Mender Loop lowers repair cost and Impact Damper reduces both knockback axes',()=>{

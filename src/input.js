@@ -1,5 +1,5 @@
 const KEY_MAP = {
-  KeyA:'left', KeyD:'right', KeyW:'jump', KeyS:'down',
+  KeyA:'left', KeyD:'right', KeyW:'jump', KeyS:'down', ArrowLeft:'left', ArrowRight:'right', ArrowUp:'jump', ArrowDown:'down',
   ShiftLeft:'dash', ShiftRight:'dash', Space:'attack',
   KeyE:'heal', KeyQ:'field', KeyF:'electricJab', KeyO:'rest', KeyI:'inventory',
   a:'left', A:'left', d:'right', D:'right', w:'jump', W:'jump', s:'down', S:'down',
