@@ -488,14 +488,14 @@ export class Game {
   }
   spawnBossVolley(boss){
     const sx=boss.x+boss.w/2,sy=boss.y+boss.h*.35,tx=this.player.x+this.player.w/2,ty=this.player.y+this.player.h/2,base=Math.atan2(ty-sy,tx-sx);
-    const offsets=boss.phase===2?[-.34,-.17,0,.17,.34]:[-.2,0,.2];for(const offset of offsets){const angle=base+offset,speed=boss.phase===2?285:230;this.bossProjectiles.push({x:sx-7,y:sy-7,w:14,h:14,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:4,dead:false});}
+    const offsets=boss.phase===2?[-.24,0,.24]:[-.14,.14];for(const offset of offsets){const angle=base+offset,speed=boss.phase===2?285:230;this.bossProjectiles.push({x:sx-7,y:sy-7,w:14,h:14,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:4,dead:false});}
   }
-  spawnBossBurst(boss){const sx=boss.x+boss.w/2,sy=boss.y+boss.h/2;for(let index=0;index<8;index++){const angle=index*Math.PI/4,speed=310;this.bossProjectiles.push({x:sx-7,y:sy-7,w:14,h:14,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.4,dead:false,owner:'heavy-burst'});}}
+  spawnBossBurst(boss){const sx=boss.x+boss.w/2,sy=boss.y+boss.h/2;for(let index=0;index<4;index++){const angle=index*Math.PI/2,speed=310;this.bossProjectiles.push({x:sx-7,y:sy-7,w:14,h:14,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.4,dead:false,owner:'heavy-burst'});}}
   spawnVaultVolley(boss){
     const sx=boss.x+boss.w/2,sy=boss.y+boss.h*.35,tx=this.player.x+this.player.w/2,ty=this.player.y+this.player.h/2,base=Math.atan2(ty-sy,tx-sx);
-    const offsets=boss.phase===2?[-.54,-.36,-.18,0,.18,.36,.54]:[-.42,-.21,0,.21,.42];for(const offset of offsets){const angle=base+offset,speed=boss.phase===2?255:205;this.bossProjectiles.push({x:sx-6,y:sy-6,w:12,h:12,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.2,dead:false,color:'#75f5ff'});}
+    const offsets=boss.phase===2?[-.42,-.14,.14,.42]:[-.3,0,.3];for(const offset of offsets){const angle=base+offset,speed=boss.phase===2?255:205;this.bossProjectiles.push({x:sx-6,y:sy-6,w:12,h:12,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.2,dead:false,color:'#75f5ff'});}
   }
-  spawnVaultCrossfire(boss){const sx=boss.x+boss.w/2,sy=boss.y+boss.h/2;for(let index=0;index<10;index++){const angle=index*Math.PI/5,speed=275;this.bossProjectiles.push({x:sx-6,y:sy-6,w:12,h:12,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.2,dead:false,owner:'warden-crossfire',color:'#75f5ff'});}}
+  spawnVaultCrossfire(boss){const sx=boss.x+boss.w/2,sy=boss.y+boss.h/2;for(let index=0;index<6;index++){const angle=index*Math.PI/3,speed=275;this.bossProjectiles.push({x:sx-6,y:sy-6,w:12,h:12,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.2,dead:false,owner:'warden-crossfire',color:'#75f5ff'});}}
   spawnDepthTracker(boss){
     const sx=boss.x+boss.w/2,sy=boss.y+boss.h*.32,tx=this.player.x+this.player.w/2,ty=this.player.y+this.player.h/2,base=Math.atan2(ty-sy,tx-sx),speed=boss.phase===2?600:520,offsets=boss.phase===2?[-.09,.09]:[0];
     for(const offset of offsets){const angle=base+offset;this.bossProjectiles.push({x:sx-8,y:sy-8,w:16,h:16,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,speed,trackingTime:boss.phase===2?.6:.48,life:3,dead:false,owner:'depth',color:'#d6ff3f'});}

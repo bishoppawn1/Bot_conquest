@@ -38,14 +38,14 @@ test('every boss continues its active movement as it crosses into phase two',()=
   for(const entry of cases){const game=new Game(),[boss,update,moved]=entry.setup(game);boss.health=boss.maxHealth/2;update();assert.equal(boss.phase,2);assert.equal(moved(),true,`${boss.name??boss.type} stalled during its phase transition`);}
 });
 
-test('Heavy Core phase two fires a faster five-shot volley',()=>{
-  const game=new Game(),boss=game.boss();enterPhaseTwo(game,boss);game.spawnBossVolley(boss);
-  assert.equal(game.bossProjectiles.length,5);assert.ok(game.bossProjectiles.every(bolt=>Math.hypot(bolt.vx,bolt.vy)>280));
+test('Heavy Core volleys leave wider gaps in both phases',()=>{
+  const game=new Game(),boss=game.boss();game.spawnBossVolley(boss);assert.equal(game.bossProjectiles.length,2);game.bossProjectiles=[];enterPhaseTwo(game,boss);game.spawnBossVolley(boss);
+  assert.equal(game.bossProjectiles.length,3);assert.ok(game.bossProjectiles.every(bolt=>Math.hypot(bolt.vx,bolt.vy)>280));
 });
 
-test('Abyss Warden phase two fires a faster seven-bolt fan',()=>{
-  const game=new Game(),boss=game.vaultBoss();enterPhaseTwo(game,boss);game.spawnVaultVolley(boss);
-  assert.equal(game.bossProjectiles.length,7);assert.ok(game.bossProjectiles.every(bolt=>Math.hypot(bolt.vx,bolt.vy)>250));
+test('Abyss Warden volleys leave wider gaps in both phases',()=>{
+  const game=new Game(),boss=game.vaultBoss();game.spawnVaultVolley(boss);assert.equal(game.bossProjectiles.length,3);game.bossProjectiles=[];enterPhaseTwo(game,boss);game.spawnVaultVolley(boss);
+  assert.equal(game.bossProjectiles.length,4);assert.ok(game.bossProjectiles.every(bolt=>Math.hypot(bolt.vx,bolt.vy)>250));
 });
 
 test('Rift Stalker phase two fires two faster tracking bolts without explosions',()=>{
@@ -69,8 +69,8 @@ test('every full boss gains a distinct fourth attack only in overdrive',()=>{
 });
 
 test('overdrive fourth attacks create distinct non-exploding hazards',()=>{
-  const heavy=new Game(),heavyBoss=heavy.boss();heavy.bossArena.active=true;Object.assign(heavyBoss,{phase:2,health:heavyBoss.maxHealth/2,bossMove:'burstWindup',bossTimer:0});heavy.updateBoss(heavyBoss,1/60);assert.equal(heavy.bossProjectiles.filter(bolt=>bolt.owner==='heavy-burst').length,8);
-  const vault=new Game(),vaultBoss=vault.vaultBoss();vault.vaultBossArena.active=true;Object.assign(vaultBoss,{phase:2,health:vaultBoss.maxHealth/2,bossMove:'wardenCrossfireWindup',bossTimer:0});vault.updateVaultBoss(vaultBoss,1/60);assert.equal(vault.bossProjectiles.filter(bolt=>bolt.owner==='warden-crossfire').length,10);
+  const heavy=new Game(),heavyBoss=heavy.boss();heavy.bossArena.active=true;Object.assign(heavyBoss,{phase:2,health:heavyBoss.maxHealth/2,bossMove:'burstWindup',bossTimer:0});heavy.updateBoss(heavyBoss,1/60);assert.equal(heavy.bossProjectiles.filter(bolt=>bolt.owner==='heavy-burst').length,4);
+  const vault=new Game(),vaultBoss=vault.vaultBoss();vault.vaultBossArena.active=true;Object.assign(vaultBoss,{phase:2,health:vaultBoss.maxHealth/2,bossMove:'wardenCrossfireWindup',bossTimer:0});vault.updateVaultBoss(vaultBoss,1/60);assert.equal(vault.bossProjectiles.filter(bolt=>bolt.owner==='warden-crossfire').length,6);
   const depth=new Game(),depthBoss=depth.depthBoss();depth.depthBossArena.active=true;Object.assign(depthBoss,{phase:2,health:depthBoss.maxHealth/2,bossMove:'stalkerRiftWindup',bossTimer:0});depth.updateDepthBoss(depthBoss,1/60);const riftBolts=depth.bossProjectiles.filter(bolt=>bolt.owner==='depth-rift');assert.equal(riftBolts.length,6);assert.ok(riftBolts.every(bolt=>bolt.explosive===undefined&&bolt.trackingTime===undefined));
   const crown=new Game(),crownBoss=crown.crownBoss();crown.crownBossArena.active=true;Object.assign(crownBoss,{phase:2,health:crownBoss.maxHealth/2,bossMove:'crownGridWindup',bossTimer:0});crown.updateCrownBoss(crownBoss,1/60);assert.equal(crown.crownHazards.filter(hazard=>hazard.type==='column').length,2);
 });

@@ -102,17 +102,17 @@ Every boss and mini boss crosses into phase two exactly once at half health. The
 
 After traversing roughly two-thirds of the current route, the player enters a 1,300-unit-wide open arena. Crossing its inner trigger while physically inside the chamber drops a solid gate behind the player and another at the far exit. The gates finish closing in about 0.3 seconds and cannot be crossed while the boss remains alive. Full-height structural bulkheads seal both approaches to the arena roof, preventing roof bypasses and ensuring a gate can never lock the player outside the fight.
 
-The Heavy Core boss has 72 health and randomly chooses its charge, aerial slam, or projectile volley without immediate repeats. Its 96-by-78-unit collision body remains imposing but can be cleared cleanly with the starting jump, preventing its charge from creating an unavoidable wall pin. At half health it enters phase two with faster recovery, a 340-unit-per-second charge, a larger slam shockwave, a five-bolt volley, and an eight-bolt radial burst.
+The Heavy Core boss has 72 health and randomly chooses its charge, aerial slam, or projectile volley without immediate repeats. Its 96-by-78-unit collision body remains imposing but can be cleared cleanly with the starting jump, preventing its charge from creating an unavoidable wall pin. At half health it enters phase two with faster recovery, a 340-unit-per-second charge, a larger slam shockwave, a three-bolt volley, and a four-bolt radial burst.
 
 - A telegraphed horizontal charge locks its direction before rushing at 260 units per second.
 - An aerial slam launches upward, then creates an expanding 300-unit ground shockwave when it lands.
-- A volley fires three energy bolts toward the player's current position with a small angular spread.
+- A volley fires two energy bolts toward the player's current position with a small angular spread.
 
 The HUD displays the boss health bar throughout the encounter. Defeating the Heavy Core awards 150 scrap, removes remaining boss hazards, retracts both gates, destroys both full-height red roof bulkheads, and permanently clears the arena for the run.
 
 ### Mini-boss encounter
 
-The Sunken Vault contains the sixty-health Abyss Warden, a full boss with its own large health bar and seeded-random charge, leaping shockwave, and five-bolt volley selection. Its chamber is 830 units wide and 320 units tall, providing broad charge runway and enough vertical clearance for the leap to read cleanly. Its 420-unit-tall right exit seal is solid before the encounter activates, reaches from Y 700 to the floor at Y 1120, and cannot be jumped around from the exit platforms. Dropping into the chamber activates the Warden and closes the entry seal. The dormant Warden cannot be damaged from the approach. No left-side hiding shelf sits above the arena or obscures the later deep-route hatch. At half health phase two accelerates its movement and recovery, enlarges the shockwave, expands the volley to seven bolts, and adds a ten-bolt radial crossfire.
+The Sunken Vault contains the sixty-health Abyss Warden, a full boss with its own large health bar and seeded-random charge, leaping shockwave, and three-bolt volley selection. Its chamber is 830 units wide and 320 units tall, providing broad charge runway and enough vertical clearance for the leap to read cleanly. Its 420-unit-tall right exit seal is solid before the encounter activates, reaches from Y 700 to the floor at Y 1120, and cannot be jumped around from the exit platforms. Dropping into the chamber activates the Warden and closes the entry seal. The dormant Warden cannot be damaged from the approach. No left-side hiding shelf sits above the arena or obscures the later deep-route hatch. At half health phase two accelerates its movement and recovery, enlarges the shockwave, expands the volley to four bolts, and adds a six-bolt radial crossfire.
 
 Defeating the Abyss Warden awards 110 scrap, removes its hazards, opens both sides, and releases the blue Volt Jab core inside the chamber. The opened escape leads to the tutorial conduit and powered seal.
 
