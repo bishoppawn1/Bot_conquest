@@ -98,6 +98,12 @@ test('Wall Climb opens the Crownworks route without a full-height barrier',()=>{
   for(let frame=0;frame<180;frame++){if(!launched&&g.player.y<-285){g.setInput({jump:true,right:true});launched=true;}else if(launched)g.setInput({jump:false,right:true});g.update(1/60);if(supportingPlatform(g.player,g.platforms,3)===entry){reached=true;break;}}
   assert.equal(reached,true);assert.ok(canTraverse('wall-entry','wall-gallery'));assert.ok(canTraverse('wall-gallery','wall-east'));assert.ok(canTraverse('wall-east','wall-cache'));
 });
+test('the Crownworks shaft can be climbed into the upper chamber',()=>{
+  const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];g.unlockAbility('wallClimb');
+  const wall=g.platforms.find(block=>block.id==='crown-upper-climb'),target=g.platforms.find(block=>block.id==='crown-upper-floor-west');Object.assign(g.player,{x:wall.x-g.player.w,y:-650-g.player.h,vx:0,vy:0,onGround:true,jumps:1});g.setInput({right:true,jump:true});let phase=0,reached=false;
+  for(let frame=0;frame<600;frame++){if(phase===0&&g.player.y<=target.y-g.player.h){g.setInput({right:false,jump:false,left:true});phase=1;}else if(phase===1&&g.player.vx<0){g.setInput({left:false});phase=2;}g.update(1/60);if(supportingPlatform(g.player,g.platforms,3)===target){reached=true;break;}}
+  assert.equal(reached,true,'the roof shaft cannot be crested into the upper chamber');
+});
 test('double jump works after its ability is unlocked',()=>{const g=new Game();tick(g,60);g.unlockAbility('doubleJump');press(g,'jump');assert.equal(g.player.jumps,1);press(g,'jump');assert.equal(g.player.jumps,0);});
 test('dash accelerates after its ability is unlocked',()=>{const g=new Game();tick(g,60);g.unlockAbility('dash');g.player.facing=-1;press(g,'dash');assert.ok(g.player.vx< -500);assert.ok(g.player.dashCooldown>0);});
 test('repair starts unlocked while traversal and special attacks stay locked',()=>{const g=new Game();assert.deepEqual(g.player.abilities,{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false});});
@@ -114,7 +120,7 @@ test('grounded wall contact does not suppress the starting jump before wall clim
 test('pressing away jumps from either side of a wall at the current height',()=>{const right=new Game();right.unlockAbility('wallClimb');right.player.x=380;right.player.y=610;right.player.vx=300;tick(right);press(right,'left');assert.ok(right.player.vx<0);assert.ok(right.player.vy<0);
   const left=new Game();left.platforms=[{x:300,y:450,w:80,h:250}];left.enemies=[];left.junkPiles=[];left.unlockAbility('wallClimb');Object.assign(left.player,{x:380,y:520,vx:-200,vy:0});tick(left);assert.equal(left.player.onWall,-1);press(left,'right');assert.ok(left.player.vx>0);assert.ok(left.player.vy<0);
 });
-test('vertical camera follows the player into the upper world',()=>{const g=new Game();g.player.y=-1500;tick(g);assert.ok(g.cameraY<0);assert.ok(g.cameraY>=-1800);});
+test('vertical camera follows the player into the upper world',()=>{const g=new Game();g.player.y=-1750;tick(g);assert.ok(g.cameraY<0);assert.ok(g.cameraY>=-1900);});
 test('enemy roster has varied movement archetypes and sizes',()=>{const g=new Game();assert.ok(new Set(g.enemies.map(e=>e.type)).size>=5);assert.ok(new Set(g.enemies.map(e=>`${e.w}x${e.h}`)).size>=5);});
 test('non-patrolling enemy remains idle until the nearby player shares its platform',()=>{const g=new Game();const e=g.enemy({type:'crawler',x:1120,y:620,w:30,h:40});g.enemies=[e];const startX=e.x;tick(g,90);assert.equal(e.active,false);assert.equal(e.x,startX);g.player.x=1080;g.player.y=624;tick(g);assert.equal(e.active,true);assert.ok(e.x<startX);});
 test('ground enemy does not detect or camp for a player across a spike gap',()=>{const g=new Game();const e=g.enemy({type:'roller',x:3560,y:575,w:34,h:35,patrol:true,patrolRange:70,patrolDirection:1});g.enemies=[e];tick(g,60);g.player.x=3370;g.player.y=644;tick(g,120);assert.equal(e.active,false);assert.ok(e.x>=3550,'enemy should remain on its own foundation instead of camping the gap');});

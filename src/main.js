@@ -77,6 +77,11 @@ function begin() {
     game.player.x=2880;
     game.player.y=-70-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'crown-upper') {
+    game.unlockAbility('wallClimb');
+    game.player.x=8890;
+    game.player.y=-1450-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'depth-boss') {
     openDebugDepth();
     game.player.x=2920;

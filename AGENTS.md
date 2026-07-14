@@ -72,7 +72,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 
 ## World structure
 
-- The current world spans X `0–14500` and Y `-1000–2700`. `REGIONS` contains eight contiguous regions connected by seven non-blocking `REGION_GATES`. Core Bastion spans X `5890–8400` and includes the former Relay Concourse space as one map region.
+- The current world spans X `0–14500` and Y `-1900–2700`. `REGIONS` contains eight contiguous regions connected by seven non-blocking `REGION_GATES`. Core Bastion spans X `5890–8400` and includes the former Relay Concourse space as one map region.
 - Do not describe content as numbered sectors, stages, or levels.
 - Do not add linear completion screens or traversal-percentage HUD elements.
 - Do not render area-name text, directional captions, or text-box-like room labels directly into the world.
@@ -82,7 +82,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 - `FOUNDATION_BLOCKS` form the tested basic-jump lower network. Upward transitions may rise by at most 70 units and gaps may be no wider than 160 units. Simulation tests must physically cross every gap in both directions.
 - The five `vault-*` foundations descend from Y 680 to Y 820 and rise again in 70-unit increments. The original branch continues down to the Abyss Warden floor at Y 1120. Every pre-Warden drop must remain reversible with the basic jump; only the clearly framed boss drop is one-way. After the Warden is dead and both Volt Jab and Wall Climb are owned, the Warden floor can open into an irreversible exploration route to Y 2550.
 - `VAULT_UPPER_BLOCKS` forms a Wall-Climb-gated loft above the Sunken Vault. `VAULT_DEEP_BLOCKS` forms the contained post-Warden descent and Rift Stalker floor. `DEPTH_RETURN_BLOCKS` appear after the Rift Stalker dies; their Dash gaps and final two Wall-Climb ascents are physically tested all the way back to the Warden floor.
-- `OVERHEAD_BLOCKS` and the first eight `RECESSES` form the original hollow rooms. The map now extends through Shard Gauntlet, Quiet Drift, and Grand Exchange chambers to X 14500.
+- `OVERHEAD_BLOCKS` and the first eight `RECESSES` form the original hollow rooms. Crownworks' split overhead mass leaves one contained Wall-Climb shaft into `CROWN_UPPER_BLOCKS`, a full upper chamber with heavy roof and side walls, broad floor masses, brace-supported perches, encounters, salvage, and a reversible return. The map also extends through Shard Gauntlet, Quiet Drift, and Grand Exchange chambers to X 14500.
 - `POCKET_BLOCKS` form the two end-alcove ceilings. `WALL_BLOCKS` also includes the short Crownworks climbing wall, the destructible Heavy Core roof bulkheads, and the left wall of the Abyss Warden room. The Crownworks entry wall must never become a floor-to-ceiling barrier; its right side launches onto `wall-entry` after Wall Climb is unlocked.
 - Suspended platforms are normally 40–60 units thick to preserve air and visibility. The two deep Vault floor masses may be 80 units thick. Foundations stay 120+ units thick except the five 60-unit Sunken Vault foundations, which preserve traversal clearance; ceilings remain massive structural forms.
 - No two entries in `PLATFORMS` may geometrically overlap. Touching faces are allowed; intersecting rectangles, buried surfaces, and objects spawned inside solids are forbidden.
@@ -187,6 +187,8 @@ Use `http://127.0.0.1:4175/?debug=lower` for visual QA of the vault undercroft.
 Use `http://127.0.0.1:4175/?debug=vault-boss` for the active Abyss Warden room, `http://127.0.0.1:4175/?debug=mini` for the optional Quiet Drift Cache Scrapper, and `http://127.0.0.1:4175/?debug=volt` for the post-Warden Volt Jab tutorial.
 
 Use `http://127.0.0.1:4175/?debug=vault-upper` for the Wall-Climb loft, `http://127.0.0.1:4175/?debug=deep-vault` for the opened post-Warden hatch, `http://127.0.0.1:4175/?debug=deep-gallery` for both mandatory climb galleries, `http://127.0.0.1:4175/?debug=depth-boss` for the active Rift Stalker, and `http://127.0.0.1:4175/?debug=dash` for the released Dash core and return platforms.
+
+Use `http://127.0.0.1:4175/?debug=crown-upper` to inspect the enclosed Crownworks upper chamber and its climbable salvage perches.
 
 Use `http://127.0.0.1:4175/?debug=merchant` to verify an unlocked merchant door and its separate interior.
 

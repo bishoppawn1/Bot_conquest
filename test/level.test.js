@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
+  ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, CROWN_UPPER_BLOCKS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
   ENEMY_SPAWNS, FORGE_UPGRADE_COSTS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
   LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
   PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_GATES, REGIONS,
@@ -13,12 +13,12 @@ const horizontalGap=(a,b)=>Math.max(0,b.x-(a.x+a.w),a.x-(b.x+b.w));
 
 test('the map occupies a genuine two-dimensional playfield',()=>{
   assert.equal(WORLD_WIDTH,14500);
-  assert.equal(WORLD_TOP,-1000);
+  assert.equal(WORLD_TOP,-1900);
   assert.equal(WORLD_BOTTOM,2700);
-  assert.equal(WORLD_HEIGHT,3700);
+  assert.equal(WORLD_HEIGHT,4600);
   assert.ok(PLATFORMS.some(block=>block.x+block.w===WORLD_WIDTH));
   assert.ok(LOWER_BLOCKS.some(block=>block.y>=1080),'the map needs playable space below the main floor');
-  assert.ok(ABILITY_GATED_BLOCKS.some(block=>block.y<=-650),'the map needs substantial upper space');
+  assert.ok(CROWN_UPPER_BLOCKS.some(block=>block.y===WORLD_TOP),'the map needs substantial upper space');
   assert.ok(ENEMY_SPAWNS.some(enemy=>enemy.y>800)&&ENEMY_SPAWNS.some(enemy=>enemy.y<0),'combat must exist above and below the main route');
 });
 
@@ -52,7 +52,11 @@ test('recesses are unlabeled rooms framed by ceilings and mostly solid floors',(
   assert.ok(RECESSES.length>=10);
   assert.ok(RECESSES.every(recess=>!('label' in recess)));
   for(const recess of RECESSES.slice(0,8)){
-    assert.ok(OVERHEAD_BLOCKS.some(block=>block.y+block.h===recess.ceilingY&&block.x<=recess.x&&block.x+block.w>=recess.x+recess.w),`recess at ${recess.x} is missing its ceiling`);
+    const ceilingIntervals=OVERHEAD_BLOCKS.filter(block=>block.y+block.h===recess.ceilingY&&block.x<recess.x+recess.w&&block.x+block.w>recess.x)
+      .map(block=>[Math.max(recess.x,block.x),Math.min(recess.x+recess.w,block.x+block.w)]).sort((a,b)=>a[0]-b[0]);
+    let ceilingCovered=0,ceilingCursor=-Infinity;
+    for(const [start,end] of ceilingIntervals){if(end<=ceilingCursor)continue;ceilingCovered+=end-Math.max(start,ceilingCursor);ceilingCursor=end;}
+    assert.ok(ceilingCovered>=recess.w*(recess.ceilingOpenings?.7:1),`recess at ${recess.x} is missing its ceiling`);
     if(recess.steppedFloor){const steps=FOUNDATION_BLOCKS.filter(block=>block.x<recess.x+recess.w&&block.x+block.w>recess.x);assert.ok(new Set(steps.map(block=>block.y)).size>=3);continue;}
     const intervals=FOUNDATION_BLOCKS.filter(block=>block.y===recess.floorY&&block.x<recess.x+recess.w&&block.x+block.w>recess.x)
       .map(block=>[Math.max(recess.x,block.x),Math.min(recess.x+recess.w,block.x+block.w)]).sort((a,b)=>a[0]-b[0]);
@@ -83,6 +87,17 @@ test('three substantial regions require later movement abilities',()=>{
   assert.ok(byId('assembly-cross').y-byId('double-entry').y>164,'double-jump entrance is reachable with the basic jump');
   assert.ok(horizontalGap(byId('foundry-high'),byId('dash-entry'))>300,'dash entrance is reachable with an ordinary leap');
   assert.ok(byId('relay-west').y-byId('wall-entry').y>200&&WALL_BLOCKS.some(wall=>wall.x+wall.w<=byId('wall-entry').x),'wall region lacks a real movement gate');
+});
+
+test('Crownworks opens into a contained upper chamber instead of ending at its ceiling',()=>{
+  const byId=id=>CROWN_UPPER_BLOCKS.find(block=>block.id===id),roof=byId('crown-upper-roof'),west=byId('crown-upper-floor-west'),east=byId('crown-upper-floor-east'),climb=byId('crown-upper-climb');
+  assert.ok(roof&&west&&east&&climb);assert.equal(roof.y,WORLD_TOP);assert.equal(roof.w,1200);assert.ok(climb.x-(west.x+west.w)>=80);assert.ok(east.x-(climb.x+climb.w)>=70);assert.equal(climb.y+climb.h,-650);
+  assert.ok(CROWN_UPPER_BLOCKS.filter(block=>block.kind==='wall').length>=5);assert.ok(CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper').reduce((sum,block)=>sum+block.w,0)>=1500);
+  const threshold=CROWN_UPPER_BLOCKS.filter(block=>block.id?.includes('climb'))[0],opening=OVERHEAD_BLOCKS.filter(block=>block.id?.startsWith('crown-threshold')).sort((a,b)=>a.x-b.x),openingWidth=opening[1].x-(opening[0].x+opening[0].w);
+  assert.ok(opening.every(block=>!intersects(block,threshold)));assert.ok(openingWidth>=220,'the ceiling opening should leave a bot-width passage around the climb wall');
+  const upperEnemies=ENEMY_SPAWNS.filter(enemy=>enemy.y<-1300),upperJunk=JUNK_PILES.filter(pile=>pile.y<-1600&&!pile.material);
+  assert.ok(upperEnemies.length>=3);assert.ok(upperEnemies.filter(enemy=>enemy.type!=='drone').every(enemy=>CROWN_UPPER_BLOCKS.some(block=>enemy.y+enemy.h===block.y&&enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w)));
+  assert.ok(upperJunk.length>=2);assert.ok(upperJunk.every(pile=>CROWN_UPPER_BLOCKS.some(block=>pile.y+pile.h===block.y&&pile.x>=block.x&&pile.x+pile.w<=block.x+block.w)));
 });
 
 test('named regions are contiguous and connected by visible gates',()=>{
@@ -137,7 +152,7 @@ test('starting-kit platforms form varied room networks with combat',()=>{
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.zone)).size>=9);
   assert.ok(BRANCH_BLOCKS.every(block=>!('step' in block)&&!('branch' in block)&&!block.requires));
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.w)).size>=12);
-  const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS];
+  const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS];
   const combatants=[...ENEMY_SPAWNS,...MINI_BOSS_ARENAS.map(arena=>arena.enemy)];
   const supportedEnemies=combatants.filter(enemy=>enemy.type!=='drone'&&combatSurfaces.some(block=>enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w&&enemy.y+enemy.h===block.y));
   assert.ok(supportedEnemies.length>=12,'upper and lower exploration spaces need their own encounters');
@@ -171,7 +186,7 @@ test('the Sunken Vault has a Wall-Climb loft and a much deeper Dash-locked retur
 
 test('walkable surfaces leave enough headroom for the bot',()=>{
   const botWidth=50,botHeight=36;
-  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS]){
+  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper')]){
     const blockers=PLATFORMS.filter(block=>block!==surface&&block.y<surface.y&&block.y+block.h>surface.y-botHeight)
       .map(block=>[Math.max(surface.x,block.x),Math.min(surface.x+surface.w,block.x+block.w)])
       .filter(([start,end])=>end>start).sort((a,b)=>a[0]-b[0]);

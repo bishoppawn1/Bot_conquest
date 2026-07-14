@@ -1,5 +1,5 @@
 export const WORLD_WIDTH = 14500;
-export const WORLD_TOP = -1000;
+export const WORLD_TOP = -1900;
 export const WORLD_BOTTOM = 2700;
 export const WORLD_HEIGHT = WORLD_BOTTOM-WORLD_TOP;
 
@@ -35,7 +35,8 @@ export const OVERHEAD_BLOCKS = [
   {x:4950,y:-300,w:840,h:100,kind:'ceiling'},
   {x:5890,y:250,w:1300,h:100,kind:'ceiling'},
   {x:7350,y:350,w:980,h:100,kind:'ceiling'},
-  {x:8400,y:-900,w:1200,h:110,kind:'ceiling'},
+  {id:'crown-threshold-west',x:8400,y:-900,w:650,h:110,kind:'ceiling'},
+  {id:'crown-threshold-east',x:9270,y:-900,w:330,h:110,kind:'ceiling'},
   {x:9600,y:-100,w:1700,h:80,kind:'ceiling'},
   {x:11400,y:-600,w:1200,h:90,kind:'ceiling'},
   {x:12700,y:-800,w:1800,h:100,kind:'ceiling'}
@@ -176,8 +177,8 @@ export const WALL_BLOCKS = [
   {x:40,y:500,w:60,h:160,kind:'wall'},
   {x:14440,y:450,w:60,h:210,kind:'wall'},
   {id:'crown-climb',x:8380,y:-260,w:60,h:220,kind:'wall'},
-  {id:'boss-roof-left',x:5790,y:-1000,w:100,h:1350,kind:'wall',destructibleAfterBoss:true},
-  {id:'boss-roof-right',x:7190,y:-1000,w:160,h:1350,kind:'wall',destructibleAfterBoss:true},
+  {id:'boss-roof-left',x:5790,y:-1900,w:100,h:2250,kind:'wall',destructibleAfterBoss:true},
+  {id:'boss-roof-right',x:7190,y:-1900,w:160,h:2250,kind:'wall',destructibleAfterBoss:true},
   {id:'vault-arena-left',x:2800,y:985,w:60,h:135,kind:'wall'}
 ];
 
@@ -199,6 +200,23 @@ export const ABILITY_GATED_BLOCKS = [
   {id:'wall-gallery',x:8750,y:-470,w:570,h:60,kind:'cache',requires:'wallClimb',region:'relay-crown'},
   {id:'wall-east',x:9340,y:-525,w:180,h:45,kind:'cache',requires:'wallClimb',region:'relay-crown'},
   {id:'wall-cache',x:9000,y:-650,w:320,h:55,kind:'cache',requires:'wallClimb',region:'relay-crown'}
+];
+
+// Crownworks continues through a narrow opening in its former roof into a
+// fully framed upper works. The long central wall grows directly from the
+// existing cache platform, while the two internal braces create optional
+// combat and salvage perches without turning the chamber into a staircase.
+export const CROWN_UPPER_BLOCKS = [
+  {id:'crown-upper-roof',x:8400,y:-1900,w:1200,h:100,kind:'ceiling'},
+  {id:'crown-upper-west-wall',x:8340,y:-1900,w:60,h:500,kind:'wall'},
+  {id:'crown-upper-east-wall',x:9600,y:-1900,w:60,h:500,kind:'wall'},
+  {id:'crown-upper-floor-west',x:8400,y:-1450,w:650,h:50,kind:'crown-upper',requires:'wallClimb',region:'relay-crown'},
+  {id:'crown-upper-climb',x:9135,y:-1450,w:60,h:800,kind:'wall',requires:'wallClimb',region:'relay-crown',gateEntry:true},
+  {id:'crown-upper-floor-east',x:9270,y:-1450,w:330,h:50,kind:'crown-upper',requires:'wallClimb',region:'relay-crown'},
+  {id:'crown-upper-west-perch',x:8460,y:-1640,w:300,h:50,kind:'crown-upper',requires:'wallClimb',region:'relay-crown'},
+  {id:'crown-upper-west-brace',x:8760,y:-1640,w:60,h:190,kind:'wall',requires:'wallClimb',region:'relay-crown'},
+  {id:'crown-upper-east-perch',x:9200,y:-1680,w:280,h:50,kind:'crown-upper',requires:'wallClimb',region:'relay-crown'},
+  {id:'crown-upper-east-brace',x:9480,y:-1680,w:60,h:230,kind:'wall',requires:'wallClimb',region:'relay-crown'}
 ];
 
 export const BOSS_ARENA = {
@@ -330,14 +348,15 @@ export const RECESSES = [
   {x:5030,y:-200,w:690,h:870,floorY:670,ceilingY:-200,openSide:'right'},
   {x:5980,y:350,w:1100,h:250,floorY:600,ceilingY:350,openSide:'left'},
   {x:7440,y:450,w:800,h:210,floorY:660,ceilingY:450,openSide:'right'},
-  {x:8500,y:-790,w:980,h:1380,floorY:590,ceilingY:-790,openSide:'left'},
+  {x:8500,y:-790,w:980,h:1380,floorY:590,ceilingY:-790,openSide:'left',ceilingOpenings:true},
   {x:100,y:500,w:240,h:160,floorY:660,ceilingY:500,openSide:'right',pocket:true},
   {x:14200,y:450,w:240,h:210,floorY:660,ceilingY:450,openSide:'left',pocket:true},
   {x:2660,y:-930,w:580,h:330,floorY:-600,ceilingY:-930,merchantRoom:true},
   {x:9650,y:-20,w:1600,h:670,floorY:650,ceilingY:-20,openSide:'right'},
   {x:11450,y:-510,w:1100,h:1130,floorY:620,ceilingY:-510,openSide:'left'},
   {x:12750,y:-700,w:1700,h:1360,floorY:660,ceilingY:-700,openSide:'left'},
-  {x:2400,y:1120,w:1150,h:1430,floorY:2550,ceilingY:1120,openSide:'top',deepVault:true}
+  {x:2400,y:1120,w:1150,h:1430,floorY:2550,ceilingY:1120,openSide:'top',deepVault:true},
+  {x:8400,y:-1800,w:1200,h:350,floorY:-1450,ceilingY:-1800,openSide:'bottom',crownUpper:true}
 ];
 
 export const PLATFORMS = [
@@ -351,6 +370,7 @@ export const PLATFORMS = [
   ...POCKET_BLOCKS,
   ...WALL_BLOCKS,
   ...ABILITY_GATED_BLOCKS,
+  ...CROWN_UPPER_BLOCKS,
   ...MERCHANT_ROOM_BLOCKS
 ];
 
@@ -399,6 +419,9 @@ export const ENEMY_SPAWNS = [
   {type:'hopper',x:8800,y:-515,w:34,h:45},
   {type:'brute',x:9400,y:-588,w:58,h:63},
   {type:'drone',x:9000,y:0,w:42,h:30},
+  {type:'crawler',x:8560,y:-1490,w:30,h:40,patrol:true,patrolRange:150},
+  {type:'brute',x:9320,y:-1513,w:58,h:63},
+  {type:'drone',x:8850,y:-1750,w:42,h:30},
   {type:'hopper',x:9700,y:605,w:34,h:45},
   {type:'drone',x:10300,y:500,w:42,h:30},
   {type:'roller',x:10780,y:622,w:46,h:28,patrol:true,patrolRange:100},
@@ -428,6 +451,8 @@ export const JUNK_PILES = [
   {x:5600,y:264,w:80,h:46,health:5,scrapValue:28},
   {x:8940,y:54,w:78,h:46,health:5,scrapValue:30},
   {x:9040,y:-696,w:92,h:46,health:7,scrapValue:0,material:{type:'uranium',amount:1}},
+  {x:8500,y:-1686,w:86,h:46,health:6,scrapValue:42},
+  {x:9370,y:-1726,w:90,h:46,health:7,scrapValue:48},
   {id:'vault-volt-seal',x:3370,y:740,w:50,h:80,health:2,scrapValue:20,minimumDamage:2,gate:true,requires:'electricJab'},
   {x:9300,y:500,w:120,h:90,health:8,scrapValue:60,minimumDamage:2,gate:true},
   {x:10280,y:344,w:82,h:46,health:6,scrapValue:38},
