@@ -418,7 +418,7 @@ export class Game {
   }
   spawnDepthTracker(boss){
     const sx=boss.x+boss.w/2,sy=boss.y+boss.h*.32,tx=this.player.x+this.player.w/2,ty=this.player.y+this.player.h/2,angle=Math.atan2(ty-sy,tx-sx),speed=520;
-    this.bossProjectiles.push({x:sx-8,y:sy-8,w:16,h:16,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,speed,trackingTime:.48,life:3,dead:false,owner:'depth',explosive:true,color:'#d6ff3f'});
+    this.bossProjectiles.push({x:sx-8,y:sy-8,w:16,h:16,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,speed,trackingTime:.48,life:3,dead:false,owner:'depth',color:'#d6ff3f'});
   }
   explodeDepthBolt(bolt){if(bolt.dead)return;bolt.dead=true;this.bossExplosions.push({x:bolt.x+bolt.w/2,y:bolt.y+bolt.h/2,radius:8,maxRadius:82,time:.34,maxTime:.34,hit:false,color:'#d6ff3f'});this.burst(bolt.x+bolt.w/2,bolt.y+bolt.h/2,'#d6ff3f',18);this.shake=Math.max(this.shake,7);}
   updateBossHazards(dt){

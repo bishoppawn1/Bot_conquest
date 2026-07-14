@@ -52,7 +52,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - Hoppers commit to a high leap toward the player, then remain grounded for 0.7 seconds after landing so the player has a reliable attack window.
 - The Abyss Warden is a twenty-four-health full boss protecting Volt Jab. Its full-height right exit seal exists before activation, so the reward can never be reached backward from the escape route. Dropping into the chamber activates a second entry seal. It cycles through a telegraphed charge, a leaping shockwave, and a five-bolt volley.
 - The Cache Scrapper is an optional twelve-health mini boss in Quiet Drift. It awards three titanium, remains outside the required foundation route, and never grants an ability.
-- The Rift Stalker is a forty-eight-health full boss at the bottom of the extended Sunken Vault. It protects Dash and cycles through a cross-room dash, a teleporting overhead drop, and one fast, briefly tracking projectile that explodes against solid geometry.
+- The Rift Stalker is a forty-eight-health full boss at the bottom of the extended Sunken Vault. It protects Dash and cycles through a cross-room dash, a teleporting overhead drop, and one fast, briefly tracking projectile that disappears without exploding on impact.
 - Activating a save station or losing the final shell reconstructs every ordinary enemy from `ENEMY_SPAWNS`. Defeated full bosses and mini bosses remain defeated for the run.
 - Enemy types should continue to vary in size, silhouette, health, speed, and movement style.
 
@@ -128,7 +128,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 
 - `DEPTH_BOSS_ARENA` is the third full boss encounter. Its right exit gate exists whenever the arena is uncleared, and the dormant boss cannot be targeted before the player drops into the trigger volume.
 - The route can open only when the Abyss Warden is cleared, Wall Climb is owned, and the collected `volt-core` has granted Electric Jab. The player must be standing on the safe west part of `under-cache`, so the hatch can never retract remotely or beneath a player in its center. Opening it replaces the intact Warden floor with two safe floor pieces, an entrance wall, and a 200-unit hatch. The route then alternates mandatory wall climbs and broad galleries before reaching the arena floor at Y 2550.
-- The Rift Stalker has 48 health, awards 180 scrap, and cycles deterministically through a 520-unit-per-second cross-room dash, a relocation above the player with a distinct 0.5-second stationary hover before its ground slam, and a fast briefly tracking bolt. The bolt explodes on platforms and arena gates.
+- The Rift Stalker has 48 health, awards 180 scrap, and cycles deterministically through a 520-unit-per-second cross-room dash, a relocation above the player with a distinct 0.5-second stationary hover before its ground slam, and a fast briefly tracking bolt. The bolt disappears without exploding when it hits the player, a platform, or an arena gate.
 - Killing the Rift Stalker permanently opens its gate, releases `dash-core`, removes the temporary east containment wall, and adds `DEPTH_RETURN_BLOCKS`. The return route uses Dash spans followed by two climb walls with bot-width crest clearance, and must reconnect physically to `under-threshold` on the Warden floor.
 
 ## Mini-boss arenas

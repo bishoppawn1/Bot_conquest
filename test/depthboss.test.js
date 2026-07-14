@@ -44,9 +44,10 @@ test('the Rift Stalker visibly hovers for half a second before its downward smas
   for(let frame=0;frame<3&&boss.bossMove==='stalkerDropHover';frame++)game.updateDepthBoss(boss,1/60);assert.equal(boss.bossMove,'stalkerDrop');assert.ok(boss.vy>0);
 });
 
-test('the fast tracking bolt explodes when it reaches solid geometry',()=>{
-  const game=new Game();game.platforms=[{id:'test-wall',x:200,y:0,w:40,h:300}];game.player.x=500;game.player.y=100;game.bossProjectiles=[{x:175,y:100,w:16,h:16,vx:520,vy:0,speed:520,trackingTime:0,life:2,dead:false,owner:'depth',explosive:true,color:'#d6ff3f'}];
-  game.updateBossHazards(1/20);assert.equal(game.bossProjectiles.length,0);assert.equal(game.bossExplosions.length,1);assert.ok(game.bossExplosions[0].maxRadius>=80);
+test('the fast tracking bolt disappears without exploding on impact',()=>{
+  const game=new Game();game.spawnDepthTracker(game.depthBoss());assert.equal(game.bossProjectiles[0].explosive,undefined);game.platforms=[{id:'test-wall',x:200,y:0,w:40,h:300}];game.player.x=500;game.player.y=100;game.bossProjectiles=[{x:175,y:100,w:16,h:16,vx:520,vy:0,speed:520,trackingTime:0,life:2,dead:false,owner:'depth',color:'#d6ff3f'}];
+  game.updateBossHazards(1/20);assert.equal(game.bossProjectiles.length,0);assert.equal(game.bossExplosions.length,0);
+  const contact=new Game();contact.platforms=[];Object.assign(contact.player,{x:100,y:100,lives:3,invuln:0});contact.bossProjectiles=[{x:100,y:100,w:16,h:16,vx:0,vy:0,speed:520,trackingTime:0,life:2,dead:false,owner:'depth',color:'#d6ff3f'}];contact.updateBossHazards(1/60);assert.equal(contact.player.lives,2);assert.equal(contact.bossProjectiles.length,0);assert.equal(contact.bossExplosions.length,0);
 });
 
 test('defeating the Rift Stalker releases Dash and builds its return route',()=>{
