@@ -3,28 +3,33 @@ import assert from 'node:assert/strict';
 import { Game } from '../src/game.js';
 import { RELICS } from '../src/level.js';
 
-const buyRelic=(game,id,slot='relic-1')=>{
+const buyRelic=(game,id,slot='shell')=>{
   const merchant=game.merchants.find(item=>item.relicStock?.includes(id)),definition=game.relicDefinition(id);
   game.player.scrap=10000;assert.equal(game.buyRelicOffer(merchant,definition),true);const item=game.player.purchasedItems.at(-1);item.equippedSlot=slot;return item;
 };
 
-test('specialized merchants distribute eight distinct slotted relics',()=>{
+test('specialized merchants distribute eight distinct normal-mount relics',()=>{
   const game=new Game(),sellers=game.merchants.filter(merchant=>merchant.relicStock?.length);
   assert.equal(RELICS.length,8);assert.equal(sellers.length,5);assert.deepEqual(new Set(sellers.flatMap(merchant=>merchant.relicStock)),new Set(RELICS.map(relic=>relic.id)));
   assert.equal(new Set(RELICS.map(relic=>JSON.stringify(relic.effects))).size,RELICS.length);
   assert.ok(RELICS.every(relic=>relic.cost>=750&&relic.detail));
 });
 
-test('relics are inactive in storage and keep the same effect in every relic bay',()=>{
+test('relics are inactive in storage and keep the same effect in every normal mount',()=>{
   const game=new Game(),item=buyRelic(game,'mender-loop',null);assert.equal(game.healCost(),30);game.inventoryPage=3;game.inventorySelection=0;
-  assert.equal(game.beginEquipmentPlacement(),true);assert.deepEqual(game.equipmentTargets().slice(0,3).map(slot=>slot.id),['relic-1','relic-2','relic-3']);assert.equal(game.confirmEquipmentPlacement(),true);assert.equal(item.equippedSlot,'relic-1');assert.equal(game.healCost(),25);
-  game.beginEquipmentPlacement();game.moveEquipmentTarget(1);game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,'relic-2');assert.equal(game.healCost(),25);
-  game.beginEquipmentPlacement();game.moveEquipmentTarget(2);game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,null);assert.equal(game.healCost(),30);
+  assert.equal(game.beginEquipmentPlacement(),true);assert.deepEqual(game.equipmentTargets().slice(0,4).map(slot=>slot.id),['shell','core','legs','weapon']);assert.equal(game.confirmEquipmentPlacement(),true);assert.equal(item.equippedSlot,'shell');assert.equal(game.healCost(),25);
+  game.beginEquipmentPlacement();game.moveEquipmentTarget(1);game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,'core');assert.equal(game.healCost(),25);
+  game.beginEquipmentPlacement();game.moveEquipmentTarget(3);game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,null);assert.equal(game.healCost(),30);
 });
 
-test('placing a relic into an occupied bay returns the previous relic to storage',()=>{
+test('placing a relic into an occupied normal mount returns the previous relic to storage',()=>{
   const game=new Game(),mender=buyRelic(game,'mender-loop'),impact=buyRelic(game,'impact-damper',null);game.inventoryPage=3;game.inventorySelection=1;
-  assert.equal(game.beginEquipmentPlacement(),true);assert.equal(game.confirmEquipmentPlacement(),true);assert.equal(impact.equippedSlot,'relic-1');assert.equal(mender.equippedSlot,null);
+  assert.equal(game.beginEquipmentPlacement(),true);assert.equal(game.confirmEquipmentPlacement(),true);assert.equal(impact.equippedSlot,'shell');assert.equal(mender.equippedSlot,null);
+});
+
+test('relics and modifiers share normal mounts and displace one another',()=>{
+  const game=new Game(),relic=buyRelic(game,'mender-loop');const merchant=game.merchants.find(item=>item.service==='modifierShop'),definition=game.modifierDefinition('aegis-filament');game.player.scrap=10000;assert.equal(game.buyModifierOffer(merchant,definition),true);const modifier=game.player.purchasedItems.at(-1);game.inventoryPage=3;game.inventorySelection=1;
+  assert.equal(game.beginEquipmentPlacement(),true);assert.equal(game.selectedEquipmentTarget().id,'shell');assert.equal(game.confirmEquipmentPlacement(),true);assert.equal(modifier.equippedSlot,'shell');assert.equal(relic.equippedSlot,null);assert.equal(game.healCost(),30);assert.equal(game.player.maxLives,4);
 });
 
 test('Shell Archive and Capacitor Exchange mix relics into their upgrade catalogs',()=>{

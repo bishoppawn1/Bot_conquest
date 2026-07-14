@@ -11,10 +11,10 @@ test('entering the upper Crownworks chamber seals its climb shaft',()=>{
   assert.equal(arena.active,true);assert.equal(boss.active,true);assert.equal(game.crownBossGates().length,2);assert.ok(game.crownBossGates().every(gate=>gate.y+gate.h===arena.floorY+arena.leftGate.h));
 });
 
-test('the Crown Dynamo relocates between high perches and cycles three attacks',()=>{
+test('the Crown Dynamo relocates between lowered high perches and randomly chooses attacks',()=>{
   const game=new Game(),arena=game.crownBossArena,boss=game.crownBoss();game.enemies=[boss];arena.active=true;boss.active=true;boss.bossMove='idle';boss.bossTimer=0;Object.assign(game.player,{x:8800,y:arena.floorY-game.player.h});const moves=new Set(),anchors=new Set();
   for(let frame=0;frame<900;frame++){game.updateCrownBoss(boss,1/60);game.updateBossHazards(1/60);moves.add(boss.bossMove);if(boss.bossMove==='crownExpose')anchors.add(`${boss.x},${boss.y}`);}
-  assert.equal(anchors.size,2);assert.ok(moves.has('crownSweepWindup'));assert.ok(moves.has('crownColumnWindup'));assert.ok(moves.has('crownVolleyWindup'));assert.ok(game.bossProjectiles.length>0||moves.has('crownRecover'));
+  assert.equal(anchors.size,2);assert.ok(arena.anchors.every(anchor=>anchor.y+boss.h===game.platforms.find(block=>block.id===`${anchor.x<9000?'crown-upper-west-perch':'crown-upper-east-perch'}`).y));assert.ok(['crownSweepWindup','crownColumnWindup','crownVolleyWindup'].filter(move=>moves.has(move)).length>=2);assert.ok(game.bossProjectiles.length>0||moves.has('crownRecover'));
 });
 
 test('the Crown Dynamo must be reached from its matching platform to take damage',()=>{

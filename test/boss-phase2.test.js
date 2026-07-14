@@ -4,11 +4,16 @@ import { Game } from '../src/game.js';
 
 const enterPhaseTwo=(game,boss)=>{boss.health=boss.maxHealth/2;assert.equal(game.updateBossPhase(boss),2);assert.equal(boss.phase,2);assert.equal(game.rewardToast.text,'PHASE 2');};
 
-test('phase two triggers once without resetting an active boss attack timer',()=>{
+test('phase two triggers once without particles or resetting an active boss attack timer',()=>{
   const game=new Game(),boss=game.boss();game.bossArena.active=true;Object.assign(boss,{health:boss.maxHealth/2,bossMove:'bossCharge',bossTimer:.2,chargeDirection:1,onGround:true});let bursts=0;game.burst=()=>bursts++;
-  game.updateBoss(boss,1/60);assert.equal(boss.phase,2);assert.equal(bursts,1);assert.ok(boss.bossTimer<.2);assert.equal(boss.vx,340);assert.equal(game.enemyTargetable(boss),false);
+  game.updateBoss(boss,1/60);assert.equal(boss.phase,2);assert.equal(bursts,0);assert.ok(boss.bossTimer<.2);assert.equal(boss.vx,340);assert.equal(game.enemyTargetable(boss),false);
   Object.assign(game.player,{x:boss.x-70,y:boss.y+20,aimX:1,aimY:0,attackAimX:1,attackAimY:0,attackHits:new Set()});const shieldedHealth=boss.health;game.resolvePrimaryAttack();assert.equal(boss.health,shieldedHealth);
-  for(let frame=0;frame<50;frame++)game.updateBoss(boss,1/60);assert.equal(bursts,1);assert.equal(game.enemyTargetable(boss),true);
+  for(let frame=0;frame<50;frame++)game.updateBoss(boss,1/60);assert.equal(bursts,0);assert.equal(game.enemyTargetable(boss),true);
+});
+
+test('full bosses choose seeded-random attacks without immediate repeats',()=>{
+  const game=new Game(),cases=[[game.boss(),['chargeWindup','slamWindup','volleyWindup']],[game.vaultBoss(),['wardenChargeWindup','wardenLeapWindup','wardenVolleyWindup']],[game.depthBoss(),['stalkerDashWindup','stalkerDropWindup','stalkerTrackerWindup']],[game.crownBoss(),['crownSweepWindup','crownColumnWindup','crownVolleyWindup']]];
+  for(const [boss,moves] of cases){const chosen=Array.from({length:12},()=>game.chooseBossMove(boss,moves));assert.ok(chosen.every((move,index)=>index===0||move!==chosen[index-1]));assert.notDeepEqual(chosen.slice(0,6),[...moves,...moves]);}
 });
 
 test('every boss continues its active movement as it crosses into phase two',()=>{
@@ -40,6 +45,23 @@ test('Rift Stalker phase two fires two faster tracking bolts without explosions'
 test('Crown Dynamo phase two doubles its sweep hazard and fires six bolts',()=>{
   const game=new Game(),boss=game.crownBoss();enterPhaseTwo(game,boss);game.spawnCrownVolley(boss);assert.equal(game.bossProjectiles.length,6);
   game.crownBossArena.active=true;Object.assign(boss,{bossMove:'crownSweepWindup',bossTimer:0,crownTargetX:8800});game.updateCrownBoss(boss,1/60);assert.deepEqual(new Set(game.crownHazards.map(hazard=>hazard.type)),new Set(['sweep','column']));
+});
+
+test('every full boss gains a distinct fourth attack only in overdrive',()=>{
+  const cases=[
+    {boss:game=>game.boss(),activate:game=>game.bossArena.active=true,state:'idle',fourth:'burstWindup',update:(game,boss)=>game.updateBoss(boss,1/60)},
+    {boss:game=>game.vaultBoss(),activate:game=>game.vaultBossArena.active=true,state:'idle',fourth:'wardenCrossfireWindup',update:(game,boss)=>game.updateVaultBoss(boss,1/60)},
+    {boss:game=>game.depthBoss(),activate:game=>game.depthBossArena.active=true,state:'idle',fourth:'stalkerRiftWindup',update:(game,boss)=>game.updateDepthBoss(boss,1/60)},
+    {boss:game=>game.crownBoss(),activate:game=>game.crownBossArena.active=true,state:'crownExpose',fourth:'crownGridWindup',update:(game,boss)=>game.updateCrownBoss(boss,1/60)}
+  ];
+  for(const entry of cases){for(const phase of[1,2]){const game=new Game(),boss=entry.boss(game);entry.activate(game);Object.assign(boss,{phase,health:phase===2?boss.maxHealth/2:boss.maxHealth,bossMove:entry.state,bossTimer:0});let offered=[];game.chooseBossMove=(enemy,moves)=>{offered=moves;return moves[0];};entry.update(game,boss);assert.equal(offered.includes(entry.fourth),phase===2);}}
+});
+
+test('overdrive fourth attacks create distinct non-exploding hazards',()=>{
+  const heavy=new Game(),heavyBoss=heavy.boss();heavy.bossArena.active=true;Object.assign(heavyBoss,{phase:2,health:heavyBoss.maxHealth/2,bossMove:'burstWindup',bossTimer:0});heavy.updateBoss(heavyBoss,1/60);assert.equal(heavy.bossProjectiles.filter(bolt=>bolt.owner==='heavy-burst').length,8);
+  const vault=new Game(),vaultBoss=vault.vaultBoss();vault.vaultBossArena.active=true;Object.assign(vaultBoss,{phase:2,health:vaultBoss.maxHealth/2,bossMove:'wardenCrossfireWindup',bossTimer:0});vault.updateVaultBoss(vaultBoss,1/60);assert.equal(vault.bossProjectiles.filter(bolt=>bolt.owner==='warden-crossfire').length,10);
+  const depth=new Game(),depthBoss=depth.depthBoss();depth.depthBossArena.active=true;Object.assign(depthBoss,{phase:2,health:depthBoss.maxHealth/2,bossMove:'stalkerRiftWindup',bossTimer:0});depth.updateDepthBoss(depthBoss,1/60);const riftBolts=depth.bossProjectiles.filter(bolt=>bolt.owner==='depth-rift');assert.equal(riftBolts.length,6);assert.ok(riftBolts.every(bolt=>bolt.explosive===undefined&&bolt.trackingTime===undefined));
+  const crown=new Game(),crownBoss=crown.crownBoss();crown.crownBossArena.active=true;Object.assign(crownBoss,{phase:2,health:crownBoss.maxHealth/2,bossMove:'crownGridWindup',bossTimer:0});crown.updateCrownBoss(crownBoss,1/60);assert.equal(crown.crownHazards.filter(hazard=>hazard.type==='column').length,2);
 });
 
 test('Cache Scrapper phase two uses the upgraded health pool and overdrive charge',()=>{

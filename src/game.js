@@ -5,6 +5,11 @@ import { BODY_MODIFIERS, BOSS_ARENA, CONDUITS, CROWN_BOSS_ARENA, DEPTH_ACCESS_BL
 export { WORLD_WIDTH as WIDTH, WORLD_HEIGHT as HEIGHT } from './level.js';
 export const PLAYER_JUMP_SPEED = 600;
 export const PLAYER_MOVE_SPEED = 250;
+const BAY_SLOT_DEFINITIONS = Object.freeze([
+  Object.freeze({id:'internal',part:'internal',label:'INTERNAL BAY',efficiency:.3,name:'INTERNAL BAY',detail:'REDUCED-EFFECT MODIFIER SLOT'}),
+  Object.freeze({id:'auxiliary-1',part:'auxiliary',label:'AUXILIARY BAY A',efficiency:.3,name:'AUXILIARY BAY A',detail:'REDUCED-EFFECT MODIFIER SLOT'}),
+  Object.freeze({id:'auxiliary-2',part:'auxiliary',label:'AUXILIARY BAY B',efficiency:.3,name:'AUXILIARY BAY B',detail:'REDUCED-EFFECT MODIFIER SLOT'})
+]);
 export const HEAL_DURATION = .7;
 export const WALL_CLIMB_SPEED = 155;
 
@@ -17,7 +22,7 @@ export class Game {
     this.spawn={...SPAWN};
     this.safePosition={...this.spawn};
     this.respawnPoint={...this.spawn};this.recoveryCorpse=null;this.inventoryOpen=false;this.inventoryPage=1;this.inventorySelection=0;this.inventoryPages=['map','status','materials','items'];this.equipmentItemIndex=null;this.equipmentSlotIndex=0;this.mappedRegions=new Set();this.mapOverview=false;this.mapRegionIndex=0;this.merchantMenuOpen=false;this.merchantMenuSelection=0;
-    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:0,lives:3,maxLives:3,shield:0,maxShield:0,scrap:0,electricity:0,maxElectricity:ELECTRICITY_MAX,materials:{titanium:0,uranium:0},purchasedItems:[],primaryDamage:3,primaryRange:ATTACK_RANGE.primary,pendingRelicDamage:0,damageUpgrades:0,healthUpgrades:0,energyUpgrades:0,internalSlotUpgrades:0,baseMoveSpeed:PLAYER_MOVE_SPEED,moveSpeed:PLAYER_MOVE_SPEED,damageSpeedBonus:0,damageSpeedDuration:0,damageEnergyGain:0,postHitInvulnerabilityBonus:0,reactiveSpeedTime:0,body:{id:'standard-body',name:'STANDARD BODY',slots:[{id:'shell',part:'shell',label:'SHELL MOUNT',efficiency:1},{id:'core',part:'core',label:'CORE MOUNT',efficiency:1},{id:'legs',part:'legs',label:'LEG MOUNT',efficiency:1},{id:'weapon',part:'weapon',label:'FUSION CUTTER',efficiency:1}],internalSlots:[],relicSlots:[{id:'relic-1',part:'relic',label:'RELIC BAY A'},{id:'relic-2',part:'relic',label:'RELIC BAY B'},{id:'relic-3',part:'relic',label:'RELIC BAY C'}]},abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
+    this.player={x:this.spawn.x,y:this.spawn.y,w:50,h:36,vx:0,vy:0,facing:1,aimX:1,aimY:0,attackAimX:1,attackAimY:0,specialAimX:1,specialAimY:0,onGround:false,onWall:0,jumps:0,lives:3,maxLives:3,shield:0,maxShield:0,scrap:0,electricity:0,maxElectricity:ELECTRICITY_MAX,materials:{titanium:0,uranium:0},purchasedItems:[],primaryDamage:3,primaryRange:ATTACK_RANGE.primary,pendingRelicDamage:0,damageUpgrades:0,healthUpgrades:0,energyUpgrades:0,bayUpgrades:0,baseMoveSpeed:PLAYER_MOVE_SPEED,moveSpeed:PLAYER_MOVE_SPEED,damageSpeedBonus:0,damageSpeedDuration:0,damageEnergyGain:0,postHitInvulnerabilityBonus:0,reactiveSpeedTime:0,body:{id:'standard-body',name:'STANDARD BODY',slots:[{id:'shell',part:'shell',label:'SHELL MOUNT',efficiency:1},{id:'core',part:'core',label:'CORE MOUNT',efficiency:1},{id:'legs',part:'legs',label:'LEG MOUNT',efficiency:1},{id:'weapon',part:'weapon',label:'FUSION CUTTER',efficiency:1}],expansionSlots:[]},abilities:{doubleJump:false,dash:false,wallClimb:false,heal:true,field:false,electricJab:false},invuln:0,dashTime:0,dashCooldown:0,wallJumpTime:0,attackTime:0,attackCooldown:0,attackId:0,attackHits:new Set(),specialTime:0,specialType:null,specialHits:new Set(),healTime:0,healFlash:0,restFlash:0};
     this.platforms=PLATFORMS.map(platform=>({...platform}));
     this.traps=TRAPS.map(trap=>({...trap}));
     this.recesses=RECESSES.map(recess=>({...recess}));
@@ -42,14 +47,17 @@ export class Game {
     this.junkPiles=JUNK_PILES.map((pile,index)=>({...pile,kind:'junk',id:pile.id??`junk-${index}`,maxHealth:pile.health,dead:false,hitFlash:0}));
   }
   enemy({type,x,y,w,h,health,patrol=false,patrolRange=80,patrolDirection=1}){const ordinaryHealth=type==='brute'?12:type==='hopper'||type==='drone'?9:6;return{type,x,y,w,h,originX:x,originY:y,vx:0,vy:0,health:health??ordinaryHealth,onGround:false,phase:x*.01,dead:false,active:false,aggroRadius:type==='drone'?340:type==='brute'?240:210,patrol,patrolRange,patrolDirection,windup:0,chargeTime:0,chargeCooldown:0,jumpCooldown:0,jumping:false,chargeDirection:patrolDirection};}
-  bodySlots(){return[...this.player.body.slots,...this.player.body.internalSlots];}
-  relicSlots(){return this.player.body.relicSlots;}
+  nextBossRandom(enemy){const seed=enemy.bossRngState??((Math.imul(Math.floor(enemy.originX),31)+Math.imul(Math.floor(enemy.originY),17)+0x9e3779b9)>>>0);enemy.bossRngState=(Math.imul(seed,1664525)+1013904223)>>>0;return enemy.bossRngState/0x100000000;}
+  chooseBossMove(enemy,moves){const choices=moves.filter(move=>move!==enemy.lastBossMove),pool=choices.length?choices:moves,move=pool[Math.floor(this.nextBossRandom(enemy)*pool.length)];enemy.lastBossMove=move;return move;}
+  normalSlots(){return this.player.body.slots;}
+  bodySlots(){return[...this.normalSlots(),...this.player.body.expansionSlots];}
+  baySlotDefinitions(){return BAY_SLOT_DEFINITIONS;}
   modifierDefinition(id){return BODY_MODIFIERS.find(modifier=>modifier.id===id)??null;}
   relicDefinition(id){return RELICS.find(relic=>relic.id===id)??null;}
   ownsRelic(id){return this.player.purchasedItems.some(item=>item.relicId===id);}
-  relicValue(effect){const activeSlots=new Set(this.relicSlots().map(slot=>slot.id));return this.player.purchasedItems.filter(item=>item.kind==='relic'&&activeSlots.has(item.equippedSlot)).reduce((sum,item)=>sum+(this.relicDefinition(item.relicId)?.effects[effect]??0),0);}
+  relicValue(effect){const activeSlots=new Set(this.normalSlots().map(slot=>slot.id));return this.player.purchasedItems.filter(item=>item.kind==='relic'&&activeSlots.has(item.equippedSlot)).reduce((sum,item)=>sum+(this.relicDefinition(item.relicId)?.effects[effect]??0),0);}
   healCost(){return Math.max(0,ABILITY_COSTS.heal-this.relicValue('healCostReduction'));}
-  modifierEffect(item,slot){const definition=this.modifierDefinition(item.modifierId??item.id);return definition?.effects[slot?.part]??null;}
+  modifierEffect(item,slot){const definition=this.modifierDefinition(item.modifierId??item.id),part=slot?.part==='auxiliary'?'internal':slot?.part;return definition?.effects[part]??null;}
   modifierCatalogDetail(definition){const names={shell:'SHELL',core:'CORE',legs:'LEGS',weapon:'CUTTER',internal:'INTERNAL'};return Object.entries(definition.effects).map(([part,effect])=>`${names[part]??part.toUpperCase()} ${effect.label}`).join(' // ');}
   compatibleModifierSlots(item){return this.bodySlots().filter(slot=>this.modifierEffect(item,slot));}
   recomputeBodyStats(){
@@ -57,11 +65,11 @@ export class Game {
     for(const item of p.purchasedItems.filter(entry=>entry.kind==='modifier'&&entry.equippedSlot)){const slot=this.bodySlots().find(candidate=>candidate.id===item.equippedSlot),effect=this.modifierEffect(item,slot);if(!effect)continue;maxLives+=effect.maxLives??0;maxElectricity+=effect.maxElectricity??0;baseMoveSpeed+=effect.moveSpeed??0;primaryRange+=effect.attackRange??0;maxShield+=effect.healShield??0;damageSpeedBonus+=effect.damageSpeedBonus??0;damageSpeedDuration=Math.max(damageSpeedDuration,effect.damageSpeedDuration??0);damageEnergyGain+=effect.damageEnergy??0;postHitInvulnerabilityBonus+=effect.postHitInvulnerability??0;}
     Object.assign(p,{maxLives,maxElectricity,baseMoveSpeed,primaryRange,maxShield,damageSpeedBonus,damageSpeedDuration,damageEnergyGain,postHitInvulnerabilityBonus});p.moveSpeed=baseMoveSpeed+(p.reactiveSpeedTime>0?damageSpeedBonus:0);p.lives=Math.min(p.lives,p.maxLives);p.electricity=Math.min(p.electricity,p.maxElectricity);p.shield=Math.min(p.shield,p.maxShield);return{maxLives,maxElectricity,moveSpeed:p.moveSpeed,primaryRange,maxShield,damageSpeedBonus,damageEnergyGain};
   }
-  itemPlacementDetail(item){if(!item.equippedSlot)return'IN STORAGE // Q INSTALL';if(item.kind==='relic'){const slot=this.relicSlots().find(candidate=>candidate.id===item.equippedSlot);return`${slot?.label??'UNKNOWN RELIC BAY'} // EFFECT ACTIVE`;}const slot=this.bodySlots().find(candidate=>candidate.id===item.equippedSlot),effect=this.modifierEffect(item,slot);return`${slot?.label??'UNKNOWN SLOT'} // ${effect?.label??'NO EFFECT'}`;}
+  itemPlacementDetail(item){if(!item.equippedSlot)return'IN STORAGE // Q INSTALL';if(item.kind==='relic'){const slot=this.normalSlots().find(candidate=>candidate.id===item.equippedSlot);return`${slot?.label??'UNKNOWN NORMAL MOUNT'} // EFFECT ACTIVE`;}const slot=this.bodySlots().find(candidate=>candidate.id===item.equippedSlot),effect=this.modifierEffect(item,slot);return`${slot?.label??'UNKNOWN SLOT'} // ${effect?.label??'NO EFFECT'}`;}
   modifierPlacementDetail(item){return this.itemPlacementDetail(item);}
   inventoryItemRows(){const items=this.player.purchasedItems;return items.length?items.map(item=>[item.name,item.kind==='modifier'||item.kind==='relic'?this.itemPlacementDetail(item):item.detail??'PERMANENT UPGRADE']):[['NO PURCHASES','MERCHANT ITEMS WILL APPEAR HERE']];}
   selectedInventoryItem(){return this.player.purchasedItems[this.inventorySelection]??null;}
-  equipmentTargets(item=this.player.purchasedItems[this.equipmentItemIndex]){if(item?.kind==='modifier')return[...this.compatibleModifierSlots(item),{id:null,part:'storage',label:'STORAGE'}];if(item?.kind==='relic')return[...this.relicSlots(),{id:null,part:'storage',label:'STORAGE'}];return[];}
+  equipmentTargets(item=this.player.purchasedItems[this.equipmentItemIndex]){if(item?.kind==='modifier')return[...this.compatibleModifierSlots(item),{id:null,part:'storage',label:'STORAGE'}];if(item?.kind==='relic')return[...this.normalSlots(),{id:null,part:'storage',label:'STORAGE'}];return[];}
   selectedEquipmentTarget(){return this.equipmentTargets()[this.equipmentSlotIndex]??null;}
   beginEquipmentPlacement(){const item=this.selectedInventoryItem();if(!['modifier','relic'].includes(item?.kind))return false;this.equipmentItemIndex=this.inventorySelection;const targets=this.equipmentTargets(item),current=item.equippedSlot?targets.findIndex(slot=>slot.id===item.equippedSlot):0;this.equipmentSlotIndex=current<0?0:current;return true;}
   cancelEquipmentPlacement(){this.equipmentItemIndex=null;this.equipmentSlotIndex=0;return true;}
@@ -245,7 +253,7 @@ export class Game {
     if(!arena.active&&!arena.cleared&&inside&&onRoomFloor){arena.active=true;boss.active=true;boss.bossMove='idle';boss.bossTimer=.55;}
     const target=arena.active&&!arena.cleared&&!boss.dead?1:0;arena.gateProgress+=Math.sign(target-arena.gateProgress)*Math.min(Math.abs(target-arena.gateProgress),dt*4);
   }
-  updateBossPhase(enemy,dt=1/60){if(enemy.phase!==2&&enemy.health<=enemy.maxHealth/2){enemy.phase=2;enemy.phaseFlash=.6;enemy.phaseShieldTime=.6;this.rewardToast={text:'PHASE 2',detail:`${enemy.name??'HEAVY CORE'} OVERDRIVE ENGAGED`,time:2.4};this.burst(enemy.x+enemy.w/2,enemy.y+enemy.h/2,'#ffffff',40);}else enemy.phaseFlash=Math.max(0,(enemy.phaseFlash??0)-dt);enemy.phaseShieldTime=Math.max(0,(enemy.phaseShieldTime??0)-dt);return enemy.phase??1;}
+  updateBossPhase(enemy,dt=1/60){if(enemy.phase!==2&&enemy.health<=enemy.maxHealth/2){enemy.phase=2;enemy.phaseShieldTime=.6;this.rewardToast={text:'PHASE 2',detail:`${enemy.name??'HEAVY CORE'} OVERDRIVE ENGAGED`,time:2.4};}enemy.phaseShieldTime=Math.max(0,(enemy.phaseShieldTime??0)-dt);return enemy.phase??1;}
   updateMiniBoss(enemy,dt){
     const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);
     if(!arena?.active||arena.cleared){enemy.active=false;enemy.vx=0;enemy.vy+=900*dt;this.moveActor(enemy,dt);return;}
@@ -260,11 +268,11 @@ export class Game {
     const arena=this.vaultBossArena;
     if(!arena.active||arena.cleared){enemy.active=false;enemy.vx=0;enemy.vy+=900*dt;this.moveActor(enemy,dt);return;}
     enemy.active=true;const phase=this.updateBossPhase(enemy,dt);enemy.bossTimer=Math.max(0,enemy.bossTimer-dt);
-    if(enemy.bossMove==='idle'&&enemy.bossTimer===0){const moves=['wardenChargeWindup','wardenLeapWindup','wardenVolleyWindup'];enemy.bossMove=moves[enemy.bossMoveIndex%moves.length];enemy.bossMoveIndex++;enemy.bossTimer=enemy.bossMove==='wardenVolleyWindup'?.55:.42;enemy.vx=0;}
+    if(enemy.bossMove==='idle'&&enemy.bossTimer===0){const moves=['wardenChargeWindup','wardenLeapWindup','wardenVolleyWindup',...(phase===2?['wardenCrossfireWindup']:[])];enemy.bossMove=this.chooseBossMove(enemy,moves);enemy.bossTimer=(enemy.bossMove==='wardenVolleyWindup'||enemy.bossMove==='wardenCrossfireWindup') ? .55 : .42;enemy.vx=0;}
     else if(enemy.bossMove?.endsWith('Windup')&&enemy.bossTimer===0){
       if(enemy.bossMove==='wardenChargeWindup'){enemy.bossMove='wardenCharge';enemy.bossTimer=phase===2?.72:.58;enemy.chargeDirection=Math.sign(this.player.x-enemy.x)||1;}
       else if(enemy.bossMove==='wardenLeapWindup'){enemy.bossMove='wardenLeap';enemy.bossTimer=1;enemy.vy=phase===2?-520:-430;enemy.vx=Math.sign(this.player.x-enemy.x)*(phase===2?210:155);}
-      else{this.spawnVaultVolley(enemy);enemy.bossMove='wardenRecover';enemy.bossTimer=.7;}
+      else{if(enemy.bossMove==='wardenCrossfireWindup')this.spawnVaultCrossfire(enemy);else this.spawnVaultVolley(enemy);enemy.bossMove='wardenRecover';enemy.bossTimer=.7;}
     }else if(enemy.bossMove==='wardenCharge'){enemy.vx=enemy.chargeDirection*(phase===2?315:245);if(enemy.bossTimer===0){enemy.bossMove='wardenRecover';enemy.bossTimer=phase===2?.38:.55;enemy.vx=0;}}
     else if(enemy.bossMove==='wardenLeap'&&enemy.onGround){this.bossShockwave={x:enemy.x+enemy.w/2,y:arena.floorY,radius:0,maxRadius:phase===2?270:190,time:phase===2?.58:.45,hit:false,color:'#75f5ff'};enemy.bossMove='wardenRecover';enemy.bossTimer=phase===2?.42:.65;enemy.vx=0;this.shake=12;}
     else if(enemy.bossMove==='wardenRecover'&&enemy.bossTimer===0){enemy.bossMove='idle';enemy.bossTimer=phase===2?.22:.4;}
@@ -274,14 +282,14 @@ export class Game {
     const arena=this.depthBossArena;
     if(!arena.active||arena.cleared){enemy.active=false;enemy.vx=0;enemy.vy+=900*dt;this.moveActor(enemy,dt);return;}
     enemy.active=true;const phase=this.updateBossPhase(enemy,dt);enemy.bossTimer=Math.max(0,enemy.bossTimer-dt);
-    if(enemy.bossMove==='idle'&&enemy.bossTimer===0){const moves=['stalkerDashWindup','stalkerDropWindup','stalkerTrackerWindup'];enemy.bossMove=moves[enemy.bossMoveIndex%moves.length];enemy.bossMoveIndex++;enemy.bossTimer=enemy.bossMove==='stalkerTrackerWindup'?.7:.5;enemy.vx=0;}
+    if(enemy.bossMove==='idle'&&enemy.bossTimer===0){const moves=['stalkerDashWindup','stalkerDropWindup','stalkerTrackerWindup',...(phase===2?['stalkerRiftWindup']:[])];enemy.bossMove=this.chooseBossMove(enemy,moves);enemy.bossTimer=enemy.bossMove==='stalkerTrackerWindup'?.7:enemy.bossMove==='stalkerRiftWindup'?.62:.5;enemy.vx=0;}
     else if(enemy.bossMove?.endsWith('Windup')&&enemy.bossTimer===0){
       if(enemy.bossMove==='stalkerDashWindup'){
         const playerLeft=this.player.x+this.player.w/2<arena.x+arena.w/2;enemy.x=playerLeft?arena.rightGateX-enemy.w-26:arena.x+26;enemy.y=arena.floorY-enemy.h;enemy.vy=0;enemy.chargeDirection=playerLeft?-1:1;enemy.bossMove='stalkerDash';enemy.bossTimer=1.35;
       }else if(enemy.bossMove==='stalkerDropWindup'){
         enemy.x=clamp(this.player.x+this.player.w/2-enemy.w/2,arena.x+18,arena.rightGateX-enemy.w-18);enemy.y=arena.y-enemy.h;enemy.vx=0;enemy.vy=0;enemy.onGround=false;enemy.bossMove='stalkerDropHover';enemy.bossTimer=phase===2?.35:.5;
         return;
-      }else{this.spawnDepthTracker(enemy);enemy.bossMove='stalkerRecover';enemy.bossTimer=.75;}
+      }else{if(enemy.bossMove==='stalkerRiftWindup')this.spawnDepthRift(enemy);else this.spawnDepthTracker(enemy);enemy.bossMove='stalkerRecover';enemy.bossTimer=.75;}
     }else if(enemy.bossMove==='stalkerDash'){
       enemy.vx=enemy.chargeDirection*(phase===2?680:520);if(enemy.bossTimer===0||enemy.x<=arena.x||enemy.x+enemy.w>=arena.rightGateX){enemy.bossMove='stalkerRecover';enemy.bossTimer=phase===2?.4:.6;enemy.vx=0;}
     }else if(enemy.bossMove==='stalkerDropHover'){
@@ -318,11 +326,11 @@ export class Game {
   }
   merchantCatalog(merchant=this.merchantRoom.activeMerchant){
     if(!merchant)return[];
-    const p=this.player,tierState=(index,owned)=>index<owned?'owned':index===owned?'available':'locked',relicRows=(merchant.relicStock??[]).map(id=>this.relicDefinition(id)).filter(Boolean).map(definition=>({id:definition.id,kind:'relic',name:definition.name,detail:`SLOTTED RELIC // ${definition.detail}`,cost:definition.cost,state:this.ownsRelic(definition.id)?'owned':'available',definition}));
+    const p=this.player,tierState=(index,owned)=>index<owned?'owned':index===owned?'available':'locked',relicRows=(merchant.relicStock??[]).map(id=>this.relicDefinition(id)).filter(Boolean).map(definition=>({id:definition.id,kind:'relic',name:definition.name,detail:`NORMAL-MOUNT RELIC // ${definition.detail}`,cost:definition.cost,state:this.ownsRelic(definition.id)?'owned':'available',definition}));
     if(merchant.service==='damageUpgrade')return[...merchant.upgradeCosts.map((cost,index)=>{const materials=FORGE_UPGRADE_RECIPES[index]??{},materialText=this.materialCostText(materials);return{id:`edge-coil-${index+1}`,name:`EDGE COIL MK ${index+1}`,detail:`PERMANENT +1 PRIMARY DAMAGE // ${3+index} TO ${4+index}${materialText?` // ${materialText}`:''}`,cost,materials,state:tierState(index,p.damageUpgrades)};}),...relicRows];
     if(merchant.service==='healthUpgrade')return[...merchant.upgradeCosts.map((cost,index)=>({id:`shell-capacity-${index+1}`,name:`SHELL CAPACITY MK ${index+1}`,detail:'PERMANENT +1 MAXIMUM SHELL',cost,state:tierState(index,p.healthUpgrades)})),...relicRows];
     if(merchant.service==='energyUpgrade')return[...merchant.upgradeCosts.map((cost,index)=>({id:`capacitor-bank-${index+1}`,name:`CAPACITOR BANK MK ${index+1}`,detail:'PERMANENT +25 MAXIMUM ELECTRICITY',cost,state:tierState(index,p.energyUpgrades)})),...relicRows];
-    if(merchant.service==='internalSlot')return merchant.upgradeCosts.map((cost,index)=>({id:`internal-bay-${index+1}`,name:`INTERNAL BAY ${index+1}`,detail:'EXTRA MODIFIER SLOT // INTERNAL EFFECTS GREATLY REDUCED',cost,state:tierState(index,p.internalSlotUpgrades)}));
+    if(merchant.service==='bayUpgrade')return merchant.upgradeCosts.map((cost,index)=>{const definition=BAY_SLOT_DEFINITIONS[index];return{id:`bay-upgrade-${index+1}`,name:definition.name,detail:definition.detail,cost,state:tierState(index,p.bayUpgrades)};});
     if(merchant.service==='modifierShop')return(merchant.stock??[]).map(id=>this.modifierDefinition(id)).filter(Boolean).map(definition=>({id:definition.id,name:definition.name,detail:this.modifierCatalogDetail(definition),cost:definition.cost,state:p.purchasedItems.some(item=>item.modifierId===definition.id)?'owned':'available',definition}));
     if(merchant.service==='relicShop')return relicRows;
     return[{id:'offline',name:'NO STOCK AVAILABLE',detail:'SPECIAL MATERIAL RECIPES ARE STILL OFFLINE',cost:null,state:'unavailable'}];
@@ -335,17 +343,17 @@ export class Game {
     if(purchased){const rows=this.merchantCatalog(merchant),next=rows.findIndex((item,index)=>index>this.merchantMenuSelection&&item.state==='available');if(next>=0)this.merchantMenuSelection=next;}
     return purchased;
   }
-  buyMerchantService(merchant){if(merchant.service==='damageUpgrade')return this.buyDamageUpgrade(merchant);if(merchant.service==='healthUpgrade')return this.buyHealthUpgrade(merchant);if(merchant.service==='energyUpgrade')return this.buyEnergyUpgrade(merchant);if(merchant.service==='modifierShop')return this.buyModifier(merchant);if(merchant.service==='internalSlot')return this.buyInternalSlot(merchant);return false;}
+  buyMerchantService(merchant){if(merchant.service==='damageUpgrade')return this.buyDamageUpgrade(merchant);if(merchant.service==='healthUpgrade')return this.buyHealthUpgrade(merchant);if(merchant.service==='energyUpgrade')return this.buyEnergyUpgrade(merchant);if(merchant.service==='modifierShop')return this.buyModifier(merchant);if(merchant.service==='bayUpgrade')return this.buyBayUpgrade(merchant);return false;}
   nextHealthUpgradeCost(merchant){return merchant.upgradeCosts[this.player.healthUpgrades]??null;}
   nextEnergyUpgradeCost(merchant){return merchant.upgradeCosts[this.player.energyUpgrades]??null;}
-  nextInternalSlotCost(merchant){return merchant.upgradeCosts[this.player.internalSlotUpgrades]??null;}
+  nextBayUpgradeCost(merchant){return merchant.upgradeCosts[this.player.bayUpgrades]??null;}
   nextModifierOffer(merchant){return(merchant.stock??[]).map(id=>this.modifierDefinition(id)).find(definition=>definition&&!this.player.purchasedItems.some(item=>item.modifierId===definition.id))??null;}
   buyHealthUpgrade(merchant){const p=this.player,cost=this.nextHealthUpgradeCost(merchant);if(cost===null||p.scrap<cost)return false;p.scrap-=cost;p.healthUpgrades++;const previous=p.maxLives;this.recomputeBodyStats();p.lives+=p.maxLives-previous;p.purchasedItems.push({id:`shell-capacity-${p.healthUpgrades}`,kind:'upgrade',name:`SHELL CAPACITY MK ${p.healthUpgrades}`,detail:'+1 MAX SHELL'});this.rewardToast={text:'MAX SHELLS +1',detail:`${merchant.name} REINFORCED THE BODY`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#d6ff3f',30);return true;}
   buyEnergyUpgrade(merchant){const p=this.player,cost=this.nextEnergyUpgradeCost(merchant);if(cost===null||p.scrap<cost)return false;p.scrap-=cost;p.energyUpgrades++;const previous=p.maxElectricity;this.recomputeBodyStats();p.electricity+=p.maxElectricity-previous;p.purchasedItems.push({id:`capacitor-bank-${p.energyUpgrades}`,kind:'upgrade',name:`CAPACITOR BANK MK ${p.energyUpgrades}`,detail:'+25 MAX ELECTRICITY'});this.rewardToast={text:'CAPACITY +25',detail:`${merchant.name} EXPANDED THE CORE`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#75f5ff',30);return true;}
   buyModifier(merchant){return this.buyModifierOffer(merchant,this.nextModifierOffer(merchant));}
   buyModifierOffer(merchant,offer){const p=this.player;if(!offer||p.purchasedItems.some(item=>item.modifierId===offer.id)||p.scrap<offer.cost)return false;p.scrap-=offer.cost;p.purchasedItems.push({id:`modifier-${offer.id}`,modifierId:offer.id,kind:'modifier',name:offer.name,detail:'UNEQUIPPED',equippedSlot:null});this.rewardToast={text:'MODIFIER ACQUIRED',detail:`${offer.name} // EQUIP IN ITEMS`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,merchant.color,34);return true;}
-  buyRelicOffer(merchant,offer){const p=this.player;if(!offer||this.ownsRelic(offer.id)||p.scrap<offer.cost)return false;p.scrap-=offer.cost;p.purchasedItems.push({id:`relic-${offer.id}`,relicId:offer.id,kind:'relic',name:offer.name,detail:`SLOTTED RELIC // ${offer.detail}`,equippedSlot:null});this.rewardToast={text:'RELIC ACQUIRED',detail:`${offer.name} // EQUIP IN ITEMS`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,merchant.color,34);return true;}
-  buyInternalSlot(merchant){const p=this.player,cost=this.nextInternalSlotCost(merchant);if(cost===null||p.scrap<cost)return false;p.scrap-=cost;p.internalSlotUpgrades++;const slotNumber=p.internalSlotUpgrades;p.body.internalSlots.push({id:`internal-${slotNumber}`,part:'internal',label:`INTERNAL BAY ${slotNumber}`,efficiency:.3});p.purchasedItems.push({id:`internal-bay-${slotNumber}`,kind:'upgrade',name:`INTERNAL BAY ${slotNumber}`,detail:'REDUCED-EFFECT MODIFIER SLOT'});this.rewardToast={text:'INTERNAL BAY OPENED',detail:'REDUCED-POWER MODIFIER SLOT ADDED',time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffb85c',34);return true;}
+  buyRelicOffer(merchant,offer){const p=this.player;if(!offer||this.ownsRelic(offer.id)||p.scrap<offer.cost)return false;p.scrap-=offer.cost;p.purchasedItems.push({id:`relic-${offer.id}`,relicId:offer.id,kind:'relic',name:offer.name,detail:`NORMAL-MOUNT RELIC // ${offer.detail}`,equippedSlot:null});this.rewardToast={text:'RELIC ACQUIRED',detail:`${offer.name} // EQUIP IN ITEMS`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,merchant.color,34);return true;}
+  buyBayUpgrade(merchant){const p=this.player,cost=this.nextBayUpgradeCost(merchant),definition=BAY_SLOT_DEFINITIONS[p.bayUpgrades];if(!definition||cost===null||p.scrap<cost)return false;p.scrap-=cost;p.bayUpgrades++;p.body.expansionSlots.push({id:definition.id,part:definition.part,label:definition.label,efficiency:definition.efficiency});p.purchasedItems.push({id:`bay-upgrade-${p.bayUpgrades}`,kind:'upgrade',name:definition.name,detail:definition.detail});this.rewardToast={text:`${definition.name} OPENED`,detail:'REDUCED-POWER MODIFIER SLOT ADDED',time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffb85c',34);return true;}
   nextDamageUpgradeCost(merchant){return(merchant.upgradeCosts??FORGE_UPGRADE_COSTS)[this.player.damageUpgrades]??null;}
   nextDamageUpgradeMaterials(){return FORGE_UPGRADE_RECIPES[this.player.damageUpgrades]??{};}
   materialCostText(materials){return Object.entries(materials).filter(([,amount])=>amount>0).map(([type,amount])=>`${amount} ${type.toUpperCase()}`).join(' + ');}
@@ -432,11 +440,11 @@ export class Game {
   updateBoss(boss,dt){
     if(!this.bossArena.active||this.bossArena.cleared){boss.active=false;boss.vx=0;return;}
     boss.active=true;const phase=this.updateBossPhase(boss,dt);boss.bossTimer=Math.max(0,boss.bossTimer-dt);
-    if(boss.bossMove==='idle'&&boss.bossTimer===0){const moves=['chargeWindup','slamWindup','volleyWindup'];boss.bossMove=moves[boss.bossMoveIndex%moves.length];boss.bossMoveIndex++;boss.bossTimer=boss.bossMove==='volleyWindup'?.6:.45;boss.vx=0;}
+    if(boss.bossMove==='idle'&&boss.bossTimer===0){const moves=['chargeWindup','slamWindup','volleyWindup',...(phase===2?['burstWindup']:[])];boss.bossMove=this.chooseBossMove(boss,moves);boss.bossTimer=(boss.bossMove==='volleyWindup'||boss.bossMove==='burstWindup') ? .6 : .45;boss.vx=0;}
     else if(boss.bossMove.endsWith('Windup')&&boss.bossTimer===0){
       if(boss.bossMove==='chargeWindup'){boss.bossMove='bossCharge';boss.bossTimer=phase===2?.82:.68;boss.chargeDirection=Math.sign(this.player.x-boss.x)||1;}
       else if(boss.bossMove==='slamWindup'){boss.bossMove='slamAir';boss.bossTimer=1.4;boss.vy=phase===2?-610:-520;boss.onGround=false;}
-      else{this.spawnBossVolley(boss);boss.bossMove='recover';boss.bossTimer=phase===2?.48:.75;}
+      else{if(boss.bossMove==='burstWindup')this.spawnBossBurst(boss);else this.spawnBossVolley(boss);boss.bossMove='recover';boss.bossTimer=phase===2?.48:.75;}
     }else if(boss.bossMove==='bossCharge'){boss.vx=boss.chargeDirection*(phase===2?340:260);if(boss.bossTimer===0){boss.bossMove='recover';boss.bossTimer=phase===2?.4:.65;boss.vx=0;}}
     else if(boss.bossMove==='recover'&&boss.bossTimer===0){boss.bossMove='idle';boss.bossTimer=phase===2?.25:.45;}
     boss.vy+=900*dt;this.moveActor(boss,dt);
@@ -447,10 +455,11 @@ export class Game {
     boss.active=true;const phase=this.updateBossPhase(boss,dt);boss.bossTimer=Math.max(0,boss.bossTimer-dt);
     if(boss.bossMove==='idle'&&boss.bossTimer===0){boss.bossMove='crownRelocate';boss.bossTimer=phase===2?.28:.42;boss.pendingAnchor=boss.anchorIndex%arena.anchors.length;boss.anchorIndex++;}
     else if(boss.bossMove==='crownRelocate'&&boss.bossTimer===0){Object.assign(boss,arena.anchors[boss.pendingAnchor]);boss.bossMove='crownExpose';boss.bossTimer=phase===2?.9:1.25;this.burst(boss.x+boss.w/2,boss.y+boss.h/2,'#75f5ff',18);}
-    else if(boss.bossMove==='crownExpose'&&boss.bossTimer===0){const attacks=['crownSweepWindup','crownColumnWindup','crownVolleyWindup'];boss.bossMove=attacks[boss.bossMoveIndex%attacks.length];boss.bossMoveIndex++;boss.bossTimer=.55;boss.crownTargetX=this.player.x+this.player.w/2;}
+    else if(boss.bossMove==='crownExpose'&&boss.bossTimer===0){const attacks=['crownSweepWindup','crownColumnWindup','crownVolleyWindup',...(phase===2?['crownGridWindup']:[])];boss.bossMove=this.chooseBossMove(boss,attacks);boss.bossTimer=.55;boss.crownTargetX=this.player.x+this.player.w/2;}
     else if(boss.bossMove?.endsWith('Windup')&&boss.bossTimer===0){
       if(boss.bossMove==='crownSweepWindup'){this.crownHazards.push({type:'sweep',x:arena.x,y:arena.floorY-30,w:arena.w,h:22,time:phase===2?.65:.48,hit:false});if(phase===2)this.crownHazards.push({type:'column',x:clamp(boss.crownTargetX-32,arena.x+10,arena.x+arena.w-74),y:arena.y,w:64,h:arena.h,time:.48,hit:false});}
       else if(boss.bossMove==='crownColumnWindup')this.crownHazards.push({type:'column',x:clamp(boss.crownTargetX-38,arena.x+10,arena.x+arena.w-86),y:arena.y,w:76,h:arena.h,time:phase===2?.68:.5,hit:false});
+      else if(boss.bossMove==='crownGridWindup'){for(const ratio of[.32,.68])this.crownHazards.push({type:'column',x:arena.x+arena.w*ratio-42,y:arena.y,w:84,h:arena.h,time:.68,hit:false});}
       else this.spawnCrownVolley(boss);
       boss.bossMove='crownRecover';boss.bossTimer=phase===2?.42:.72;
     }else if(boss.bossMove==='crownRecover'&&boss.bossTimer===0){boss.bossMove='idle';boss.bossTimer=phase===2?.12:.22;}
@@ -459,14 +468,17 @@ export class Game {
     const sx=boss.x+boss.w/2,sy=boss.y+boss.h*.35,tx=this.player.x+this.player.w/2,ty=this.player.y+this.player.h/2,base=Math.atan2(ty-sy,tx-sx);
     const offsets=boss.phase===2?[-.34,-.17,0,.17,.34]:[-.2,0,.2];for(const offset of offsets){const angle=base+offset,speed=boss.phase===2?285:230;this.bossProjectiles.push({x:sx-7,y:sy-7,w:14,h:14,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:4,dead:false});}
   }
+  spawnBossBurst(boss){const sx=boss.x+boss.w/2,sy=boss.y+boss.h/2;for(let index=0;index<8;index++){const angle=index*Math.PI/4,speed=310;this.bossProjectiles.push({x:sx-7,y:sy-7,w:14,h:14,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.4,dead:false,owner:'heavy-burst'});}}
   spawnVaultVolley(boss){
     const sx=boss.x+boss.w/2,sy=boss.y+boss.h*.35,tx=this.player.x+this.player.w/2,ty=this.player.y+this.player.h/2,base=Math.atan2(ty-sy,tx-sx);
     const offsets=boss.phase===2?[-.54,-.36,-.18,0,.18,.36,.54]:[-.42,-.21,0,.21,.42];for(const offset of offsets){const angle=base+offset,speed=boss.phase===2?255:205;this.bossProjectiles.push({x:sx-6,y:sy-6,w:12,h:12,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.2,dead:false,color:'#75f5ff'});}
   }
+  spawnVaultCrossfire(boss){const sx=boss.x+boss.w/2,sy=boss.y+boss.h/2;for(let index=0;index<10;index++){const angle=index*Math.PI/5,speed=275;this.bossProjectiles.push({x:sx-6,y:sy-6,w:12,h:12,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.2,dead:false,owner:'warden-crossfire',color:'#75f5ff'});}}
   spawnDepthTracker(boss){
     const sx=boss.x+boss.w/2,sy=boss.y+boss.h*.32,tx=this.player.x+this.player.w/2,ty=this.player.y+this.player.h/2,base=Math.atan2(ty-sy,tx-sx),speed=boss.phase===2?600:520,offsets=boss.phase===2?[-.09,.09]:[0];
     for(const offset of offsets){const angle=base+offset;this.bossProjectiles.push({x:sx-8,y:sy-8,w:16,h:16,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,speed,trackingTime:boss.phase===2?.6:.48,life:3,dead:false,owner:'depth',color:'#d6ff3f'});}
   }
+  spawnDepthRift(boss){const sx=boss.x+boss.w/2,sy=boss.y+boss.h/2;for(let index=0;index<6;index++){const angle=index*Math.PI/3,speed=390;this.bossProjectiles.push({x:sx-7,y:sy-7,w:14,h:14,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:2.8,dead:false,owner:'depth-rift',color:'#d6ff3f'});}}
   spawnCrownVolley(boss){
     const sx=boss.x+boss.w/2,sy=boss.y+boss.h/2,tx=this.player.x+this.player.w/2,ty=this.player.y+this.player.h/2,base=Math.atan2(ty-sy,tx-sx);
     const offsets=boss.phase===2?[-.42,-.25,-.08,.08,.25,.42]:[-.3,-.1,.1,.3];for(const offset of offsets){const angle=base+offset,speed=boss.phase===2?300:245;this.bossProjectiles.push({x:sx-7,y:sy-7,w:14,h:14,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:3.2,dead:false,owner:'crown',color:'#75f5ff'});}
@@ -483,9 +495,9 @@ export class Game {
   }
   respawnOrdinaryEnemies(){const protectedEnemies=this.enemies.filter(enemy=>enemy.isBoss||enemy.isVaultBoss||enemy.isDepthBoss||enemy.isCrownBoss||enemy.isMiniBoss);this.enemies=[...ENEMY_SPAWNS.map(spawn=>this.enemy(spawn)),...protectedEnemies];}
   resetUnclearedEncounters(){
-    const resetBoss=(arena,boss,gateKey)=>{if(!arena.active||arena.cleared||!boss)return;arena.active=false;arena[gateKey]=0;Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,bossMove:'dormant',bossTimer:0,bossMoveIndex:0,phase:1,phaseFlash:0,phaseShieldTime:0});};
-    resetBoss(this.bossArena,this.boss(),'gateProgress');resetBoss(this.vaultBossArena,this.vaultBoss(),'leftGateProgress');resetBoss(this.crownBossArena,this.crownBoss(),'gateProgress');const crownBoss=this.crownBoss();if(crownBoss&&!this.crownBossArena.cleared)Object.assign(crownBoss,{anchorIndex:0,pendingAnchor:0,crownTargetX:0});if(this.depthBossArena.active&&!this.depthBossArena.cleared){const boss=this.depthBoss();this.depthBossArena.active=false;if(boss)Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,bossMove:'dormant',bossTimer:0,bossMoveIndex:0,phase:1,phaseFlash:0,phaseShieldTime:0});}
-    for(const arena of this.miniBossArenas){const boss=this.miniBoss(arena.id);if(!arena.active||arena.cleared||!boss)continue;arena.active=false;arena.gateProgress=0;Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,windup:0,chargeTime:0,chargeCooldown:0,phase:1,phaseFlash:0,phaseShieldTime:0});}
+    const resetBoss=(arena,boss,gateKey)=>{if(!arena.active||arena.cleared||!boss)return;arena.active=false;arena[gateKey]=0;Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,bossMove:'dormant',bossTimer:0,bossMoveIndex:0,bossRngState:undefined,lastBossMove:null,phase:1,phaseShieldTime:0});};
+    resetBoss(this.bossArena,this.boss(),'gateProgress');resetBoss(this.vaultBossArena,this.vaultBoss(),'leftGateProgress');resetBoss(this.crownBossArena,this.crownBoss(),'gateProgress');const crownBoss=this.crownBoss();if(crownBoss&&!this.crownBossArena.cleared)Object.assign(crownBoss,{anchorIndex:0,pendingAnchor:0,crownTargetX:0});if(this.depthBossArena.active&&!this.depthBossArena.cleared){const boss=this.depthBoss();this.depthBossArena.active=false;if(boss)Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,bossMove:'dormant',bossTimer:0,bossMoveIndex:0,bossRngState:undefined,lastBossMove:null,phase:1,phaseShieldTime:0});}
+    for(const arena of this.miniBossArenas){const boss=this.miniBoss(arena.id);if(!arena.active||arena.cleared||!boss)continue;arena.active=false;arena.gateProgress=0;Object.assign(boss,{x:boss.originX,y:boss.originY,vx:0,vy:0,health:boss.maxHealth,dead:false,active:false,windup:0,chargeTime:0,chargeCooldown:0,phase:1,phaseShieldTime:0});}
     this.bossProjectiles=[];this.bossExplosions=[];this.bossShockwave=null;this.crownHazards=[];
   }
   destroyPlayer(cause){

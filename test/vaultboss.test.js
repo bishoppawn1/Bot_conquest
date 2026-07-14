@@ -14,7 +14,7 @@ test('dropping into the Vault activates a full boss and closes both sides',()=>{
   assert.equal(arena.active,true);assert.equal(boss.active,true);assert.ok(arena.leftGateProgress>.95);assert.equal(game.vaultBossGates().length,2);
 });
 
-test('the Abyss Warden cycles through charge, leap shockwave, and five-bolt volley',()=>{
+test('the Abyss Warden randomly uses charge, leap shockwave, and five-bolt volley',()=>{
   const game=new Game(),boss=game.vaultBoss();game.vaultBossArena.active=true;boss.bossMove='idle';boss.bossTimer=0;game.player.x=2920;game.player.y=game.vaultBossArena.floorY-game.player.h;const moves=new Set();let sawShockwave=false,maxProjectiles=0;
   for(let frame=0;frame<720;frame++){game.updateVaultBoss(boss,1/60);moves.add(boss.bossMove);sawShockwave||=Boolean(game.bossShockwave);maxProjectiles=Math.max(maxProjectiles,game.bossProjectiles.length);}
   assert.ok(moves.has('wardenCharge'));assert.ok(moves.has('wardenLeap'));assert.equal(sawShockwave,true);assert.ok(maxProjectiles>=5);

@@ -32,7 +32,7 @@ test('dropping into the deep arena activates the Rift Stalker behind a sealed ex
   Object.assign(game.player,{x:arena.x+250,y:arena.floorY-game.player.h,vx:0,vy:0});game.updateDepthBossArena();assert.equal(arena.active,true);assert.equal(boss.active,true);assert.equal(game.enemyTargetable(boss),true);
 });
 
-test('the Rift Stalker cycles through dash, overhead drop, and tracking bolt moves',()=>{
+test('the Rift Stalker randomly uses dash, overhead drop, and tracking bolt moves',()=>{
   const game=new Game(),boss=game.depthBoss();game.depthBossArena.active=true;boss.active=true;boss.bossMove='idle';boss.bossTimer=0;game.player.x=3220;game.player.y=game.depthBossArena.floorY-game.player.h;const moves=new Set();let sawShockwave=false,sawTracker=false;
   for(let frame=0;frame<900;frame++){game.updateDepthBoss(boss,1/60);moves.add(boss.bossMove);sawShockwave||=Boolean(game.bossShockwave);sawTracker||=game.bossProjectiles.some(bolt=>bolt.owner==='depth'&&bolt.trackingTime>=0);}
   assert.ok(moves.has('stalkerDash'));assert.ok(moves.has('stalkerDropHover'));assert.ok(moves.has('stalkerDrop'));assert.equal(sawShockwave,true);assert.equal(sawTracker,true);
