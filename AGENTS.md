@@ -185,38 +185,38 @@ npm test
 npm run check
 ```
 
-The development server runs at `http://127.0.0.1:4175`. Before handing off visual changes, run `npm run check` and inspect the game in a browser at both the start screen and during live play.
+The development server runs at `http://127.0.0.1:4173`. Before handing off visual changes, run `npm run check` and inspect the game in a browser at both the start screen and during live play.
 
-Use `http://127.0.0.1:4175/?debug=boss` for visual boss-arena QA. This query only changes the initial preview spawn; it must never affect the default URL or ordinary progression.
+Use `http://127.0.0.1:4173/?debug=boss` for visual boss-arena QA. This query only changes the initial preview spawn; it must never affect the default URL or ordinary progression.
 
-Use `http://127.0.0.1:4175/?debug=rest` for visual recovery-area QA. It previews the post-boss cleared state without changing default progression.
+Use `http://127.0.0.1:4173/?debug=rest` for visual recovery-area QA. It previews the post-boss cleared state without changing default progression.
 
-Use `http://127.0.0.1:4175/?debug=explore` for visual QA of the assembly platform network and ability-gated upper space.
+Use `http://127.0.0.1:4173/?debug=explore` for visual QA of the assembly platform network and ability-gated upper space.
 
-Use `http://127.0.0.1:4175/?debug=lower` for visual QA of the vault undercroft.
+Use `http://127.0.0.1:4173/?debug=lower` for visual QA of the vault undercroft.
 
-Use `http://127.0.0.1:4175/?debug=vault-boss` for the active Abyss Warden room, `http://127.0.0.1:4175/?debug=mini` for the optional Quiet Drift Cache Scrapper, and `http://127.0.0.1:4175/?debug=volt` for the post-Warden Volt Jab tutorial.
+Use `http://127.0.0.1:4173/?debug=vault-boss` for the active Abyss Warden room, `http://127.0.0.1:4173/?debug=mini` for the optional Quiet Drift Cache Scrapper, and `http://127.0.0.1:4173/?debug=volt` for the post-Warden Volt Jab tutorial.
 
-Use `http://127.0.0.1:4175/?debug=vault-upper` for the Wall-Climb loft, `http://127.0.0.1:4175/?debug=deep-vault` for the opened post-Warden hatch, `http://127.0.0.1:4175/?debug=deep-gallery` for both mandatory climb galleries, `http://127.0.0.1:4175/?debug=depth-boss` for the active Rift Stalker, and `http://127.0.0.1:4175/?debug=dash` for the released Dash core and return platforms.
+Use `http://127.0.0.1:4173/?debug=vault-upper` for the Wall-Climb loft, `http://127.0.0.1:4173/?debug=deep-vault` for the opened post-Warden hatch, `http://127.0.0.1:4173/?debug=deep-gallery` for both mandatory climb galleries, `http://127.0.0.1:4173/?debug=depth-boss` for the active Rift Stalker, and `http://127.0.0.1:4173/?debug=dash` for the released Dash core and return platforms.
 
-Use `http://127.0.0.1:4175/?debug=crown-upper` to inspect the enclosed Crownworks upper chamber and its climbable salvage perches.
+Use `http://127.0.0.1:4173/?debug=crown-upper` to inspect the enclosed Crownworks upper chamber and its climbable salvage perches.
 
-Use `http://127.0.0.1:4175/?debug=crown-boss` for the active Crown Dynamo, `http://127.0.0.1:4175/?debug=field-annex` for its cleared Field-gated annex, and `http://127.0.0.1:4175/?debug=dash-routes` for the distributed Dash backtracking pockets.
+Use `http://127.0.0.1:4173/?debug=crown-boss` for the active Crown Dynamo, `http://127.0.0.1:4173/?debug=field-annex` for its cleared Field-gated annex, and `http://127.0.0.1:4173/?debug=dash-routes` for the distributed Dash backtracking pockets.
 
-Use `http://127.0.0.1:4175/?debug=merchant` to verify an unlocked merchant door and its separate interior.
+Use `http://127.0.0.1:4173/?debug=merchant` to verify an unlocked merchant door and its separate interior.
 
-Use `http://127.0.0.1:4175/?debug=merchant-room` to inspect the full modifier catalog directly. Add `&panel=health`, `&panel=energy`, or `&panel=internal` to inspect the other merchant catalogs.
+Use `http://127.0.0.1:4173/?debug=merchant-room` to inspect the full modifier catalog directly. Add `&panel=health`, `&panel=energy`, or `&panel=internal` to inspect the other merchant catalogs.
 
-Use `http://127.0.0.1:4175/?debug=wall` to verify continuous wall climbing and jumps away from either wall side.
+Use `http://127.0.0.1:4173/?debug=wall` to verify continuous wall climbing and jumps away from either wall side.
 
-Use `http://127.0.0.1:4175/?debug=gauntlet` for the trap-heavy Shard Gauntlet and `http://127.0.0.1:4175/?debug=exchange` for the Grand Exchange damage forge.
+Use `http://127.0.0.1:4173/?debug=gauntlet` for the trap-heavy Shard Gauntlet and `http://127.0.0.1:4173/?debug=exchange` for the Grand Exchange damage forge.
 
-Use `http://127.0.0.1:4175/?debug=gauntlet-top` for the upper spike beds, cycling barriers, swinging chain ball, and summit cache. Add `&phase=2` to any boss or mini-boss debug URL to inspect its second phase.
+Use `http://127.0.0.1:4173/?debug=gauntlet-top` for the upper spike beds, cycling barriers, swinging chain ball, and summit cache. Add `&phase=2` to any boss or mini-boss debug URL to inspect its second phase.
 
-Use `http://127.0.0.1:4175/?debug=forge-room` for the full Edge Forge catalog and `http://127.0.0.1:4175/?debug=postboss` to inspect the opened roof after the Heavy Core bulkheads are destroyed.
+Use `http://127.0.0.1:4173/?debug=forge-room` for the full Edge Forge catalog and `http://127.0.0.1:4173/?debug=postboss` to inspect the opened roof after the Heavy Core bulkheads are destroyed.
 
-Use `http://127.0.0.1:4175/?debug=recovery` to inspect a rebuilt bot and its nearby scrap-bearing wreckage.
+Use `http://127.0.0.1:4173/?debug=recovery` to inspect a rebuilt bot and its nearby scrap-bearing wreckage.
 
-Use `http://127.0.0.1:4175/?debug=inventory` to inspect STATUS; add `&panel=items`, `&panel=placement`, `&panel=materials`, `&panel=map`, `&panel=overview`, or `&panel=nomap` for the other inventory, modifier-placement, and map states.
+Use `http://127.0.0.1:4173/?debug=inventory` to inspect STATUS; add `&panel=items`, `&panel=placement`, `&panel=materials`, `&panel=map`, `&panel=overview`, or `&panel=nomap` for the other inventory, modifier-placement, and map states.
 
-Use `http://127.0.0.1:4175/?debug=verge-merchant` to inspect the cleared Verge Tinker doorway and its collision-free standing pocket.
+Use `http://127.0.0.1:4173/?debug=verge-merchant` to inspect the cleared Verge Tinker doorway and its collision-free standing pocket.

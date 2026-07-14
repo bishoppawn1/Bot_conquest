@@ -8,7 +8,7 @@ A dependency-free 2D canvas platformer prototype set in a growing interconnected
 npm start
 ```
 
-Open http://127.0.0.1:4175.
+Open http://127.0.0.1:4173.
 
 ## Controls
 
