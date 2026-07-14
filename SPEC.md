@@ -98,6 +98,8 @@ Drones detect at 340 units. When inactive they hover around their spawn height. 
 
 Current archetypes are crawler, roller, hopper, drone, and brute. Their silhouettes use hard industrial chassis, pistons, claws, spikes, and needle-like feet rather than soft creature shapes. Crawlers and rollers take two unmodified slashes, hoppers and drones take three, and brutes take four; bosses and mini bosses retain their larger explicit health pools.
 
+Every boss and mini boss crosses into phase two exactly once at half health. Its single white transition burst supplies a 0.6-second damage shield while the existing attack state continues uninterrupted; the transition never resets an attack timer or leaves the boss stationary and vulnerable.
+
 ### Boss encounter
 
 After traversing roughly two-thirds of the current route, the player enters a 1,300-unit-wide open arena. Crossing its inner trigger while physically inside the chamber drops a solid gate behind the player and another at the far exit. The gates finish closing in about 0.3 seconds and cannot be crossed while the boss remains alive. Full-height structural bulkheads seal both approaches to the arena roof, preventing roof bypasses and ensuring a gate can never lock the player outside the fight.

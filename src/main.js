@@ -176,7 +176,7 @@ function begin() {
   }
   if(debugPhase==='2'){
     const phaseBoss=debugSpawn==='vault-boss'?game.vaultBoss():debugSpawn==='depth-boss'?game.depthBoss():debugSpawn==='crown-boss'?game.crownBoss():debugSpawn==='mini'?game.miniBoss(game.miniBossArenas[0].id):debugSpawn==='boss'?game.boss():null;
-    if(phaseBoss){phaseBoss.health=Math.floor(phaseBoss.maxHealth/2);phaseBoss.phase=2;phaseBoss.phaseFlash=1;}
+    if(phaseBoss){phaseBoss.health=Math.floor(phaseBoss.maxHealth/2);phaseBoss.phase=1;phaseBoss.phaseFlash=0;phaseBoss.phaseShieldTime=0;}
   }
   playing = true;
   syncAbilityControls();

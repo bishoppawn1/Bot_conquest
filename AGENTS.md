@@ -55,6 +55,7 @@ The July 2026 map is a clean replacement for the discarded access-path layout. D
 - The Cache Scrapper is an optional thirty-health mini boss in Quiet Drift. It awards three titanium, remains outside the required foundation route, never grants an ability, and enters a faster, longer-charge phase below half health.
 - The Rift Stalker is a ninety-six-health full boss at the bottom of the extended Sunken Vault. It protects Dash and cycles through a cross-room dash, a teleporting overhead drop, and one fast, briefly tracking projectile that disappears without exploding on impact. Below half health it moves faster and fires paired tracking bolts.
 - The Crown Dynamo is a seventy-two-health full boss in upper Crownworks. It relocates between two high anchors and is vulnerable only during its exposed phase, so the player must use the chamber's climbable perches to reach it. It protects Field and cycles through a floor sweep, targeted column, and four-bolt volley, adding combined hazards and six-bolt volleys below half health.
+- Every boss and mini boss enters phase two exactly once at half health. The one-time white burst grants a 0.6-second damage shield but must never reset, extend, or pause the current attack timer; the boss continues moving and attacking throughout the transition.
 - Activating a save station or losing the final shell reconstructs every ordinary enemy from `ENEMY_SPAWNS`. Defeated full bosses and mini bosses remain defeated for the run.
 - Enemy types should continue to vary in size, silhouette, health, speed, and movement style.
 
