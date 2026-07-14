@@ -106,10 +106,10 @@ export const BRANCH_BLOCKS = [
 ];
 
 // The Sunken Vault descends through a reversible upper route, then uses one
-// deliberate one-way drop into its mini-boss room. The right-hand platforms
+// deliberate one-way drop into its full-boss chamber. The right-hand platforms
 // form the guaranteed basic-jump escape after the arena gate opens.
 export const LOWER_BLOCKS = [
-  {id:'under-cache',x:2860,y:1120,w:470,h:80,kind:'lower'},
+  {id:'under-cache',x:2500,y:1120,w:830,h:80,kind:'lower'},
   {id:'under-threshold',x:3370,y:1120,w:180,h:80,kind:'lower'},
   {id:'under-exit-low',x:3390,y:1020,w:80,h:40,kind:'lower'},
   {id:'under-exit-mid',x:3290,y:920,w:80,h:45,kind:'lower'},
@@ -132,13 +132,13 @@ export const VAULT_UPPER_BLOCKS = [
 // hatch above this wall retracts while the player is safely west of the shaft.
 // The chamber below then zig-zags through two mandatory climb galleries.
 export const DEPTH_ACCESS_BLOCKS = [
-  {id:'vault-depth-floor-west',x:2860,y:1120,w:130,h:80,kind:'lower'},
+  {id:'vault-depth-floor-west',x:2500,y:1120,w:490,h:80,kind:'lower'},
   {id:'vault-depth-access',x:2990,y:1000,w:60,h:120,kind:'wall',requires:'wallClimb',region:'vault-depth',gateEntry:true},
   {id:'vault-depth-floor-east',x:3250,y:1120,w:80,h:80,kind:'lower'}
 ];
 
 export const VAULT_DEEP_BLOCKS = [
-  {id:'vault-depth-roof-west',x:2360,y:985,w:440,h:215,kind:'ceiling'},
+  {id:'vault-depth-roof-west',x:2360,y:985,w:80,h:215,kind:'wall'},
   {id:'vault-deep-drop-one',x:3000,y:1480,w:300,h:50,kind:'vault-depth'},
   {id:'vault-deep-climb-west',x:2940,y:1280,w:60,h:200,kind:'wall',requires:'wallClimb',region:'vault-depth'},
   {id:'vault-deep-gallery-west',x:2600,y:1280,w:340,h:50,kind:'vault-depth',requires:'wallClimb',region:'vault-depth'},
@@ -178,7 +178,7 @@ export const WALL_BLOCKS = [
   {id:'crown-climb',x:8380,y:-260,w:60,h:220,kind:'wall'},
   {id:'boss-roof-left',x:5790,y:-1900,w:100,h:2250,kind:'wall',destructibleAfterBoss:true},
   {id:'boss-roof-right',x:7190,y:-1900,w:160,h:2250,kind:'wall',destructibleAfterBoss:true},
-  {id:'vault-arena-left',x:2800,y:985,w:60,h:135,kind:'wall'}
+  {id:'vault-arena-left',x:2440,y:985,w:60,h:135,kind:'wall'}
 ];
 
 // Three substantial optional regions remain unreachable with the starting
@@ -323,10 +323,10 @@ export const BOSS_ARENA = {
 
 export const VAULT_BOSS_ARENA = {
   id:'vault-warden',name:'ABYSS WARDEN',region:'vault',
-  x:2860,y:950,w:510,h:170,floorY:1120,triggerY:1000,
-  leftGateX:2818,rightGateX:3330,gateY:700,gateWidth:40,gateHeight:420,
+  x:2500,y:800,w:830,h:320,floorY:1120,triggerY:900,
+  leftGateX:2458,rightGateX:3330,gateY:700,gateWidth:40,gateHeight:420,
   rewardScrap:110,
-  boss:{type:'vaultBoss',x:3120,y:1038,w:92,h:82,health:60}
+  boss:{type:'vaultBoss',x:2880,y:1038,w:92,h:82,health:60}
 };
 
 export const DEPTH_BOSS_ARENA = {

@@ -4,6 +4,12 @@ import { Game } from '../src/game.js';
 
 const tick=(game,count=1)=>{for(let frame=0;frame<count;frame++)game.update(1/60);};
 
+test('the Abyss Warden arena provides a broad two-dimensional fight space',()=>{
+  const game=new Game(),arena=game.vaultBossArena,boss=game.vaultBoss();
+  assert.ok(arena.w>=800);assert.ok(arena.h>=300);assert.equal(arena.rightGateX-arena.x,arena.w);
+  assert.ok(boss.x-arena.x>=300);assert.ok(arena.rightGateX-(boss.x+boss.w)>=300);
+});
+
 test('the Vault exit is sealed before the Abyss Warden is ever activated',()=>{
   const game=new Game(),arena=game.vaultBossArena,gates=game.vaultBossGates();assert.equal(arena.active,false);assert.equal(gates.length,1);assert.equal(gates[0].side,'exit');assert.ok(gates[0].h>=350);assert.equal(gates[0].y+gates[0].h,arena.floorY);
   Object.assign(game.player,{x:gates[0].x+gates[0].w+8,y:arena.floorY-game.player.h,vx:-500,vy:0});game.moveActor(game.player,.1,true);assert.ok(game.player.x>=gates[0].x+gates[0].w);

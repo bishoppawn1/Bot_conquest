@@ -194,7 +194,7 @@ test('main-route ground encounters have room to fight away from spike-and-step p
 test('the lower vault has a contained full-boss floor and a staged escape',()=>{
   assert.equal(LOWER_BLOCKS.length,5);
   const floor=LOWER_BLOCKS.find(block=>block.id==='under-cache'),threshold=LOWER_BLOCKS.find(block=>block.id==='under-threshold');
-  assert.equal(floor.y,1120);assert.equal(floor.x+floor.w,VAULT_BOSS_ARENA.rightGateX);
+  assert.equal(floor.y,1120);assert.equal(floor.x,VAULT_BOSS_ARENA.x);assert.equal(floor.x+floor.w,VAULT_BOSS_ARENA.rightGateX);assert.ok(VAULT_BOSS_ARENA.w>=800&&VAULT_BOSS_ARENA.h>=300);
   assert.equal(threshold.x,VAULT_BOSS_ARENA.rightGateX+VAULT_BOSS_ARENA.gateWidth);
   assert.deepEqual(LOWER_BLOCKS.filter(block=>block.id.startsWith('under-exit-')).map(block=>block.y),[1020,920,820]);
 });

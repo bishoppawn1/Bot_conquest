@@ -123,7 +123,7 @@ Do not move rendering concerns into the game-state engine. Keep level coordinate
 
 ## Abyss Warden arena
 
-- `VAULT_BOSS_ARENA` is a full boss encounter, not an entry in `MINI_BOSS_ARENAS`. The Abyss Warden has 60 health and awards 110 scrap.
+- `VAULT_BOSS_ARENA` is an 830-by-320-unit full boss chamber, not an entry in `MINI_BOSS_ARENAS`. Preserve its broad charge runway and vertical leap clearance. The Abyss Warden has 60 health and awards 110 scrap.
 - Its right exit seal exists whenever the arena is uncleared, including before activation. It spans Y 700–1120, reaches the floor, and must block approach from every escape platform. Never shorten it to a jumpable gate.
 - Dropping into the trigger volume activates the Warden and closes the animated left entry seal. The dormant Warden is not targetable from the approach.
 - The Warden randomly chooses horizontal charge, leaping shockwave, and five-projectile volley attacks without immediate repeats. Overdrive adds a ten-bolt radial crossfire. It uses the full-size cyan boss health bar.
