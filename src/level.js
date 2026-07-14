@@ -405,7 +405,7 @@ export const FORGE_UPGRADE_RECIPES = Object.freeze([
 ]);
 export const HEALTH_UPGRADE_COSTS = Object.freeze([450,900,1600]);
 export const ENERGY_UPGRADE_COSTS = Object.freeze([400,800,1400]);
-export const BAY_UPGRADE_COSTS = Object.freeze([800,1600,2800]);
+export const BAY_UPGRADE_COSTS = Object.freeze([1600,2800]);
 
 export const BODY_MODIFIERS = Object.freeze([
   {id:'aegis-filament',name:'AEGIS FILAMENT',cost:650,effects:{shell:{maxLives:1,label:'+1 MAX SHELL'},core:{maxElectricity:10,label:'+10 CAPACITY'},legs:{moveSpeed:18,label:'+18 MOVE SPEED'},internal:{healShield:1,label:'REPAIR GRANTS 1-HIT SHIELD'}}},
@@ -433,7 +433,7 @@ export const MERCHANT_SPAWNS = [
   {id:'merchant-shells',name:'SHELL ARCHIVE',specialty:'SURVIVABILITY // REPAIR + DAMAGE RESPONSE',x:13700,y:60,w:80,h:120,region:'exchange',hub:false,color:'#d6ff3f',clearRadius:210,service:'healthUpgrade',upgradeCosts:HEALTH_UPGRADE_COSTS,relicStock:['mender-loop','impact-damper']},
   {id:'merchant-salvage',name:'CAPACITOR EXCHANGE',specialty:'CHARGE ECONOMY // DAMAGE + KILL RECOVERY',x:11120,y:250,w:80,h:120,region:'gauntlet',hub:false,color:'#ffb85c',clearRadius:210,service:'energyUpgrade',upgradeCosts:ENERGY_UPGRADE_COSTS,relicStock:['feedback-dynamo','execution-coil']},
   {id:'merchant-verge',name:'VERGE TINKER',x:2160,y:500,w:80,h:120,region:'verge',hub:false,color:'#75f5ff',clearRadius:210},
-  {id:'merchant-foundry',name:'INNER FOUNDRY',specialty:'BODY CAPACITY // ONE INTERNAL + TWO AUXILIARY BAYS',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:210,service:'bayUpgrade',upgradeCosts:BAY_UPGRADE_COSTS},
+  {id:'merchant-foundry',name:'INNER FOUNDRY',specialty:'BODY CAPACITY // TWO AUXILIARY BAYS',x:4690,y:490,w:80,h:120,region:'foundry',hub:false,color:'#ffb85c',clearRadius:210,service:'bayUpgrade',upgradeCosts:BAY_UPGRADE_COSTS},
   {id:'merchant-response',name:'RESPONSE FORGE',specialty:'COUNTERATTACK SYSTEMS // DAMAGE RETALIATION',x:12450,y:240,w:80,h:120,region:'drift',hub:false,color:'#ff786f',clearRadius:180,service:'relicShop',relicStock:['arc-retort']},
   {id:'merchant-curator',name:'SALVAGE CURATOR',specialty:'RECOVERY ECONOMY // SCRAP + WRECK RETRIEVAL',x:12880,y:330,w:80,h:120,region:'exchange',hub:false,color:'#d9a441',clearRadius:180,service:'relicShop',relicStock:['salvage-lens','corpse-key']},
   {id:'merchant-forge',name:'EDGE FORGE',specialty:'CUTTER OUTPUT // DAMAGE + STORED IMPACT',x:14280,y:540,w:80,h:120,region:'exchange',hub:false,color:'#ffffff',clearRadius:210,service:'damageUpgrade',upgradeCosts:FORGE_UPGRADE_COSTS,relicStock:['kinetic-memory']}

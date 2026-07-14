@@ -38,6 +38,6 @@ test('each shell restores its own equipment placements when swapped',()=>{
 });
 
 test('Foundry expansion bays are installed on every owned shell',()=>{
-  const game=new Game(),foundry=game.merchants.find(item=>item.service==='bayUpgrade');game.acquireShell('slicer-body');game.player.scrap=10000;game.buyBayUpgrade(foundry);game.buyBayUpgrade(foundry);
+  const game=new Game(),foundry=game.merchants.find(item=>item.service==='bayUpgrade');game.acquireShell('slicer-body');assert.deepEqual(game.player.bodies['slicer-body'].expansionSlots.map(slot=>slot.id),['internal']);game.player.scrap=10000;game.buyBayUpgrade(foundry);
   assert.deepEqual(game.player.bodies['standard-body'].expansionSlots.map(slot=>slot.id),['internal','auxiliary-1']);assert.deepEqual(game.player.bodies['slicer-body'].expansionSlots.map(slot=>slot.id),['internal','auxiliary-1']);
 });

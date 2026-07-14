@@ -38,11 +38,11 @@ test('Aegis Filament skips the cutter and changes meaning on each compatible mou
   assert.equal(game.beginEquipmentPlacement(),true);assert.equal(game.selectedEquipmentTarget().id,'shell');assert.equal(game.confirmEquipmentPlacement(),true);assert.equal(item.equippedSlot,'shell');assert.equal(game.player.maxLives,4);
   game.beginEquipmentPlacement();game.moveEquipmentTarget(1);game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,'core');assert.equal(game.player.maxLives,3);assert.equal(game.player.maxElectricity,110);
   game.beginEquipmentPlacement();game.moveEquipmentTarget(1);game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,'legs');assert.equal(game.player.maxElectricity,100);assert.equal(game.player.moveSpeed,PLAYER_MOVE_SPEED+18);
-  game.beginEquipmentPlacement();game.moveEquipmentTarget(1);assert.equal(game.selectedEquipmentTarget().part,'storage');game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,null);assert.equal(game.player.moveSpeed,PLAYER_MOVE_SPEED);assert.ok(!game.compatibleModifierSlots(item).some(slot=>slot.part==='weapon'));
+  game.beginEquipmentPlacement();game.moveEquipmentTarget(1);assert.equal(game.selectedEquipmentTarget().id,'internal');game.moveEquipmentTarget(1);assert.equal(game.selectedEquipmentTarget().part,'storage');game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,null);assert.equal(game.player.moveSpeed,PLAYER_MOVE_SPEED);assert.ok(!game.compatibleModifierSlots(item).some(slot=>slot.part==='weapon'));
 });
 
 test('an internal Aegis Filament creates one repair shield that absorbs one enemy hit',()=>{
-  const game=new Game(),foundry=game.merchants.find(item=>item.service==='bayUpgrade');game.player.scrap=10000;assert.equal(game.buyBayUpgrade(foundry),true);const item=buyModifier(game,'aegis-filament');item.equippedSlot='internal';game.recomputeBodyStats();
+  const game=new Game(),item=buyModifier(game,'aegis-filament');assert.deepEqual(game.player.body.expansionSlots.map(slot=>slot.id),['internal']);item.equippedSlot='internal';game.recomputeBodyStats();
   game.player.lives=2;assert.equal(game.completeHeal(),true);assert.equal(game.player.lives,3);assert.equal(game.player.shield,1);
   game.damagePlayer('enemy',game.player.x+100);assert.equal(game.player.lives,3);assert.equal(game.player.shield,0);
   game.player.invuln=0;game.damagePlayer('enemy',game.player.x+100);assert.equal(game.player.lives,2);
@@ -57,18 +57,20 @@ test('Reactive Governor rewards damage with placement-specific energy or speed',
 test('Extender Arm modifies Fusion Cutter range and has a reduced internal profile',()=>{
   const game=new Game(),item=buyModifier(game,'extender-arm');item.equippedSlot='weapon';game.recomputeBodyStats();assert.equal(game.player.primaryRange,145);assert.equal(game.player.maxLives,3);
   const enemy=game.enemy({type:'crawler',x:game.player.x+170,y:game.player.y,w:30,h:40,health:6});game.enemies=[enemy];game.player.attackAimX=1;game.player.attackAimY=0;game.player.attackHits=new Set();game.resolvePrimaryAttack();assert.equal(enemy.health,3);
-  const foundry=game.merchants.find(merchant=>merchant.service==='bayUpgrade');game.player.scrap=10000;game.buyBayUpgrade(foundry);item.equippedSlot='internal';game.recomputeBodyStats();assert.equal(game.player.primaryRange,117);assert.match(game.modifierPlacementDetail(item),/INTERNAL BAY.*12 CUTTER RANGE/);
+  item.equippedSlot='internal';game.recomputeBodyStats();assert.equal(game.player.primaryRange,117);assert.match(game.modifierPlacementDetail(item),/INTERNAL BAY.*12 CUTTER RANGE/);
 });
 
-test('the Foundry unlocks one internal bay followed by two auxiliary bays',()=>{
+test('the internal bay starts unlocked and the Foundry sells only two auxiliary bays',()=>{
   const game=new Game(),foundry=game.merchants.find(merchant=>merchant.service==='bayUpgrade');game.player.scrap=10000;
-  assert.equal(game.buyBayUpgrade(foundry),true);assert.equal(game.buyBayUpgrade(foundry),true);assert.equal(game.buyBayUpgrade(foundry),true);assert.equal(game.buyBayUpgrade(foundry),false);
+  assert.deepEqual(game.player.body.expansionSlots.map(slot=>[slot.id,slot.part,slot.label]),[['internal','internal','INTERNAL BAY']]);
+  assert.deepEqual(game.merchantCatalog(foundry).map(row=>[row.name,row.cost]),[['AUXILIARY BAY A',1600],['AUXILIARY BAY B',2800]]);
+  assert.equal(game.buyBayUpgrade(foundry),true);assert.equal(game.buyBayUpgrade(foundry),true);assert.equal(game.buyBayUpgrade(foundry),false);
   assert.deepEqual(game.player.body.expansionSlots.map(slot=>[slot.id,slot.part,slot.label]),[['internal','internal','INTERNAL BAY'],['auxiliary-1','auxiliary','AUXILIARY BAY A'],['auxiliary-2','auxiliary','AUXILIARY BAY B']]);
   assert.equal(game.player.body.expansionSlots.filter(slot=>slot.part==='internal').length,1);assert.equal(game.player.body.expansionSlots.filter(slot=>slot.part==='auxiliary').length,2);
 });
 
 test('auxiliary bays use each modifier reduced profile without becoming internal bays',()=>{
-  const game=new Game(),foundry=game.merchants.find(merchant=>merchant.service==='bayUpgrade');game.player.scrap=10000;game.buyBayUpgrade(foundry);game.buyBayUpgrade(foundry);const item=buyModifier(game,'extender-arm');item.equippedSlot='auxiliary-1';game.recomputeBodyStats();
+  const game=new Game(),foundry=game.merchants.find(merchant=>merchant.service==='bayUpgrade');game.player.scrap=10000;game.buyBayUpgrade(foundry);const item=buyModifier(game,'extender-arm');item.equippedSlot='auxiliary-1';game.recomputeBodyStats();
   assert.equal(game.player.primaryRange,117);assert.match(game.modifierPlacementDetail(item),/AUXILIARY BAY A.*12 CUTTER RANGE/);
 });
 
