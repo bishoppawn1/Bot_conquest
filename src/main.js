@@ -7,6 +7,7 @@ const startScreen = document.querySelector('#start');
 const renderer = new Renderer(canvas);
 const debugSpawn = new URLSearchParams(location.search).get('debug');
 const debugPanel = new URLSearchParams(location.search).get('panel');
+const debugPhase = new URLSearchParams(location.search).get('phase');
 const abilityControls = [...document.querySelectorAll('[data-ability]')];
 
 let game = new Game();
@@ -49,7 +50,7 @@ function begin() {
     Object.assign(game.player,{x:500,y:624,lives:1,scrap:73,electricity:48,invuln:0});
     game.damagePlayer('enemy',600);
   } else if (debugSpawn === 'inventory') {
-    Object.assign(game.player,{scrap:860,primaryDamage:5,damageUpgrades:2,healthUpgrades:1,energyUpgrades:1,internalSlotUpgrades:1,materials:{titanium:4,uranium:1},purchasedItems:[{id:'edge-coil-1',kind:'upgrade',name:'EDGE COIL MK 1',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'edge-coil-2',kind:'upgrade',name:'EDGE COIL MK 2',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'shell-capacity-1',kind:'upgrade',name:'SHELL CAPACITY MK 1',detail:'+1 MAX SHELL'},{id:'capacitor-bank-1',kind:'upgrade',name:'CAPACITOR BANK MK 1',detail:'+25 MAX ELECTRICITY'},{id:'internal-bay-1',kind:'upgrade',name:'INTERNAL BAY 1',detail:'REDUCED-EFFECT MODIFIER SLOT'},{id:'modifier-aegis-filament',modifierId:'aegis-filament',kind:'modifier',name:'AEGIS FILAMENT',equippedSlot:'internal-1'},{id:'modifier-reactive-governor',modifierId:'reactive-governor',kind:'modifier',name:'REACTIVE GOVERNOR',equippedSlot:'legs'},{id:'modifier-extender-arm',modifierId:'extender-arm',kind:'modifier',name:'EXTENDER ARM',equippedSlot:'weapon'},{id:'relic-feedback-dynamo',relicId:'feedback-dynamo',kind:'relic',name:'FEEDBACK DYNAMO',detail:'PASSIVE RELIC // TAKING DAMAGE RESTORES 12 ELECTRICITY'},{id:'relic-arc-retort',relicId:'arc-retort',kind:'relic',name:'ARC RETORT',detail:'PASSIVE RELIC // TAKING DAMAGE HITS NEARBY ENEMIES FOR 2'}]});
+    Object.assign(game.player,{scrap:860,primaryDamage:5,damageUpgrades:2,healthUpgrades:1,energyUpgrades:1,internalSlotUpgrades:1,materials:{titanium:4,uranium:1},purchasedItems:[{id:'edge-coil-1',kind:'upgrade',name:'EDGE COIL MK 1',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'edge-coil-2',kind:'upgrade',name:'EDGE COIL MK 2',detail:'+1 PRIMARY SLASH DAMAGE'},{id:'shell-capacity-1',kind:'upgrade',name:'SHELL CAPACITY MK 1',detail:'+1 MAX SHELL'},{id:'capacitor-bank-1',kind:'upgrade',name:'CAPACITOR BANK MK 1',detail:'+25 MAX ELECTRICITY'},{id:'internal-bay-1',kind:'upgrade',name:'INTERNAL BAY 1',detail:'REDUCED-EFFECT MODIFIER SLOT'},{id:'modifier-aegis-filament',modifierId:'aegis-filament',kind:'modifier',name:'AEGIS FILAMENT',equippedSlot:'internal-1'},{id:'modifier-reactive-governor',modifierId:'reactive-governor',kind:'modifier',name:'REACTIVE GOVERNOR',equippedSlot:'legs'},{id:'modifier-extender-arm',modifierId:'extender-arm',kind:'modifier',name:'EXTENDER ARM',equippedSlot:'weapon'},{id:'relic-feedback-dynamo',relicId:'feedback-dynamo',kind:'relic',name:'FEEDBACK DYNAMO',detail:'SLOTTED RELIC // TAKING DAMAGE RESTORES 12 ELECTRICITY',equippedSlot:'relic-1'},{id:'relic-arc-retort',relicId:'arc-retort',kind:'relic',name:'ARC RETORT',detail:'SLOTTED RELIC // TAKING DAMAGE HITS NEARBY ENEMIES FOR 2',equippedSlot:'relic-2'}]});
     game.player.body.internalSlots.push({id:'internal-1',part:'internal',label:'INTERNAL BAY 1',efficiency:.3});game.recomputeBodyStats();game.player.lives=4;game.player.electricity=125;game.player.shield=1;
     for(const region of ['verge','vault','foundry','bastion'])game.mappedRegions.add(region);game.inventoryOpen=true;
     if(debugPanel==='map'||debugPanel==='overview'||debugPanel==='nomap'){game.inventoryPage=0;game.mapOverview=debugPanel==='overview';if(debugPanel==='nomap')game.mapRegionIndex=5;}
@@ -152,10 +153,15 @@ function begin() {
     game.player.x=9750;
     game.player.y=650-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'gauntlet-top') {
+    game.unlockAbility('dash');game.player.x=10310;
+    game.player.y=390-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'exchange') {
     game.player.x=14295;
     game.player.y=660-game.player.h;
     game.player.scrap=6000;
+    game.player.materials={titanium:10,uranium:10};
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'forge-room') {
     const forge=game.merchants.find(merchant=>merchant.id==='merchant-forge');
@@ -164,8 +170,13 @@ function begin() {
     game.player.x=game.merchantRoom.merchant.x-80;
     game.player.y=game.merchantRoom.merchant.y;
     game.player.scrap=6000;
+    game.player.materials={titanium:10,uranium:10};
     game.safePosition={x:game.player.x,y:game.player.y};
     game.openMerchantMenu(game.merchantRoom.activeMerchant);
+  }
+  if(debugPhase==='2'){
+    const phaseBoss=debugSpawn==='vault-boss'?game.vaultBoss():debugSpawn==='depth-boss'?game.depthBoss():debugSpawn==='crown-boss'?game.crownBoss():debugSpawn==='mini'?game.miniBoss(game.miniBossArenas[0].id):debugSpawn==='boss'?game.boss():null;
+    if(phaseBoss){phaseBoss.health=Math.floor(phaseBoss.maxHealth/2);phaseBoss.phase=2;phaseBoss.phaseFlash=1;}
   }
   playing = true;
   syncAbilityControls();

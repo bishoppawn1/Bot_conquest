@@ -10,7 +10,7 @@ const canTraverse=(sourceId,targetId,{jump=true,clearMini=false}={})=>{
   const source=PLATFORMS.find(block=>block.id===sourceId),target=PLATFORMS.find(block=>block.id===targetId);
   const direction=Math.sign((target.x+target.w/2)-(source.x+source.w/2))||1,move=direction>0?'right':'left';
   for(const inset of[5,15,30,50,70,90,110,130,150]){
-    const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];if(clearMini){for(const arena of g.miniBossArenas)arena.cleared=true;g.vaultBossArena.cleared=true;}
+    const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];g.gauntletHazards=[];if(clearMini){for(const arena of g.miniBossArenas)arena.cleared=true;g.vaultBossArena.cleared=true;}
     const player=g.player;player.x=direction>0?source.x+source.w-player.w-inset:source.x+inset;
     player.y=source.y-player.h;player.vx=direction*250;player.vy=0;player.onGround=true;player.jumps=1;
     g.setInput({[move]:true,jump});g.update(1/60);g.setInput({jump:false});
@@ -20,7 +20,7 @@ const canTraverse=(sourceId,targetId,{jump=true,clearMini=false}={})=>{
   return false;
 };
 const canControlledDrop=(sourceId,targetId)=>{
-  const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];
+  const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];g.gauntletHazards=[];
   g.vaultBossArena.cleared=true;for(const arena of g.miniBossArenas)arena.cleared=true;
   const source=g.platforms.find(block=>block.id===sourceId),target=g.platforms.find(block=>block.id===targetId),player=g.player;
   const direction=Math.sign((target.x+target.w/2)-(source.x+source.w/2))||1,move=direction>0?'right':'left',brake=direction>0?'left':'right';let braking=false;
@@ -30,7 +30,7 @@ const canControlledDrop=(sourceId,targetId)=>{
 };
 const canStagedJump=(sourceId,targetId)=>{
   for(const delay of[0,6,10,14,18]){
-    const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];for(const arena of g.miniBossArenas)arena.cleared=true;g.vaultBossArena.cleared=true;
+    const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];g.gauntletHazards=[];for(const arena of g.miniBossArenas)arena.cleared=true;g.vaultBossArena.cleared=true;
     const source=g.platforms.find(block=>block.id===sourceId),target=g.platforms.find(block=>block.id===targetId),player=g.player;
     const direction=Math.sign((target.x+target.w/2)-(source.x+source.w/2))||1,move=direction>0?'right':'left';
     Object.assign(player,{x:direction>0?source.x:source.x+source.w-player.w,y:source.y-player.h,vx:0,vy:0,onGround:true,jumps:1});
@@ -50,7 +50,6 @@ test('the starting jump physically connects the scattered exploration platforms'
   const reversibleLinks=[
     ['west-step','start-loft'],['start-loft','west-bridge'],
     ['assembly-step','assembly-entry'],['assembly-entry','assembly-perch'],['assembly-perch','assembly-cross'],
-    ['vault-span','vault-high'],
     ['foundry-step','foundry-platform'],['foundry-platform','foundry-mid'],['foundry-mid','foundry-east'],['foundry-west','foundry-high'],
     ['prearena-step','prearena-low'],['prearena-low','prearena-wide'],['prearena-wide','prearena-high'],
     ['relay-step','relay-entry'],['relay-entry','relay-east'],['relay-east','relay-center'],['relay-center','relay-west'],
@@ -69,7 +68,8 @@ test('the starting jump physically connects the scattered exploration platforms'
   assert.ok(canTraverse('vault-span','vault-ledge'));
   assert.ok(canTraverse('foundry-mid','foundry-west'));
   assert.ok(canTraverse('foundry-west','foundry-step'));
-  assert.ok(canTraverse('vault-high','under-cache',{jump:false}),'the Vault boss entrance does not drop safely into its room');
+  assert.ok(canControlledDrop('vault-span','under-cache'),'the Vault boss entrance does not drop safely into its room');
+  assert.equal(PLATFORMS.some(block=>block.id==='vault-high'),false,'the old hiding ledge must not obscure the deep-route hatch');
   assert.ok(canTraverse('under-cache','under-threshold',{clearMini:true}),'the cleared Vault boss room has no exit');
   assert.ok(canControlledDrop('drift-threshold','drift-east'),'the optional Drift reward path has no safe drop');
   assert.ok(canControlledDrop('drift-east','drift-floor'),'the optional Drift reward path cannot return to the main floor');

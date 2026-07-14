@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, CROWN_BOSS_ARENA, CROWN_UPPER_BLOCKS, DASH_POCKET_BLOCKS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
-  ENEMY_SPAWNS, FIELD_ANNEX_BLOCKS, FORGE_UPGRADE_COSTS, FOUNDATION_BLOCKS, INTERIOR_BLOCKS, JUNK_PILES,
+  ENEMY_SPAWNS, FIELD_ANNEX_BLOCKS, FORGE_UPGRADE_COSTS, FORGE_UPGRADE_RECIPES, FOUNDATION_BLOCKS, GAUNTLET_HAZARDS, INTERIOR_BLOCKS, JUNK_PILES,
   LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
   PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_GATES, REGIONS,
   REST_AREA, TRAPS, VAULT_BOSS_ARENA, VAULT_DEEP_BLOCKS, VAULT_UPPER_BLOCKS, WALL_BLOCKS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
@@ -45,7 +45,7 @@ test('the main floor stays reversible while the Sunken Vault descends and rises'
   assert.ok(Math.max(...vaultFoundations.map(block=>block.y))-Math.min(...vaultFoundations.map(block=>block.y))>=140);
   assert.ok(TRAPS.every(trap=>trap.x+trap.w<=2360||trap.x>=3550),'the vault descent must not hide spike softlocks');
   assert.deepEqual(TRAPS.slice(0,6).map(trap=>[trap.x,trap.w]),[[1200,90],[2270,90],[4850,100],[5790,100],[7190,160],[8330,70]]);
-  assert.equal(TRAPS.filter(trap=>trap.x>=9600&&trap.x<12700).length,4);
+  assert.equal(TRAPS.filter(trap=>trap.x>=9600&&trap.x<11400).length,6);
 });
 
 test('recesses are unlabeled rooms framed by ceilings and mostly solid floors',()=>{
@@ -144,6 +144,8 @@ test('ability and map cores use the generic pickup format',()=>{
 test('rare material salvage is sparse and hidden on ability-gated routes',()=>{
   const rare=JUNK_PILES.filter(pile=>pile.material);assert.equal(rare.length,2);assert.deepEqual(new Set(rare.map(pile=>pile.material.type)),new Set(['titanium','uranium']));
   for(const pile of rare)assert.ok(ABILITY_GATED_BLOCKS.some(block=>pile.y+pile.h===block.y&&pile.x>=block.x&&pile.x+pile.w<=block.x+block.w),`${pile.material.type} salvage is not on an ability-gated route`);
+  const summit=JUNK_PILES.find(pile=>pile.id==='gauntlet-prize-cache');assert.equal(summit.scrapValue,450);assert.deepEqual(summit.materials,[{type:'titanium',amount:3},{type:'uranium',amount:2}]);
+  assert.deepEqual(FORGE_UPGRADE_RECIPES,[{}, {titanium:1}, {titanium:2,uranium:1}, {titanium:3,uranium:2}]);
 });
 
 test('the boss arena remains a large uncluttered chamber',()=>{
@@ -157,7 +159,7 @@ test('the boss arena remains a large uncluttered chamber',()=>{
 });
 
 test('starting-kit platforms form varied room networks with combat',()=>{
-  assert.equal(BRANCH_BLOCKS.length,33);
+  assert.equal(BRANCH_BLOCKS.length,32);
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.zone)).size>=9);
   assert.ok(BRANCH_BLOCKS.every(block=>!('step' in block)&&!('branch' in block)&&!block.requires));
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.w)).size>=12);
@@ -254,7 +256,8 @@ test('placed gameplay objects are not embedded inside solid geometry',()=>{
 
 test('the three new regions have distinct traversal identities',()=>{
   const gauntlet=REGIONS.find(region=>region.id==='gauntlet'),drift=REGIONS.find(region=>region.id==='drift'),exchange=REGIONS.find(region=>region.id==='exchange');
-  assert.ok(gauntlet&&drift&&exchange);assert.ok(TRAPS.filter(trap=>trap.x>=gauntlet.x&&trap.x<gauntlet.x+gauntlet.w).length>=3);
+  assert.ok(gauntlet&&drift&&exchange);const gauntletTraps=TRAPS.filter(trap=>trap.x>=gauntlet.x&&trap.x<gauntlet.x+gauntlet.w);assert.ok(gauntletTraps.length>=6);assert.ok(gauntletTraps.filter(trap=>trap.y<500).length>=3);
+  assert.deepEqual(new Set(GAUNTLET_HAZARDS.map(hazard=>hazard.type)),new Set(['swing','electric']));assert.equal(GAUNTLET_HAZARDS.filter(hazard=>hazard.type==='electric').length,2);
   assert.ok(BRANCH_BLOCKS.filter(block=>block.zone==='drift').length>=4);assert.ok(exchange.w>=1800);assert.ok(BRANCH_BLOCKS.filter(block=>block.zone==='exchange').length>=4);
 });
 

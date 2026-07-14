@@ -72,7 +72,6 @@ export const BRANCH_BLOCKS = [
 
   {id:'vault-ledge',x:2500,y:870,w:160,h:40,kind:'branch',zone:'vault'},
   {id:'vault-span',x:2600,y:930,w:290,h:55,kind:'branch',zone:'vault'},
-  {id:'vault-high',x:2860,y:1040,w:200,h:40,kind:'branch',zone:'vault'},
 
   {id:'foundry-platform',x:3960,y:400,w:310,h:60,kind:'branch',zone:'foundry'},
   {id:'foundry-mid',x:4350,y:280,w:220,h:40,kind:'branch',zone:'foundry'},
@@ -251,7 +250,7 @@ export const BOSS_ARENA = {
   x:5890,y:350,w:1300,h:250,floorY:600,
   triggerX:6000,leftGateX:5905,rightGateX:7133,gateWidth:42,
   gateStartY:80,gateClosedY:350,gateHeight:250,
-  boss:{type:'boss',x:6512,y:522,w:96,h:78,health:36}
+  boss:{type:'boss',x:6512,y:522,w:96,h:78,health:72}
 };
 
 export const VAULT_BOSS_ARENA = {
@@ -259,7 +258,7 @@ export const VAULT_BOSS_ARENA = {
   x:2860,y:950,w:510,h:170,floorY:1120,triggerY:1000,
   leftGateX:2818,rightGateX:3330,gateY:700,gateWidth:40,gateHeight:420,
   rewardScrap:110,
-  boss:{type:'vaultBoss',x:3120,y:1038,w:92,h:82,health:24}
+  boss:{type:'vaultBoss',x:3120,y:1038,w:92,h:82,health:60}
 };
 
 export const DEPTH_BOSS_ARENA = {
@@ -267,7 +266,7 @@ export const DEPTH_BOSS_ARENA = {
   x:2440,y:2330,w:1030,h:220,floorY:2550,triggerY:2360,
   rightGateX:3470,gateY:2330,gateWidth:40,gateHeight:220,
   rewardScrap:180,
-  boss:{type:'depthBoss',x:2680,y:2478,w:88,h:72,health:48}
+  boss:{type:'depthBoss',x:2680,y:2478,w:88,h:72,health:96}
 };
 
 export const CROWN_BOSS_ARENA = {
@@ -276,7 +275,7 @@ export const CROWN_BOSS_ARENA = {
   leftGate:{x:9050,y:-1450,w:85,h:50},rightGate:{x:9195,y:-1450,w:75,h:50},
   rewardScrap:140,
   anchors:[{x:8550,y:-1750},{x:9290,y:-1790}],
-  boss:{type:'crownBoss',x:8550,y:-1750,w:96,h:70,health:30}
+  boss:{type:'crownBoss',x:8550,y:-1750,w:96,h:70,health:72}
 };
 
 export const MINI_BOSS_ARENAS = [
@@ -284,7 +283,7 @@ export const MINI_BOSS_ARENAS = [
     id:'drift-scrapper',name:'CACHE SCRAPPER',region:'drift',
     x:11800,y:170,w:560,h:170,floorY:340,triggerY:205,
     gateX:12320,gateY:170,gateWidth:40,gateHeight:170,rewardScrap:0,rewardMaterial:{type:'titanium',amount:3},
-    enemy:{type:'miniBoss',x:12080,y:268,w:82,h:72,health:12}
+    enemy:{type:'miniBoss',x:12080,y:268,w:82,h:72,health:30}
   }
 ];
 
@@ -329,6 +328,12 @@ export const PICKUP_SPAWNS = [
 ];
 
 export const FORGE_UPGRADE_COSTS = Object.freeze([500,900,1500,2400]);
+export const FORGE_UPGRADE_RECIPES = Object.freeze([
+  Object.freeze({}),
+  Object.freeze({titanium:1}),
+  Object.freeze({titanium:2,uranium:1}),
+  Object.freeze({titanium:3,uranium:2})
+]);
 export const HEALTH_UPGRADE_COSTS = Object.freeze([450,900,1600]);
 export const ENERGY_UPGRADE_COSTS = Object.freeze([400,800,1400]);
 export const INTERNAL_SLOT_COSTS = Object.freeze([800,1600,2800]);
@@ -339,8 +344,8 @@ export const BODY_MODIFIERS = Object.freeze([
   {id:'extender-arm',name:'EXTENDER ARM',cost:950,effects:{core:{maxElectricity:8,label:'+8 CAPACITY'},legs:{moveSpeed:30,label:'+30 MOVE SPEED'},weapon:{attackRange:40,label:'+40 CUTTER RANGE'},internal:{attackRange:12,label:'+12 CUTTER RANGE'}}}
 ]);
 
-// Relics are permanent passive merchant items with distinct conditional
-// effects. They do not occupy body-modifier mounts.
+// Relics are reusable conditional-effect items. They use dedicated relic bays
+// and provide the same effect in every compatible bay.
 export const RELICS = Object.freeze([
   {id:'mender-loop',name:'MENDER LOOP',cost:750,detail:'REPAIR COST -5 ELECTRICITY',effects:{healCostReduction:5}},
   {id:'impact-damper',name:'IMPACT DAMPER',cost:900,detail:'50% LESS KNOCKBACK AFTER DAMAGE',effects:{knockbackReduction:.5}},
@@ -424,9 +429,18 @@ export const TRAPS = [
   {x:8330,y:700,w:70,h:100},
   {x:10080,y:680,w:100,h:150},
   {x:10620,y:680,w:100,h:150},
+  {id:'gauntlet-center-spikes',x:10210,y:370,w:80,h:20,platform:'gauntlet-center'},
+  {id:'gauntlet-east-spikes',x:10710,y:480,w:60,h:20,platform:'gauntlet-east-perch'},
+  {id:'gauntlet-overlook-spikes',x:11030,y:350,w:70,h:20,platform:'gauntlet-overlook'},
   {x:11300,y:680,w:100,h:150},
   {x:12600,y:690,w:100,h:110}
 ];
+
+export const GAUNTLET_HAZARDS = Object.freeze([
+  Object.freeze({id:'gauntlet-wrecker',type:'swing',anchorX:10540,anchorY:-15,length:360,radius:28,period:2.8,amplitude:.92,phase:0}),
+  Object.freeze({id:'gauntlet-field-west',type:'electric',x:10070,y:250,w:24,h:400,onTime:1.05,offTime:.9,phase:.15}),
+  Object.freeze({id:'gauntlet-field-east',type:'electric',x:10515,y:180,w:26,h:470,onTime:.9,offTime:1.1,phase:1.1})
+]);
 
 export const ENEMY_SPAWNS = [
   {type:'crawler',x:500,y:550,w:30,h:40,patrol:true,patrolRange:90},
@@ -485,7 +499,7 @@ export const JUNK_PILES = [
   {x:500,y:544,w:76,h:46,health:5,scrapValue:24},
   {x:740,y:404,w:76,h:46,health:5,scrapValue:26},
   {x:1500,y:94,w:82,h:46,health:5,scrapValue:28},
-  {id:'vault-hatch-junk',x:2960,y:994,w:84,h:46,health:6,scrapValue:32},
+  {id:'vault-hatch-junk',x:3466,y:1074,w:84,h:46,health:6,scrapValue:32},
   {x:2800,y:884,w:88,h:46,health:6,scrapValue:34},
   {x:3820,y:-46,w:86,h:46,health:6,scrapValue:36},
   {x:4500,y:-276,w:90,h:46,health:6,scrapValue:0,material:{type:'titanium',amount:1}},
@@ -497,7 +511,7 @@ export const JUNK_PILES = [
   {id:'crown-field-seal',x:8340,y:-1740,w:60,h:290,health:1,scrapValue:25,gate:true,requires:'field'},
   {x:320,y:44,w:82,h:46,health:6,scrapValue:36},
   {x:5010,y:-146,w:86,h:46,health:6,scrapValue:40},
-  {x:10090,y:24,w:84,h:46,health:6,scrapValue:42},
+  {id:'gauntlet-prize-cache',x:10090,y:24,w:110,h:46,health:12,scrapValue:450,materials:[{type:'titanium',amount:3},{type:'uranium',amount:2}]},
   {x:14280,y:-26,w:88,h:46,health:7,scrapValue:48},
   {id:'vault-volt-seal',x:3370,y:740,w:50,h:80,health:2,scrapValue:20,minimumDamage:2,gate:true,requires:'electricJab'},
   {x:9300,y:500,w:120,h:90,health:8,scrapValue:60,minimumDamage:2,gate:true},

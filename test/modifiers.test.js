@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game, PLAYER_MOVE_SPEED } from '../src/game.js';
-import { BODY_MODIFIERS, BOSS_ARENA, DEPTH_BOSS_ARENA, MINI_BOSS_ARENAS, VAULT_BOSS_ARENA } from '../src/level.js';
+import { BODY_MODIFIERS, BOSS_ARENA, CROWN_BOSS_ARENA, DEPTH_BOSS_ARENA, MINI_BOSS_ARENAS, VAULT_BOSS_ARENA } from '../src/level.js';
 
 const press=(game,key)=>{game.setInput({[key]:true});game.update(1/60);game.setInput({[key]:false});game.update(1/60);};
 const buyModifier=(game,id)=>{
@@ -9,8 +9,9 @@ const buyModifier=(game,id)=>{
   game.player.scrap=10000;assert.equal(game.buyModifierOffer(merchant,definition),true);return game.player.purchasedItems.at(-1);
 };
 
-test('full bosses receive the same durability increase as the enemy roster',()=>{
-  assert.equal(BOSS_ARENA.boss.health,36);assert.equal(VAULT_BOSS_ARENA.boss.health,24);assert.equal(DEPTH_BOSS_ARENA.boss.health,48);assert.equal(MINI_BOSS_ARENAS[0].enemy.health,12);
+test('all bosses have upgraded durability relative to the starting Fusion Cutter',()=>{
+  assert.equal(BOSS_ARENA.boss.health,72);assert.equal(VAULT_BOSS_ARENA.boss.health,60);assert.equal(DEPTH_BOSS_ARENA.boss.health,96);assert.equal(CROWN_BOSS_ARENA.boss.health,72);assert.equal(MINI_BOSS_ARENAS[0].enemy.health,30);
+  assert.ok([BOSS_ARENA.boss,VAULT_BOSS_ARENA.boss,DEPTH_BOSS_ARENA.boss,CROWN_BOSS_ARENA.boss].every(boss=>boss.health/3>=20));assert.ok(MINI_BOSS_ARENAS[0].enemy.health/3>=10);
 });
 
 test('selected merchants sell shells, electricity, modifiers, and internal bays',()=>{

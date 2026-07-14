@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/game.js';
+import { FORGE_UPGRADE_RECIPES } from '../src/level.js';
 
 const standUnder=(game,door)=>Object.assign(game.player,{x:door.x+15,y:door.y+door.h-game.player.h,vx:0,vy:0});
 const press=(game,key)=>{game.setInput({[key]:true});game.update(1/60);game.setInput({[key]:false});game.update(1/60);};
@@ -28,9 +29,18 @@ test('O teleports into an enemy-free merchant room and its exit returns outside'
 
 test('the Grand Exchange forge sells four increasingly expensive slash upgrades',()=>{
   const game=new Game(),door=game.merchants.find(merchant=>merchant.id==='merchant-forge');standUnder(game,door);assert.equal(game.merchantDoorUnlocked(door),true);assert.equal(game.tryInteract(),true);
-  Object.assign(game.player,{x:game.merchantRoom.merchant.x-10,y:game.merchantRoom.merchant.y,scrap:door.upgradeCosts.reduce((sum,cost)=>sum+cost,0)});assert.equal(game.tryInteract(),true);assert.equal(game.merchantMenuOpen,true);assert.deepEqual(game.merchantCatalog().slice(0,door.upgradeCosts.length).map(row=>row.cost),door.upgradeCosts);assert.equal(game.merchantCatalog().at(-1).id,'kinetic-memory');for(const cost of door.upgradeCosts){assert.equal(game.nextDamageUpgradeCost(door),cost);assert.equal(game.purchaseSelectedMerchantItem(),true);}
-  assert.equal(game.player.scrap,0);assert.equal(game.player.primaryDamage,7);assert.equal(game.player.damageUpgrades,4);assert.equal(game.player.purchasedItems.length,4);assert.equal(game.purchaseSelectedMerchantItem(),false);
+  Object.assign(game.player,{x:game.merchantRoom.merchant.x-10,y:game.merchantRoom.merchant.y,scrap:door.upgradeCosts.reduce((sum,cost)=>sum+cost,0)});Object.assign(game.player.materials,{titanium:6,uranium:3});assert.equal(game.tryInteract(),true);assert.equal(game.merchantMenuOpen,true);assert.deepEqual(game.merchantCatalog().slice(0,door.upgradeCosts.length).map(row=>row.cost),door.upgradeCosts);assert.deepEqual(game.merchantCatalog().slice(0,door.upgradeCosts.length).map(row=>row.materials),FORGE_UPGRADE_RECIPES);assert.equal(game.merchantCatalog().at(-1).id,'kinetic-memory');for(const cost of door.upgradeCosts){assert.equal(game.nextDamageUpgradeCost(door),cost);assert.equal(game.purchaseSelectedMerchantItem(),true);}
+  assert.equal(game.player.scrap,0);assert.deepEqual(game.player.materials,{titanium:0,uranium:0});assert.equal(game.player.primaryDamage,7);assert.equal(game.player.damageUpgrades,4);assert.equal(game.player.purchasedItems.length,4);assert.equal(game.purchaseSelectedMerchantItem(),false);
   const enemy=game.enemy({type:'brute',x:game.player.x+60,y:game.player.y,w:58,h:63,health:8});game.enemies=[enemy];game.player.aimX=1;game.player.aimY=0;game.player.attackHits=new Set();game.resolvePrimaryAttack();assert.equal(enemy.health,1);
+});
+
+test('Mark 2 and Mark 3 forge tiers require rare materials as well as scrap',()=>{
+  const game=new Game(),forge=game.merchants.find(merchant=>merchant.service==='damageUpgrade');game.player.scrap=10000;
+  assert.equal(game.buyDamageUpgrade(forge),true);assert.equal(game.player.damageUpgrades,1);
+  assert.equal(game.buyDamageUpgrade(forge),false);assert.equal(game.player.damageUpgrades,1);
+  game.player.materials.titanium=1;assert.equal(game.buyDamageUpgrade(forge),true);assert.equal(game.player.damageUpgrades,2);
+  game.player.materials.titanium=2;assert.equal(game.buyDamageUpgrade(forge),false);
+  game.player.materials.uranium=1;assert.equal(game.buyDamageUpgrade(forge),true);assert.equal(game.player.damageUpgrades,3);
 });
 
 test('merchant catalogs show every item, effect, price, and ownership state',()=>{
