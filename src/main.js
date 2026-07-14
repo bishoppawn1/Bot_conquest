@@ -90,9 +90,18 @@ function begin() {
     game.safePosition={x:game.player.x,y:game.player.y};game.updateCrownBossArena(1);
   } else if (debugSpawn === 'field-annex') {
     const crownBoss=game.crownBoss(),field=game.pickups.find(item=>item.id==='field-core');game.crownBossArena.cleared=true;crownBoss.dead=true;crownBoss.health=0;field.collected=true;game.unlockAbility('field');game.player.electricity=40;
+    game.unlockAbility('electricJab');game.player.electricity=100;
     game.player.x=8420;
     game.player.y=-1450-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'slicer-gate') {
+    const crownBoss=game.crownBoss(),field=game.pickups.find(item=>item.id==='field-core'),fieldSeal=game.junkPiles.find(item=>item.id==='crown-field-seal');game.crownBossArena.cleared=true;crownBoss.dead=true;crownBoss.health=0;field.collected=true;fieldSeal.dead=true;game.unlockAbility('field');game.unlockAbility('electricJab');game.player.electricity=24;
+    Object.assign(game.player,{x:7706,y:-1450-game.player.h,aimX:-1,aimY:0,facing:-1});game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'slicer') {
+    const crownBoss=game.crownBoss(),field=game.pickups.find(item=>item.id==='field-core'),seal=game.junkPiles.find(item=>item.id==='crown-volt-shell-seal');game.crownBossArena.cleared=true;crownBoss.dead=true;crownBoss.health=0;field.collected=true;seal.dead=true;game.unlockAbility('field');game.unlockAbility('electricJab');game.acquireShell('slicer-body');game.switchShell('slicer-body',true);
+    game.player.x=7480;game.player.y=-1450-game.player.h;game.safePosition={x:game.player.x,y:game.player.y};if(debugPanel==='items'){game.inventoryOpen=true;game.inventoryPage=3;}
+  } else if (debugSpawn === 'shell-menu') {
+    const boss=game.boss();boss.dead=true;boss.health=0;game.bossArena.cleared=true;game.platforms=game.platforms.filter(block=>!block.destructibleAfterBoss);game.acquireShell('slicer-body');game.player.x=game.restArea.station.x+game.restArea.station.w+40;game.player.y=game.restArea.floorY-game.player.h;game.safePosition={x:game.player.x,y:game.player.y};game.openShellMenu();
   } else if (debugSpawn === 'dash-routes') {
     game.unlockAbility('dash');
     game.player.x=970;

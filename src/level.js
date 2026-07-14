@@ -225,7 +225,7 @@ export const FIELD_ANNEX_BLOCKS = [
   {id:'field-annex-roof',x:7410,y:-1900,w:930,h:100,kind:'ceiling',requires:'field'},
   {id:'field-annex-west-wall',x:7350,y:-1900,w:60,h:500,kind:'wall',requires:'field'},
   {id:'field-annex-floor',x:7410,y:-1450,w:930,h:50,kind:'field-annex',requires:'field'},
-  {id:'field-annex-west-perch',x:7480,y:-1640,w:280,h:50,kind:'field-annex',requires:'field'},
+  {id:'field-annex-west-perch',x:7410,y:-1640,w:350,h:50,kind:'field-annex',requires:'field'},
   {id:'field-annex-west-brace',x:7760,y:-1640,w:60,h:190,kind:'wall',requires:'field'},
   {id:'field-annex-east-brace',x:7920,y:-1700,w:60,h:250,kind:'wall',requires:'field'},
   {id:'field-annex-east-perch',x:7980,y:-1700,w:270,h:50,kind:'field-annex',requires:'field'}
@@ -322,6 +322,7 @@ export const PICKUP_SPAWNS = [
   {id:'vault-core',kind:'ability',ability:'wallClimb',x:7448,y:608,w:24,h:24,color:'#ffffff',name:'WALL CLIMB',key:'W + A / D',description:'Hold W on a wall; press away to jump at any height.',requiresBossClear:true},
   {id:'dash-core',kind:'ability',ability:'dash',x:2570,y:2526,w:24,h:24,color:'#d6ff3f',name:'DASH DRIVE',key:'SHIFT',description:'Burst across the deep return gaps.',requiresDepthBossClear:true},
   {id:'field-core',kind:'ability',ability:'field',x:8875,y:-1490,w:24,h:24,color:'#75f5ff',name:'ELECTRIC FIELD',key:'Q',description:'Spend 40 electricity to strike every target around you.',requiresCrownBossClear:true,minimumElectricity:40},
+  {id:'slicer-shell',kind:'shell',shellId:'slicer-body',x:7480,y:-1490,w:32,h:26,color:'#ffb85c',name:'SLICER SHELL',description:'A forward-droplet shell with twin cutter mounts.',requiresCrownBossClear:true,requiresJunkClear:'crown-volt-shell-seal'},
   {id:'map-west',kind:'map',x:1080,y:256,w:24,h:24,color:'#d6ff3f',name:'WESTERN SURVEY',regions:['verge','vault']},
   {id:'map-central',kind:'map',x:4740,y:356,w:24,h:24,color:'#d6ff3f',name:'CENTRAL SURVEY',regions:['foundry','bastion']},
   {id:'map-east',kind:'map',x:11020,y:326,w:24,h:24,color:'#d6ff3f',name:'EASTERN SURVEY',regions:['crown','gauntlet','drift','exchange']}
@@ -509,6 +510,7 @@ export const JUNK_PILES = [
   {x:7500,y:-1686,w:86,h:46,health:6,scrapValue:42},
   {x:8060,y:-1746,w:90,h:46,health:7,scrapValue:48},
   {id:'crown-field-seal',x:8340,y:-1740,w:60,h:290,health:1,scrapValue:25,gate:true,requires:'field'},
+  {id:'crown-volt-shell-seal',x:7650,y:-1570,w:50,h:120,health:2,scrapValue:0,minimumDamage:2,gate:true,requires:'electricJab'},
   {x:320,y:44,w:82,h:46,health:6,scrapValue:36},
   {x:5010,y:-146,w:86,h:46,health:6,scrapValue:40},
   {id:'gauntlet-prize-cache',x:10090,y:24,w:110,h:46,health:12,scrapValue:450,materials:[{type:'titanium',amount:3},{type:'uranium',amount:2}]},
