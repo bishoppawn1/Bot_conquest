@@ -22,6 +22,11 @@ function syncAbilityControls() {
 
 function begin() {
   game = new Game();
+  const openDebugDepth=()=>{
+    const vaultBoss=game.vaultBoss(),volt=game.pickups.find(item=>item.id==='volt-core');
+    game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;volt.collected=true;game.unlockAbility('wallClimb');game.unlockAbility('electricJab');
+    Object.assign(game.player,{x:2890,y:1120-game.player.h,onGround:true});game.syncDepthAccess();
+  };
   if (debugSpawn === 'boss') {
     game.player.x=game.bossArena.triggerX+80;
     game.player.y=game.bossArena.floorY-game.player.h;
@@ -58,14 +63,12 @@ function begin() {
     game.player.y=930-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'deep-vault') {
-    game.unlockAbility('wallClimb');
-    const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();
+    openDebugDepth();
     game.player.x=2890;
     game.player.y=1120-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'deep-gallery') {
-    game.unlockAbility('wallClimb');
-    const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();
+    openDebugDepth();
     const landing=game.platforms.find(block=>block.id==='vault-deep-drop-one');game.player.x=landing.x+80;
     game.player.y=landing.y-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
@@ -75,14 +78,12 @@ function begin() {
     game.player.y=-70-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'depth-boss') {
-    game.unlockAbility('wallClimb');
-    const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();
+    openDebugDepth();
     game.player.x=2920;
     game.player.y=game.depthBossArena.floorY-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};game.updateDepthBossArena();
   } else if (debugSpawn === 'dash') {
-    game.unlockAbility('wallClimb');
-    const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();
+    openDebugDepth();
     const depthBoss=game.depthBoss();game.depthBossArena.cleared=true;depthBoss.dead=true;depthBoss.health=0;game.releaseDepthReturn();
     game.player.x=game.pickups.find(item=>item.id==='dash-core').x;
     game.player.y=game.depthBossArena.floorY-game.player.h;

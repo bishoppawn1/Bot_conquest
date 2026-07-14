@@ -128,9 +128,9 @@ export const VAULT_UPPER_BLOCKS = [
   {id:'vault-upper-east',x:3190,y:280,w:260,h:50,kind:'vault-upper',requires:'wallClimb',region:'vault-upper'}
 ];
 
-// Once Wall Climb is owned and the Abyss Warden is dead, the low hatch above
-// this wall retracts. The player must climb over it to reach a broad 200-unit
-// opening; the chamber below then zig-zags through two more climb galleries.
+// Once Volt Jab and Wall Climb are owned and the Abyss Warden is dead, the low
+// hatch above this wall retracts while the player is safely west of the shaft.
+// The chamber below then zig-zags through two mandatory climb galleries.
 export const DEPTH_ACCESS_BLOCKS = [
   {id:'vault-depth-floor-west',x:2860,y:1120,w:130,h:80,kind:'lower'},
   {id:'vault-depth-access',x:2990,y:1000,w:60,h:120,kind:'wall',requires:'wallClimb',region:'vault-depth',gateEntry:true},
@@ -138,6 +138,7 @@ export const DEPTH_ACCESS_BLOCKS = [
 ];
 
 export const VAULT_DEEP_BLOCKS = [
+  {id:'vault-depth-roof-west',x:2360,y:985,w:440,h:215,kind:'ceiling'},
   {id:'vault-deep-drop-one',x:3000,y:1480,w:300,h:50,kind:'vault-depth'},
   {id:'vault-deep-climb-west',x:2940,y:1280,w:60,h:200,kind:'wall',requires:'wallClimb',region:'vault-depth'},
   {id:'vault-deep-gallery-west',x:2600,y:1280,w:340,h:50,kind:'vault-depth',requires:'wallClimb',region:'vault-depth'},
@@ -145,12 +146,13 @@ export const VAULT_DEEP_BLOCKS = [
   {id:'vault-deep-climb-east',x:2780,y:1580,w:60,h:220,kind:'wall',requires:'wallClimb',region:'vault-depth'},
   {id:'vault-deep-gallery-east',x:2840,y:1580,w:380,h:50,kind:'vault-depth',requires:'wallClimb',region:'vault-depth'},
   {id:'vault-deep-drop-three',x:3170,y:2110,w:320,h:50,kind:'vault-depth'},
-  {id:'depth-boss-left-wall',x:2380,y:2130,w:60,h:420,kind:'wall'},
+  {id:'vault-depth-west-containment',x:2380,y:1200,w:80,h:1350,kind:'wall'},
+  {id:'vault-depth-east-containment',x:3300,y:1200,w:70,h:910,kind:'wall',removeAfterDepthBoss:true},
   {id:'depth-boss-floor',x:2440,y:2550,w:1110,h:150,kind:'foundation'}
 ];
 
-// These surfaces rise only after the Rift Stalker dies. The two alternating
-// 270-unit gaps require Dash, after which the route rejoins the open hatch.
+// These surfaces rise only after the Rift Stalker dies. The alternating spans
+// require Dash, then two clear climb faces reconnect to the Warden floor.
 export const DEPTH_RETURN_BLOCKS = [
   {id:'depth-return-one',x:2480,y:2410,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
   {id:'depth-return-two',x:2910,y:2280,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
@@ -158,7 +160,9 @@ export const DEPTH_RETURN_BLOCKS = [
   {id:'depth-return-four',x:2860,y:1950,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
   {id:'depth-return-five',x:3230,y:1780,w:160,h:50,kind:'vault-depth-return',requires:'dash'},
   {id:'depth-return-climb',x:3390,y:1380,w:60,h:400,kind:'wall',requires:'dash'},
-  {id:'depth-return-hatch',x:3260,y:1380,w:130,h:50,kind:'vault-depth-return',requires:'dash'}
+  {id:'depth-return-hatch',x:3260,y:1380,w:80,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-threshold',x:3420,y:1320,w:130,h:50,kind:'vault-depth-return',requires:'dash'},
+  {id:'depth-return-hatch-wall',x:3610,y:1120,w:40,h:200,kind:'wall',requires:'dash'}
 ];
 
 // Small alcoves exist only at the outer ends of the world, where their back

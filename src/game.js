@@ -173,14 +173,16 @@ export class Game {
   depthBoss(){return this.enemies.find(enemy=>enemy.isDepthBoss)??null;}
   depthBossGates(){const arena=this.depthBossArena;return!arena||arena.cleared?[]:[{x:arena.rightGateX,y:arena.gateY,w:arena.gateWidth,h:arena.gateHeight,kind:'depth-boss-gate'}];}
   syncDepthAccess(){
-    if(this.depthAccessOpen||!this.player.abilities.wallClimb||!this.vaultBossArena.cleared)return false;
+    const p=this.player,volt=this.pickups.find(pickup=>pickup.id==='volt-core'),support=supportingPlatform(p,this.platforms,3);
+    const safelyWest=support?.id==='under-cache'&&p.x+p.w<=2990;
+    if(this.depthAccessOpen||!this.player.abilities.wallClimb||!this.player.abilities.electricJab||!volt?.collected||!this.vaultBossArena.cleared||!safelyWest)return false;
     const floor=this.platforms.find(block=>block.id==='under-cache');
     this.platforms=this.platforms.filter(block=>block.id!=='under-cache'&&block.id!=='vault-high');
     this.platforms.push(...DEPTH_ACCESS_BLOCKS.map(block=>({...block})));const hatchJunk=this.junkPiles.find(pile=>pile.id==='vault-hatch-junk'&&!pile.dead);if(hatchJunk)Object.assign(hatchJunk,{x:2660,y:1234});this.depthAccessOpen=true;
     if(floor)this.burst(3150,floor.y+floor.h/2,'#75f5ff',34);
     return true;
   }
-  releaseDepthReturn(){if(this.depthReturnOpen)return false;this.platforms.push(...DEPTH_RETURN_BLOCKS.map(block=>({...block})));this.depthReturnOpen=true;return true;}
+  releaseDepthReturn(){if(this.depthReturnOpen)return false;this.platforms=this.platforms.filter(block=>!block.removeAfterDepthBoss);this.platforms.push(...DEPTH_RETURN_BLOCKS.map(block=>({...block})));this.depthReturnOpen=true;return true;}
   miniBoss(arenaId){return this.enemies.find(enemy=>enemy.isMiniBoss&&enemy.arenaId===arenaId)??null;}
   miniBossGates(){
     const gates=[];
@@ -212,7 +214,7 @@ export class Game {
     arena.leftGateProgress+=Math.sign(target-arena.leftGateProgress)*Math.min(Math.abs(target-arena.leftGateProgress),dt*4);
   }
   updateDepthBossArena(){
-    const arena=this.depthBossArena,boss=this.depthBoss();if(!arena||!boss||arena.cleared)return;
+    const arena=this.depthBossArena,boss=this.depthBoss();if(!arena||!boss||arena.cleared||!this.depthAccessOpen)return;
     const p=this.player,centerX=p.x+p.w/2,centerY=p.y+p.h/2;
     if(!arena.active&&centerX>=arena.x&&centerX<arena.rightGateX&&centerY>=arena.triggerY&&centerY<arena.floorY){arena.active=true;boss.active=true;boss.bossMove='idle';boss.bossTimer=.7;}
   }
@@ -249,10 +251,12 @@ export class Game {
       if(enemy.bossMove==='stalkerDashWindup'){
         const playerLeft=this.player.x+this.player.w/2<arena.x+arena.w/2;enemy.x=playerLeft?arena.rightGateX-enemy.w-26:arena.x+26;enemy.y=arena.floorY-enemy.h;enemy.vy=0;enemy.chargeDirection=playerLeft?-1:1;enemy.bossMove='stalkerDash';enemy.bossTimer=1.35;
       }else if(enemy.bossMove==='stalkerDropWindup'){
-        enemy.x=clamp(this.player.x+this.player.w/2-enemy.w/2,arena.x+18,arena.rightGateX-enemy.w-18);enemy.y=arena.y-115;enemy.vx=0;enemy.vy=760;enemy.onGround=false;enemy.bossMove='stalkerDrop';enemy.bossTimer=1;
+        enemy.x=clamp(this.player.x+this.player.w/2-enemy.w/2,arena.x+18,arena.rightGateX-enemy.w-18);enemy.y=arena.y+28;enemy.vx=0;enemy.vy=0;enemy.onGround=false;enemy.bossMove='stalkerDropHover';enemy.bossTimer=.5;
       }else{this.spawnDepthTracker(enemy);enemy.bossMove='stalkerRecover';enemy.bossTimer=.75;}
     }else if(enemy.bossMove==='stalkerDash'){
       enemy.vx=enemy.chargeDirection*520;if(enemy.bossTimer===0||enemy.x<=arena.x||enemy.x+enemy.w>=arena.rightGateX){enemy.bossMove='stalkerRecover';enemy.bossTimer=.6;enemy.vx=0;}
+    }else if(enemy.bossMove==='stalkerDropHover'){
+      enemy.vx=0;enemy.vy=0;if(enemy.bossTimer===0){enemy.bossMove='stalkerDrop';enemy.bossTimer=1;enemy.vy=760;}return;
     }else if(enemy.bossMove==='stalkerDrop'){
       enemy.x+=Math.sign((this.player.x+this.player.w/2)-(enemy.x+enemy.w/2))*55*dt;enemy.y+=enemy.vy*dt;enemy.vy+=1050*dt;
       if(enemy.y+enemy.h>=arena.floorY){enemy.y=arena.floorY-enemy.h;enemy.vy=0;enemy.onGround=true;enemy.bossMove='stalkerRecover';enemy.bossTimer=.7;this.bossShockwave={x:enemy.x+enemy.w/2,y:arena.floorY,radius:0,maxRadius:145,time:.38,hit:false,color:'#d6ff3f'};this.shake=15;}
