@@ -12,6 +12,12 @@ test('the Slicer shell sits behind a contained Volt Jab wall in the Field annex'
   assert.equal(seal.requires,'electricJab');assert.equal(seal.minimumDamage,2);assert.equal(seal.y+seal.h,floor.y);assert.equal(pickup.requiresJunkClear,seal.id);assert.ok(pickup.x+pickup.w<seal.x);assert.ok(roof.x<=pickup.x&&roof.x+roof.w>=seal.x+seal.w);assert.ok(roof.y+roof.h<seal.y);
 });
 
+test('the annex floor corridor reaches the Volt wall without another red barrier',()=>{
+  const game=new Game(),floor=game.platforms.find(item=>item.id==='field-annex-floor'),seal=game.junkPiles.find(item=>item.id==='crown-volt-shell-seal');game.enemies=[];game.traps=[];game.junkPiles=[seal];game.crownBossArena.cleared=true;
+  Object.assign(game.player,{x:8280,y:floor.y-game.player.h,vx:0,vy:0,onGround:true,jumps:1});game.setInput({left:true});tick(game,240);
+  assert.ok(game.player.x<=seal.x+seal.w+1,`the bot stopped at x ${game.player.x} before reaching the Volt wall`);assert.ok(game.player.x>=seal.x+seal.w-1,'the bot passed through the intact Volt wall');
+});
+
 test('only Volt Jab opens the annex shell wall and releases the pickup',()=>{
   const game=new Game(),seal=game.junkPiles.find(item=>item.id==='crown-volt-shell-seal'),pickup=game.pickups.find(item=>item.id==='slicer-shell');game.enemies=[];game.crownBossArena.cleared=true;Object.assign(game.player,{x:seal.x+seal.w+6,y:game.platforms.find(item=>item.id==='field-annex-floor').y-game.player.h,aimX:-1,aimY:0,attackAimX:-1,attackAimY:0,attackHits:new Set()});
   assert.equal(game.pickupAvailable(pickup),false);game.resolvePrimaryAttack();assert.equal(seal.health,2);game.unlockAbility('field');game.player.electricity=40;press(game,'field');assert.equal(seal.health,2);

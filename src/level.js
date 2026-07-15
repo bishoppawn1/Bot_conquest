@@ -226,8 +226,8 @@ export const FIELD_ANNEX_BLOCKS = [
   {id:'field-annex-west-wall',x:7350,y:-1900,w:60,h:500,kind:'wall',requires:'field'},
   {id:'field-annex-floor',x:7410,y:-1450,w:930,h:50,kind:'field-annex',requires:'field'},
   {id:'field-annex-west-perch',x:7410,y:-1640,w:350,h:50,kind:'field-annex',requires:'field'},
-  {id:'field-annex-west-brace',x:7760,y:-1640,w:60,h:190,kind:'wall',requires:'field'},
-  {id:'field-annex-east-brace',x:7920,y:-1700,w:60,h:250,kind:'wall',requires:'field'},
+  {id:'field-annex-west-brace',x:7760,y:-1640,w:60,h:100,kind:'wall',requires:'field'},
+  {id:'field-annex-east-brace',x:7920,y:-1700,w:60,h:160,kind:'wall',requires:'field'},
   {id:'field-annex-east-perch',x:7980,y:-1700,w:270,h:50,kind:'field-annex',requires:'field'}
 ];
 
