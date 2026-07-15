@@ -521,8 +521,7 @@ export const TRAPS = [
   {id:'gauntlet-capacitor-spikes',x:11200,y:170,w:60,h:20,platform:'gauntlet-capacitor-roof'},
   {id:'drift-upper-spikes',x:12230,y:10,w:70,h:20,platform:'drift-upper-mid'},
   {id:'exchange-upper-spikes',x:13290,y:130,w:70,h:20,platform:'exchange-upper-west'},
-  {id:'exchange-archive-spikes',x:13650,y:-320,w:70,h:20,platform:'exchange-archive-east'},
-  {id:'exchange-market-spikes',x:14170,y:500,w:60,h:20,platform:'exchange-floor-market'}
+  {id:'exchange-archive-spikes',x:13650,y:-320,w:70,h:20,platform:'exchange-archive-east'}
 ];
 
 export const GAUNTLET_HAZARDS = Object.freeze([

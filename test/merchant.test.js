@@ -34,6 +34,14 @@ test('the Grand Exchange forge sells four increasingly expensive slash upgrades'
   const enemy=game.enemy({type:'brute',x:game.player.x+60,y:game.player.y,w:58,h:63,health:8});game.enemies=[enemy];game.player.aimX=1;game.player.aimY=0;game.player.attackHits=new Set();game.resolvePrimaryAttack();assert.equal(enemy.health,1);
 });
 
+test('the Edge Forge has a spike-free physical approach from the Grand Exchange floor',()=>{
+  const game=new Game(),door=game.merchants.find(merchant=>merchant.id==='merchant-forge'),step=game.platforms.find(block=>block.id==='exchange-step-east');game.enemies=[];game.junkPiles=[];
+  Object.assign(game.player,{x:step.x+20,y:step.y-game.player.h,vx:0,vy:0,onGround:true,jumps:1});game.safePosition={x:game.player.x,y:game.player.y};
+  let entered=false,jumped=false,braking=false;game.setInput({right:true});
+  for(let frame=0;frame<220&&!entered;frame++){if(!jumped&&game.player.x>=13980){game.setInput({right:true,jump:true});jumped=true;}else if(jumped&&game.input.jump)game.setInput({right:true});if(!braking&&game.player.x>=14270){game.setInput({left:true});braking=true;}game.update(1/60);if(game.nearbyMerchantDoor()===door)entered=game.tryInteract();}
+  assert.equal(entered,true);assert.equal(game.merchantRoom.activeMerchant,door);assert.equal(game.player.lives,game.player.maxLives);
+});
+
 test('Mark 2 and Mark 3 forge tiers require rare materials as well as scrap',()=>{
   const game=new Game(),forge=game.merchants.find(merchant=>merchant.service==='damageUpgrade');game.player.scrap=10000;
   assert.equal(game.buyDamageUpgrade(forge),true);assert.equal(game.player.damageUpgrades,1);
