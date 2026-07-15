@@ -41,11 +41,18 @@ test('Aegis Filament skips the cutter and changes meaning on each compatible mou
   game.beginEquipmentPlacement();game.moveEquipmentTarget(1);assert.equal(game.selectedEquipmentTarget().id,'internal');game.moveEquipmentTarget(1);assert.equal(game.selectedEquipmentTarget().part,'storage');game.confirmEquipmentPlacement();assert.equal(item.equippedSlot,null);assert.equal(game.player.moveSpeed,PLAYER_MOVE_SPEED);assert.ok(!game.compatibleModifierSlots(item).some(slot=>slot.part==='weapon'));
 });
 
-test('an internal Aegis Filament creates one repair shield that absorbs one enemy hit',()=>{
+test('an internal Aegis Filament guards one enemy hit only during the repair channel',()=>{
   const game=new Game(),item=buyModifier(game,'aegis-filament');assert.deepEqual(game.player.body.expansionSlots.map(slot=>slot.id),['internal']);item.equippedSlot='internal';game.recomputeBodyStats();
-  game.player.lives=2;assert.equal(game.completeHeal(),true);assert.equal(game.player.lives,3);assert.equal(game.player.shield,1);
-  game.damagePlayer('enemy',game.player.x+100);assert.equal(game.player.lives,3);assert.equal(game.player.shield,0);
+  Object.assign(game.player,{lives:2,electricity:30});assert.equal(game.startHeal(),true);assert.equal(game.player.shield,1);
+  const channelTime=game.player.healTime;game.damagePlayer('enemy',game.player.x+100);assert.equal(game.player.lives,2);assert.equal(game.player.shield,0);assert.equal(game.player.healTime,channelTime);
+  game.player.invuln=0;for(let frame=0;frame<45;frame++)game.update(1/60);assert.equal(game.player.lives,3);assert.equal(game.player.healTime,0);assert.equal(game.player.shield,0);
   game.player.invuln=0;game.damagePlayer('enemy',game.player.x+100);assert.equal(game.player.lives,2);
+});
+
+test('the Aegis repair guard never protects against spikes or survives cancellation',()=>{
+  const game=new Game(),item=buyModifier(game,'aegis-filament');item.equippedSlot='internal';game.recomputeBodyStats();Object.assign(game.player,{lives:2,electricity:60});assert.equal(game.startHeal(),true);assert.equal(game.player.shield,1);
+  game.damagePlayer('spike');assert.equal(game.player.lives,1);assert.equal(game.player.healTime,0);assert.equal(game.player.shield,0);
+  game.player.invuln=0;assert.equal(game.startHeal(),true);assert.equal(game.player.shield,1);assert.equal(game.cancelHeal(),true);assert.equal(game.player.shield,0);
 });
 
 test('Reactive Governor rewards damage with placement-specific energy or speed',()=>{

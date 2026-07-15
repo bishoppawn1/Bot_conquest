@@ -408,7 +408,7 @@ export const ENERGY_UPGRADE_COSTS = Object.freeze([400,800,1400]);
 export const BAY_UPGRADE_COSTS = Object.freeze([1600,2800]);
 
 export const BODY_MODIFIERS = Object.freeze([
-  {id:'aegis-filament',name:'AEGIS FILAMENT',cost:650,effects:{shell:{maxLives:1,label:'+1 MAX SHELL'},core:{maxElectricity:10,label:'+10 CAPACITY'},legs:{moveSpeed:18,label:'+18 MOVE SPEED'},internal:{healShield:1,label:'REPAIR GRANTS 1-HIT SHIELD'}}},
+  {id:'aegis-filament',name:'AEGIS FILAMENT',cost:650,effects:{shell:{maxLives:1,label:'+1 MAX SHELL'},core:{maxElectricity:10,label:'+10 CAPACITY'},legs:{moveSpeed:18,label:'+18 MOVE SPEED'},internal:{healShield:1,label:'1-HIT GUARD WHILE REPAIRING'}}},
   {id:'reactive-governor',name:'REACTIVE GOVERNOR',cost:800,effects:{shell:{postHitInvulnerability:.35,label:'+0.35S POST-HIT WINDOW'},core:{damageEnergy:8,label:'DAMAGE RETURNS 8 ENERGY'},legs:{damageSpeedBonus:85,damageSpeedDuration:3,label:'+85 SPEED FOR 3S AFTER DAMAGE'},internal:{damageSpeedBonus:30,damageSpeedDuration:2,label:'+30 SPEED FOR 2S AFTER DAMAGE'}}},
   {id:'extender-arm',name:'EXTENDER ARM',cost:950,effects:{core:{maxElectricity:8,label:'+8 CAPACITY'},legs:{moveSpeed:30,label:'+30 MOVE SPEED'},weapon:{attackRange:40,label:'+40 CUTTER RANGE'},internal:{attackRange:12,label:'+12 CUTTER RANGE'}}}
 ]);

@@ -151,7 +151,7 @@ export class Renderer {
     }else{
       ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.fillStyle='#1a242b';ctx.beginPath();ctx.ellipse(0,0,25,18,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#93a2a5';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#2b3940';ctx.beginPath();ctx.ellipse(-5,-4,17,11,0,0,Math.PI*2);ctx.fill();ctx.save();ctx.rotate(Math.atan2(player.aimY,player.aimX));ctx.shadowBlur=10;ctx.shadowColor='#ff3434';ctx.fillStyle='#ff3d3d';ctx.beginPath();ctx.arc(12,-6,4,0,Math.PI*2);ctx.arc(19,0,2.5,0,Math.PI*2);ctx.arc(10,5,2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.restore();ctx.fillStyle='#d6ff3f';ctx.fillRect(-8,-21,16,3);ctx.restore();
     }
-    if(player.shield>0)this.drawRepairShield(player);
+    if(player.healTime>0&&player.shield>0)this.drawRepairGuard(player);
     if(player.healTime>0)this.drawRepairChannel(player);
     if(player.healFlash>0)this.drawHeal(player);
     if(player.restFlash>0){ctx.save();ctx.strokeStyle='#d6ff3f';ctx.globalAlpha=player.restFlash;ctx.lineWidth=5;ctx.beginPath();ctx.arc(player.x+player.w/2,player.y+player.h/2,34+(1-player.restFlash)*45,0,Math.PI*2);ctx.stroke();ctx.restore();}
@@ -163,7 +163,7 @@ export class Renderer {
     const {ctx}=this,cx=player.x+player.w/2,cy=player.y+player.h/2,range=player.primaryRange;ctx.save();ctx.translate(cx,cy);ctx.rotate(Math.atan2(player.attackAimY,player.attackAimX));ctx.shadowBlur=16;ctx.shadowColor='#ffffff';ctx.strokeStyle='#ffffff';ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(21,0);ctx.lineTo(range,0);ctx.stroke();ctx.globalAlpha=.28;ctx.lineWidth=16;ctx.beginPath();ctx.moveTo(29,0);ctx.lineTo(range-8,0);ctx.stroke();ctx.restore();
   }
 
-  drawRepairShield(player) {
+  drawRepairGuard(player) {
     const {ctx}=this,cx=player.x+player.w/2,cy=player.y+player.h/2;ctx.save();ctx.shadowBlur=18;ctx.shadowColor='#75f5ff';ctx.strokeStyle='#75f5ff';ctx.lineWidth=3;ctx.globalAlpha=.82;ctx.beginPath();ctx.ellipse(cx,cy,36,29,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=.32;ctx.lineWidth=8;ctx.beginPath();ctx.ellipse(cx,cy,32,25,0,Math.PI*.15,Math.PI*.85);ctx.stroke();ctx.restore();
   }
 
