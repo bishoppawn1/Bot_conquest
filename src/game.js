@@ -324,7 +324,7 @@ export class Game {
     enemy.vy+=900*dt;this.moveActor(enemy,dt);enemy.x=clamp(enemy.x,arena.x,arena.rightGateX-enemy.w);
   }
   aim(){return{x:this.player.aimX,y:this.player.aimY};}
-  enemyTargetable(enemy){if(enemy.isVaultBoss)return this.vaultBossArena.active&&!this.vaultBossArena.cleared;if(enemy.isDepthBoss)return this.depthBossArena.active&&!this.depthBossArena.cleared;if(enemy.isCrownBoss)return this.crownBossArena.active&&!this.crownBossArena.cleared&&enemy.bossMove==='crownExpose';if(!enemy.isMiniBoss)return true;const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);return Boolean(arena?.active&&!arena.cleared);}
+  enemyTargetable(enemy){if(enemy.isVaultBoss)return this.vaultBossArena.active&&!this.vaultBossArena.cleared;if(enemy.isDepthBoss)return this.depthBossArena.active&&!this.depthBossArena.cleared;if(enemy.isCrownBoss)return this.crownBossArena.active&&!this.crownBossArena.cleared&&!enemy.dead;if(!enemy.isMiniBoss)return true;const arena=this.miniBossArenas.find(item=>item.id===enemy.arenaId);return Boolean(arena?.active&&!arena.cleared);}
   attackDirection(){return{x:this.player.attackAimX,y:this.player.attackAimY};}
   specialDirection(){return{x:this.player.specialAimX,y:this.player.specialAimY};}
   attackBox(){return directionalBox(this.player,this.attackDirection(),this.player.primaryRange,30);}

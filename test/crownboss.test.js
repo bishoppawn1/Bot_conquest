@@ -17,11 +17,12 @@ test('the Crown Dynamo relocates between lowered high perches and randomly choos
   assert.equal(anchors.size,2);assert.ok(arena.anchors.every(anchor=>anchor.y+boss.h===game.platforms.find(block=>block.id===`${anchor.x<9000?'crown-upper-west-perch':'crown-upper-east-perch'}`).y));assert.ok(['crownSweepWindup','crownColumnWindup','crownVolleyWindup'].filter(move=>moves.has(move)).length>=2);assert.ok(game.bossProjectiles.length>0||moves.has('crownRecover'));
 });
 
-test('the Crown Dynamo must be reached from its matching platform to take damage',()=>{
+test('the Crown Dynamo takes damage in every active state when reached from its matching platform',()=>{
   const game=new Game(),boss=game.crownBoss(),arena=game.crownBossArena;game.enemies=[boss];arena.active=true;Object.assign(boss,{x:arena.anchors[0].x,y:arena.anchors[0].y,bossMove:'crownExpose'});
   Object.assign(game.player,{x:8530,y:arena.floorY-game.player.h,aimX:0,aimY:-1,attackAimX:0,attackAimY:-1,attackHits:new Set()});const floorBox=game.attackBox();assert.equal(overlaps(floorBox,boss),false);game.resolvePrimaryAttack();assert.equal(boss.health,boss.maxHealth);
-  const perch=game.platforms.find(block=>block.id==='crown-upper-west-perch');Object.assign(game.player,{x:8530,y:perch.y-game.player.h,attackHits:new Set()});assert.equal(overlaps(game.attackBox(),boss),true);game.resolvePrimaryAttack();assert.ok(boss.health<boss.maxHealth);
-  boss.bossMove='crownSweepWindup';game.player.attackHits=new Set();game.resolvePrimaryAttack();assert.equal(boss.health,boss.maxHealth-game.player.primaryDamage,'armored attack phases should ignore slash damage');
+  const perch=game.platforms.find(block=>block.id==='crown-upper-west-perch');Object.assign(game.player,{x:8530,y:perch.y-game.player.h});assert.equal(overlaps(game.attackBox(),boss),true);
+  for(const state of['idle','crownRelocate','crownExpose','crownSweepWindup','crownColumnWindup','crownVolleyWindup','crownGridWindup','crownRecover']){Object.assign(boss,{bossMove:state,health:boss.maxHealth,dead:false});game.player.attackHits=new Set();assert.equal(game.enemyTargetable(boss),true,`${state} should remain targetable`);game.resolvePrimaryAttack();assert.equal(boss.health,boss.maxHealth-game.player.primaryDamage,`${state} rejected slash damage`);}
+  arena.active=false;boss.bossMove='dormant';assert.equal(game.enemyTargetable(boss),false,'the dormant pre-fight boss must stay untargetable');
 });
 
 test('defeating the Crown Dynamo releases a charged Field Core',()=>{
