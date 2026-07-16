@@ -28,21 +28,18 @@ function begin() {
     game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();volt.collected=true;game.unlockAbility('wallClimb');game.unlockAbility('electricJab');
     Object.assign(game.player,{x:2890,y:1120-game.player.h,onGround:true});
   };
+  const clearDebugHeavyCore=()=>{const boss=game.boss();boss.dead=true;boss.health=0;game.bossArena.cleared=true;game.releaseHeavyCoreRoof();};
   if (debugSpawn === 'boss') {
     game.player.x=game.bossArena.triggerX+80;
     game.player.y=game.bossArena.floorY-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'rest') {
-    const boss=game.boss();boss.dead=true;boss.health=0;
-    game.bossArena.cleared=true;
-    game.platforms=game.platforms.filter(block=>!block.destructibleAfterBoss);
+    clearDebugHeavyCore();
     game.player.x=game.restArea.station.x+game.restArea.station.w+40;
     game.player.y=game.restArea.floorY-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'postboss') {
-    const boss=game.boss();boss.dead=true;boss.health=0;
-    game.bossArena.cleared=true;
-    game.platforms=game.platforms.filter(block=>!block.destructibleAfterBoss);
+    clearDebugHeavyCore();
     game.player.x=7100;
     game.player.y=250-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
@@ -65,9 +62,8 @@ function begin() {
     game.player.y=landing.y-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'bastion-tower') {
-    const boss=game.boss(),landing=game.platforms.find(block=>block.id==='bastion-tower-one');
-    boss.dead=true;boss.health=0;game.bossArena.cleared=true;
-    game.platforms=game.platforms.filter(block=>!block.destructibleAfterBoss);
+    const landing=game.platforms.find(block=>block.id==='bastion-tower-one');
+    clearDebugHeavyCore();
     game.player.x=landing.x+landing.w-game.player.w-10;
     game.player.y=landing.y-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
@@ -106,19 +102,18 @@ function begin() {
     game.player.y=game.crownBossArena.floorY-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};game.updateCrownBossArena(1);
   } else if (debugSpawn === 'field-annex') {
-    const crownBoss=game.crownBoss(),field=game.pickups.find(item=>item.id==='field-core');game.crownBossArena.cleared=true;crownBoss.dead=true;crownBoss.health=0;field.collected=true;game.unlockAbility('field');game.player.electricity=40;
-    game.unlockAbility('electricJab');game.player.electricity=100;
-    game.player.x=8420;
+    clearDebugHeavyCore();const crownBoss=game.crownBoss(),field=game.pickups.find(item=>item.id==='field-core'),fieldSeal=game.junkPiles.find(item=>item.id==='crown-field-seal'),voltSeal=game.junkPiles.find(item=>item.id==='crown-volt-shell-seal');game.crownBossArena.cleared=true;crownBoss.dead=true;crownBoss.health=0;field.collected=true;fieldSeal.dead=true;voltSeal.dead=true;game.unlockAbility('field');game.unlockAbility('electricJab');game.player.electricity=100;
+    game.player.x=6420;
     game.player.y=-1450-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'slicer-gate') {
-    const crownBoss=game.crownBoss(),field=game.pickups.find(item=>item.id==='field-core'),fieldSeal=game.junkPiles.find(item=>item.id==='crown-field-seal');game.crownBossArena.cleared=true;crownBoss.dead=true;crownBoss.health=0;field.collected=true;fieldSeal.dead=true;game.unlockAbility('field');game.unlockAbility('electricJab');game.player.electricity=24;
+    clearDebugHeavyCore();const crownBoss=game.crownBoss(),field=game.pickups.find(item=>item.id==='field-core'),fieldSeal=game.junkPiles.find(item=>item.id==='crown-field-seal');game.crownBossArena.cleared=true;crownBoss.dead=true;crownBoss.health=0;field.collected=true;fieldSeal.dead=true;game.unlockAbility('field');game.unlockAbility('electricJab');game.player.electricity=24;
     Object.assign(game.player,{x:7706,y:-1450-game.player.h,aimX:-1,aimY:0,facing:-1});game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'slicer') {
-    const crownBoss=game.crownBoss(),field=game.pickups.find(item=>item.id==='field-core'),seal=game.junkPiles.find(item=>item.id==='crown-volt-shell-seal');game.crownBossArena.cleared=true;crownBoss.dead=true;crownBoss.health=0;field.collected=true;seal.dead=true;game.unlockAbility('field');game.unlockAbility('electricJab');game.acquireShell('slicer-body');game.switchShell('slicer-body',true);
+    clearDebugHeavyCore();const crownBoss=game.crownBoss(),field=game.pickups.find(item=>item.id==='field-core'),seal=game.junkPiles.find(item=>item.id==='crown-volt-shell-seal');game.crownBossArena.cleared=true;crownBoss.dead=true;crownBoss.health=0;field.collected=true;seal.dead=true;game.unlockAbility('field');game.unlockAbility('electricJab');game.acquireShell('slicer-body');game.switchShell('slicer-body',true);
     game.player.x=7480;game.player.y=-1450-game.player.h;game.safePosition={x:game.player.x,y:game.player.y};if(debugPanel==='items'){game.inventoryOpen=true;game.inventoryPage=3;}
   } else if (debugSpawn === 'shell-menu') {
-    const boss=game.boss();boss.dead=true;boss.health=0;game.bossArena.cleared=true;game.platforms=game.platforms.filter(block=>!block.destructibleAfterBoss);game.acquireShell('slicer-body');game.player.x=game.restArea.station.x+game.restArea.station.w+40;game.player.y=game.restArea.floorY-game.player.h;game.safePosition={x:game.player.x,y:game.player.y};game.openShellMenu();
+    clearDebugHeavyCore();game.acquireShell('slicer-body');game.player.x=game.restArea.station.x+game.restArea.station.w+40;game.player.y=game.restArea.floorY-game.player.h;game.safePosition={x:game.player.x,y:game.player.y};game.openShellMenu();
   } else if (debugSpawn === 'dash-routes') {
     game.unlockAbility('dash');
     game.player.x=970;

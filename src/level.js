@@ -223,16 +223,31 @@ export const CROWN_UPPER_BLOCKS = [
 ];
 
 // Defeating the Crown Dynamo releases Field. Its first use breaks the seal at
-// the west edge of Crownworks and opens this enclosed annex as a permanent
-// loop above Core Bastion.
+// the west edge of Crownworks and opens this broad, two-chamber annex above
+// Core Bastion. The western hall occupies the former Heavy Core roof volume;
+// the connector across that boss's east bulkhead is installed only after the
+// bulkhead has burst apart.
 export const FIELD_ANNEX_BLOCKS = [
-  {id:'field-annex-roof',x:7410,y:-1900,w:930,h:100,kind:'ceiling',requires:'field'},
-  {id:'field-annex-west-wall',x:7350,y:-1900,w:60,h:500,kind:'wall',requires:'field'},
-  {id:'field-annex-floor',x:7410,y:-1450,w:930,h:50,kind:'field-annex',requires:'field'},
-  {id:'field-annex-west-perch',x:7410,y:-1640,w:350,h:50,kind:'field-annex',requires:'field'},
+  {id:'field-annex-roof',x:7350,y:-1900,w:990,h:100,kind:'ceiling',requires:'field'},
+  {id:'field-annex-floor',x:7350,y:-1450,w:990,h:50,kind:'field-annex',requires:'field'},
+  {id:'field-annex-west-perch',x:7350,y:-1640,w:410,h:50,kind:'field-annex',requires:'field'},
   {id:'field-annex-west-brace',x:7760,y:-1640,w:60,h:100,kind:'wall',requires:'field'},
   {id:'field-annex-east-brace',x:7920,y:-1700,w:60,h:160,kind:'wall',requires:'field'},
-  {id:'field-annex-east-perch',x:7980,y:-1700,w:270,h:50,kind:'field-annex',requires:'field'}
+  {id:'field-annex-east-perch',x:7980,y:-1700,w:270,h:50,kind:'field-annex',requires:'field'},
+
+  {id:'field-annex-west-hall-roof',x:5950,y:-1900,w:1240,h:100,kind:'ceiling',requires:'field'},
+  {id:'field-annex-west-wall',x:5890,y:-1900,w:60,h:500,kind:'wall',requires:'field'},
+  {id:'field-annex-west-hall-floor',x:5950,y:-1450,w:1240,h:50,kind:'field-annex',requires:'field'},
+  {id:'field-annex-overlook',x:6000,y:-1720,w:330,h:50,kind:'field-annex',requires:'field'},
+  {id:'field-annex-overlook-brace',x:6330,y:-1720,w:60,h:180,kind:'wall',requires:'field'},
+  {id:'field-annex-mid-span',x:6460,y:-1590,w:400,h:50,kind:'field-annex',requires:'field'},
+  {id:'field-annex-high-span',x:6820,y:-1740,w:300,h:50,kind:'field-annex',requires:'field'},
+  {id:'field-annex-high-brace',x:7120,y:-1740,w:70,h:200,kind:'wall',requires:'field'}
+];
+
+export const POST_BOSS_CROWN_CONNECTORS = [
+  {id:'field-annex-connector-roof',x:7190,y:-1900,w:160,h:100,kind:'ceiling',requires:'field'},
+  {id:'field-annex-connector-floor',x:7190,y:-1450,w:160,h:50,kind:'field-annex',requires:'field'}
 ];
 
 // Dash is a world-wide backtracking tool rather than a reward used only in
@@ -519,6 +534,7 @@ export const TRAPS = [
   {id:'bastion-tower-six-spikes',x:6350,y:-620,w:70,h:20,platform:'bastion-tower-six'},
   {id:'crown-lower-spikes',x:8650,y:180,w:70,h:20,platform:'crown-lower-mid'},
   {id:'crown-shaft-spikes',x:8810,y:-1190,w:70,h:20,platform:'crown-shaft-mid'},
+  {id:'field-annex-mid-spikes',x:6510,y:-1610,w:70,h:20,platform:'field-annex-mid-span'},
   {id:'gauntlet-service-west-spikes',x:9660,y:430,w:70,h:20,platform:'gauntlet-service-west'},
   {id:'gauntlet-service-mid-spikes',x:10440,y:410,w:70,h:20,platform:'gauntlet-service-mid'},
   {id:'gauntlet-service-east-spikes',x:10680,y:300,w:70,h:20,platform:'gauntlet-service-east'},
@@ -569,6 +585,10 @@ export const ENEMY_SPAWNS = [
   {type:'crawler',x:7540,y:-1490,w:30,h:40,patrol:true,patrolRange:120},
   {type:'brute',x:8150,y:-1513,w:58,h:63},
   {type:'drone',x:7820,y:-1775,w:42,h:30},
+  {type:'crawler',x:6140,y:-1490,w:30,h:40,patrol:true,patrolRange:100},
+  {type:'roller',x:6840,y:-1478,w:46,h:28,patrol:true,patrolRange:75,patrolDirection:-1},
+  {type:'hopper',x:6580,y:-1635,w:34,h:45},
+  {type:'drone',x:6700,y:-1790,w:42,h:30},
   {type:'hopper',x:9700,y:605,w:34,h:45},
   {type:'drone',x:10300,y:500,w:42,h:30},
   {type:'roller',x:10780,y:622,w:46,h:28,patrol:true,patrolRange:100},
@@ -664,6 +684,8 @@ export const JUNK_PILES = [
   {x:9040,y:-696,w:92,h:46,health:7,scrapValue:0,material:{type:'uranium',amount:1}},
   {x:7500,y:-1686,w:86,h:46,health:6,scrapValue:42},
   {x:8060,y:-1746,w:90,h:46,health:7,scrapValue:48},
+  {id:'field-annex-overlook-cache',x:6060,y:-1766,w:86,h:46,health:7,scrapValue:62},
+  {id:'field-annex-west-cache',x:6960,y:-1496,w:90,h:46,health:8,scrapValue:72},
   {id:'crown-field-seal',x:8340,y:-1740,w:60,h:290,health:1,scrapValue:25,gate:true,requires:'field'},
   {id:'crown-volt-shell-seal',x:7650,y:-1570,w:50,h:120,health:2,scrapValue:0,minimumDamage:2,gate:true,requires:'electricJab'},
   {x:320,y:44,w:82,h:46,health:6,scrapValue:36},

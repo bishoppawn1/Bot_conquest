@@ -4,7 +4,7 @@ import {
   ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, CROWN_BOSS_ARENA, CROWN_UPPER_BLOCKS, DASH_POCKET_BLOCKS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
   ENEMY_SPAWNS, FIELD_ANNEX_BLOCKS, FORGE_UPGRADE_COSTS, FORGE_UPGRADE_RECIPES, FOUNDATION_BLOCKS, GAUNTLET_HAZARDS, INTERIOR_BLOCKS, JUNK_PILES,
   LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
-  PLATFORMS, POCKET_BLOCKS, RECESSES, REGION_EXPANSION_BLOCKS, REGION_GATES, REGIONS,
+  PLATFORMS, POCKET_BLOCKS, POST_BOSS_CROWN_CONNECTORS, RECESSES, REGION_EXPANSION_BLOCKS, REGION_GATES, REGIONS,
   REST_AREA, TRAPS, VAULT_BOSS_ARENA, VAULT_DEEP_BLOCKS, VAULT_UPPER_BLOCKS, WALL_BLOCKS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
 } from '../src/level.js';
 
@@ -99,8 +99,9 @@ test('Crownworks opens into a contained upper chamber instead of ending at its c
 });
 
 test('Field opens a substantial annex beyond the Crownworks boss',()=>{
-  const floor=FIELD_ANNEX_BLOCKS.find(block=>block.id==='field-annex-floor'),seal=JUNK_PILES.find(pile=>pile.id==='crown-field-seal');assert.ok(floor&&seal);assert.equal(seal.requires,'field');assert.equal(seal.y+seal.h,floor.y);assert.ok(FIELD_ANNEX_BLOCKS.reduce((sum,block)=>sum+block.w,0)>2500);
-  const annexEnemies=ENEMY_SPAWNS.filter(enemy=>enemy.x>=7410&&enemy.x<8340),annexJunk=JUNK_PILES.filter(pile=>!pile.gate&&pile.x>=7410&&pile.x<8340);assert.ok(annexEnemies.length>=3);assert.ok(annexJunk.length>=2);
+  const floor=FIELD_ANNEX_BLOCKS.find(block=>block.id==='field-annex-floor'),westFloor=FIELD_ANNEX_BLOCKS.find(block=>block.id==='field-annex-west-hall-floor'),seal=JUNK_PILES.find(pile=>pile.id==='crown-field-seal');assert.ok(floor&&westFloor&&seal);assert.equal(seal.requires,'field');assert.equal(seal.y+seal.h,floor.y);
+  assert.ok(floor.x+floor.w-westFloor.x>=2300,'the annex should span two broad chambers');assert.ok(FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex').length>=7);assert.equal(POST_BOSS_CROWN_CONNECTORS.length,2);assert.ok(POST_BOSS_CROWN_CONNECTORS.every(block=>block.x===7190&&block.w===160));
+  const annexEnemies=ENEMY_SPAWNS.filter(enemy=>enemy.x>=westFloor.x&&enemy.x<floor.x+floor.w),annexJunk=JUNK_PILES.filter(pile=>!pile.gate&&pile.x>=westFloor.x&&pile.x<floor.x+floor.w),annexTraps=TRAPS.filter(trap=>trap.platform?.startsWith('field-annex-'));assert.ok(annexEnemies.length>=7);assert.ok(annexJunk.length>=4);assert.ok(annexTraps.length>=1);
 });
 
 test('Dash creates optional pockets across ordinary regions',()=>{

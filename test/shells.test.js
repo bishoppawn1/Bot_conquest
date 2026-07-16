@@ -18,6 +18,12 @@ test('the annex floor corridor reaches the Volt wall without another red barrier
   assert.ok(game.player.x<=seal.x+seal.w+1,`the bot stopped at x ${game.player.x} before reaching the Volt wall`);assert.ok(game.player.x>=seal.x+seal.w-1,'the bot passed through the intact Volt wall');
 });
 
+test('the cleared Heavy Core roof links the shell pocket to the expanded west hall',()=>{
+  const game=new Game(),mainFloor=game.platforms.find(item=>item.id==='field-annex-floor'),westFloor=game.platforms.find(item=>item.id==='field-annex-west-hall-floor');game.enemies=[];game.traps=[];game.junkPiles=[];game.bossArena.cleared=true;game.releaseHeavyCoreRoof();
+  Object.assign(game.player,{x:7480,y:mainFloor.y-game.player.h,vx:0,vy:0,onGround:true,jumps:1});game.setInput({left:true});tick(game,420);
+  assert.equal(game.platforms.filter(item=>item.id?.startsWith('field-annex-connector-')).length,2);assert.ok(game.player.x<=westFloor.x+40,`the expanded hall stopped at x ${game.player.x}`);assert.ok(game.player.x>=westFloor.x,'the bot passed through the annex west wall');
+});
+
 test('only Volt Jab opens the annex shell wall and releases the pickup',()=>{
   const game=new Game(),seal=game.junkPiles.find(item=>item.id==='crown-volt-shell-seal'),pickup=game.pickups.find(item=>item.id==='slicer-shell');game.enemies=[];game.crownBossArena.cleared=true;Object.assign(game.player,{x:seal.x+seal.w+6,y:game.platforms.find(item=>item.id==='field-annex-floor').y-game.player.h,aimX:-1,aimY:0,attackAimX:-1,attackAimY:0,attackHits:new Set()});
   assert.equal(game.pickupAvailable(pickup),false);game.resolvePrimaryAttack();assert.equal(seal.health,2);game.unlockAbility('field');game.player.electricity=40;press(game,'field');assert.equal(seal.health,2);
