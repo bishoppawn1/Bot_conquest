@@ -1,30 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/game.js';
-import { supportingPlatform } from '../src/geometry.js';
+import { overlaps, supportingPlatform } from '../src/geometry.js';
 
 const tick=(game,count=1)=>{for(let frame=0;frame<count;frame++)game.update(1/60);};
 const openDepth=game=>{
-  game.vaultBossArena.cleared=true;game.unlockAbility('wallClimb');game.unlockAbility('electricJab');game.pickups.find(item=>item.id==='volt-core').collected=true;
-  Object.assign(game.player,{x:2890,y:1120-game.player.h,vx:0,vy:0,onGround:true});
-  assert.equal(game.syncDepthAccess(),true);return game;
+  game.vaultBossArena.cleared=true;assert.equal(game.syncDepthAccess(),true);game.unlockAbility('wallClimb');return game;
 };
 
-test('the deep Vault hatch opens only with both rewards while the player is safely west',()=>{
+test('the deep Vault hatch opens on the Warden clear without waiting for either ability',()=>{
   const game=new Game();assert.ok(game.platforms.some(block=>block.id==='under-cache'));assert.equal(game.depthAccessOpen,false);
-  game.vaultBossArena.cleared=true;game.unlockAbility('wallClimb');Object.assign(game.player,{x:2890,y:1120-game.player.h,onGround:true});assert.equal(game.syncDepthAccess(),false,'Volt Jab must be collected first');
-  game.unlockAbility('electricJab');assert.equal(game.syncDepthAccess(),false,'owning the ability cannot stand in for collecting its core');game.pickups.find(item=>item.id==='volt-core').collected=true;
-  Object.assign(game.player,{x:3100,y:1120-game.player.h,onGround:true});assert.equal(game.syncDepthAccess(),false,'the hatch cannot open beneath a player in its center');
-  Object.assign(game.player,{x:7000,y:564,onGround:true});assert.equal(game.syncDepthAccess(),false,'the hatch cannot open remotely');
-  Object.assign(game.player,{x:2890,y:1120-game.player.h,onGround:true});assert.equal(game.syncDepthAccess(),true);
-  assert.equal(game.platforms.some(block=>block.id==='under-cache'),false);assert.equal(game.platforms.some(block=>block.id==='vault-high'),false);assert.ok(game.platforms.some(block=>block.id==='vault-depth-access'));assert.equal(game.depthAccessOpen,true);const junk=game.junkPiles.find(pile=>pile.id==='vault-hatch-junk'),gallery=game.platforms.find(block=>block.id==='vault-deep-gallery-west');assert.equal(junk.y+junk.h,gallery.y);assert.ok(gallery.x+gallery.w-(junk.x+junk.w)>=50);
+  assert.equal(game.syncDepthAccess(),false);game.vaultBossArena.cleared=true;assert.equal(game.syncDepthAccess(),true);
+  assert.equal(game.platforms.some(block=>block.id==='under-cache'),false);assert.equal(game.platforms.some(block=>block.id==='vault-high'),false);assert.equal(game.player.abilities.wallClimb,false);assert.equal(game.player.abilities.electricJab,false);assert.equal(game.pickups.find(item=>item.id==='volt-core').collected,false);assert.equal(game.depthAccessOpen,true);const junk=game.junkPiles.find(pile=>pile.id==='vault-hatch-junk'),gallery=game.platforms.find(block=>block.id==='vault-deep-gallery-west'),stairs=game.platforms.filter(block=>block.kind==='vault-depth-stair');assert.equal(junk.y+junk.h,gallery.y);assert.ok(gallery.x+gallery.w-(junk.x+junk.w)>=50);assert.ok(Math.min(...stairs.map(step=>step.x))-(gallery.x+gallery.w)>=300,'the return stairs can bypass the Wall-Climb gate');
+  for(let first=0;first<game.platforms.length;first++)for(let second=first+1;second<game.platforms.length;second++)assert.equal(overlaps(game.platforms[first],game.platforms[second]),false,`${game.platforms[first].id??first} overlaps ${game.platforms[second].id??second}`);
 });
 
-test('the opened deep hatch has enough headroom to climb and enter the lower world',()=>{
-  const game=new Game();game.enemies=[];game.traps=[];game.junkPiles=[];openDepth(game);const target=game.platforms.find(block=>block.id==='vault-deep-drop-one'),west=game.platforms.find(block=>block.id==='vault-depth-floor-west'),wall=game.platforms.find(block=>block.id==='vault-depth-access'),east=game.platforms.find(block=>block.id==='vault-depth-floor-east');
-  assert.ok(east.x-(wall.x+wall.w)>=200,'the opened hatch should be several bot widths wide');Object.assign(game.player,{x:west.x+west.w-game.player.w,y:west.y-game.player.h,vx:0,vy:0,onGround:true,jumps:1});game.setInput({right:true,jump:true});let phase=0,reached=false;
-  for(let frame=0;frame<360;frame++){if(phase===0&&game.player.y<960){game.setInput({jump:false,right:true});phase=1;}if(phase===1&&game.player.x>3080){game.setInput({right:false,left:true});phase=2;}if(phase===2&&game.player.vx<0){game.setInput({left:false});phase=3;}game.update(1/60);if(supportingPlatform(game.player,game.platforms,3)===target){reached=true;break;}}
+test('the open hatch drops safely onto the first deep landing',()=>{
+  const game=new Game();game.enemies=[];game.traps=[];game.junkPiles=[];openDepth(game);game.player.abilities.wallClimb=false;const target=game.platforms.find(block=>block.id==='vault-deep-drop-one'),west=game.platforms.find(block=>block.id==='vault-depth-floor-west'),east=game.platforms.find(block=>block.id==='vault-depth-floor-east');
+  assert.ok(east.x-(west.x+west.w)>=200,'the opened hatch should be several bot widths wide');Object.assign(game.player,{x:west.x+west.w-game.player.w,y:west.y-game.player.h,vx:0,vy:0,onGround:true,jumps:1});game.setInput({right:true});let reached=false;
+  for(let frame=0;frame<240;frame++){game.update(1/60);if(supportingPlatform(game.player,game.platforms,3)===target){reached=true;break;}}
   assert.equal(reached,true);
+});
+
+test('the right-side stairs return a starting bot from the hatch landing',()=>{
+  const canClimbStep=(sourceId,targetId)=>{for(const inset of[5,15,30,45,60,80])for(const delay of[0,4,8,12,16,20]){const game=new Game();game.enemies=[];game.traps=[];game.junkPiles=[];game.vaultBossArena.cleared=true;game.syncDepthAccess();const source=game.platforms.find(block=>block.id===sourceId),target=game.platforms.find(block=>block.id===targetId),direction=Math.sign((target.x+target.w/2)-(source.x+source.w/2)),move=direction>0?'right':'left',startX=direction>0?Math.max(source.x,target.x-game.player.w-inset):Math.min(source.x+source.w-game.player.w,target.x+target.w+inset);Object.assign(game.player,{x:startX,y:source.y-game.player.h,vx:0,vy:0,onGround:true,jumps:1});game.setInput({jump:true});game.update(1/60);game.setInput({jump:false});tick(game,delay);game.setInput({[move]:true});for(let frame=0;frame<180;frame++){game.update(1/60);if(supportingPlatform(game.player,game.platforms,3)===target)return true;}}return false;};
+  for(const [source,target] of [['vault-depth-stair-floor','vault-depth-return-step-one'],['vault-depth-return-step-one','vault-depth-return-step-two'],['vault-depth-return-step-two','vault-depth-return-step-three'],['vault-depth-return-step-three','under-threshold']])assert.equal(canClimbStep(source,target),true,`${source} cannot climb to ${target}`);
 });
 
 test('dropping into the deep arena activates the Rift Stalker behind a sealed exit',()=>{
@@ -70,8 +70,8 @@ test('the completed return route climbs from the boss floor back onto the Warden
 });
 
 test('structural containment prevents side-drop shortcuts through the deep Vault',()=>{
-  const game=new Game();game.enemies=[];game.traps=[];game.junkPiles=[];openDepth(game);const roof=game.platforms.find(block=>block.id==='vault-depth-roof-west'),arenaWall=game.platforms.find(block=>block.id==='vault-arena-left'),westFloor=game.platforms.find(block=>block.id==='vault-depth-floor-west'),westWall=game.platforms.find(block=>block.id==='vault-depth-west-containment'),eastWall=game.platforms.find(block=>block.id==='vault-depth-east-containment');assert.deepEqual([roof.x,roof.x+roof.w,roof.y+roof.h],[2360,2440,1200]);assert.equal(roof.x+roof.w,arenaWall.x);assert.equal(arenaWall.x+arenaWall.w,westFloor.x);assert.equal(westWall.y,1200);assert.equal(westWall.y+westWall.h,game.depthBossArena.floorY);assert.equal(eastWall.y,1200);assert.equal(eastWall.y+eastWall.h,game.platforms.find(block=>block.id==='vault-deep-drop-three').y);
-  for(const [sourceId,direction] of [['vault-deep-drop-one',-1],['vault-deep-drop-one',1],['vault-deep-drop-two',-1]]){const source=game.platforms.find(block=>block.id===sourceId),move=direction>0?'right':'left';Object.assign(game.player,{x:direction>0?source.x+source.w-game.player.w:source.x,y:source.y-game.player.h,vx:0,vy:0,onGround:true,jumps:1});game.setInput({[move]:true});for(let frame=0;frame<90;frame++)game.update(1/60);assert.equal(supportingPlatform(game.player,game.platforms,3),source,`${sourceId} still allows a side-drop shortcut`);}
+  const game=new Game();game.enemies=[];game.traps=[];game.junkPiles=[];openDepth(game);const roof=game.platforms.find(block=>block.id==='vault-depth-roof-west'),arenaWall=game.platforms.find(block=>block.id==='vault-arena-left'),westFloor=game.platforms.find(block=>block.id==='vault-depth-floor-west'),westWall=game.platforms.find(block=>block.id==='vault-depth-west-containment'),stairWall=game.platforms.find(block=>block.id==='vault-depth-stair-containment'),eastWall=game.platforms.find(block=>block.id==='vault-depth-east-containment');assert.deepEqual([roof.x,roof.x+roof.w,roof.y+roof.h],[2360,2440,1200]);assert.equal(roof.x+roof.w,arenaWall.x);assert.equal(arenaWall.x+arenaWall.w,westFloor.x);assert.equal(westWall.y,1200);assert.equal(westWall.y+westWall.h,game.depthBossArena.floorY);assert.deepEqual([stairWall.x,stairWall.y,stairWall.y+stairWall.h],[3530,1200,1480]);assert.equal(eastWall.y,1530);assert.equal(eastWall.y+eastWall.h,game.platforms.find(block=>block.id==='vault-deep-drop-three').y);
+  for(const [sourceId,direction] of [['vault-deep-drop-one',-1],['vault-deep-drop-one',1],['vault-deep-drop-two',-1]]){const source=game.platforms.find(block=>block.id===sourceId),move=direction>0?'right':'left';Object.assign(game.player,{x:direction>0?source.x+source.w-game.player.w:source.x,y:source.y-game.player.h,vx:0,vy:0,onGround:true,jumps:1});game.setInput({[move]:true});for(let frame=0;frame<90;frame++)game.update(1/60);const support=supportingPlatform(game.player,game.platforms,3);assert.ok(support===source||(sourceId==='vault-deep-drop-one'&&direction>0&&support?.id==='vault-depth-stair-floor'),`${sourceId} still allows a side-drop shortcut`);}
 });
 
 test('the deep route physically requires Wall Climb and zig-zags through both galleries',()=>{

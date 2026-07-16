@@ -224,9 +224,7 @@ export class Game {
   crownBoss(){return this.enemies.find(enemy=>enemy.isCrownBoss)??null;}
   crownBossGates(){const arena=this.crownBossArena;if(!arena||arena.gateProgress<=0||arena.cleared)return[];return[arena.leftGate,arena.rightGate].map(gate=>({...gate,y:gate.y+gate.h*(1-arena.gateProgress),h:gate.h*arena.gateProgress,kind:'crown-boss-gate'}));}
   syncDepthAccess(){
-    const p=this.player,volt=this.pickups.find(pickup=>pickup.id==='volt-core'),support=supportingPlatform(p,this.platforms,3);
-    const safelyWest=support?.id==='under-cache'&&p.x+p.w<=2990;
-    if(this.depthAccessOpen||!this.player.abilities.wallClimb||!this.player.abilities.electricJab||!volt?.collected||!this.vaultBossArena.cleared||!safelyWest)return false;
+    if(this.depthAccessOpen||!this.vaultBossArena.cleared)return false;
     const floor=this.platforms.find(block=>block.id==='under-cache');
     this.platforms=this.platforms.filter(block=>block.id!=='under-cache');
     this.platforms.push(...DEPTH_ACCESS_BLOCKS.map(block=>({...block})));const hatchJunk=this.junkPiles.find(pile=>pile.id==='vault-hatch-junk'&&!pile.dead);if(hatchJunk)Object.assign(hatchJunk,{x:2660,y:1234});this.depthAccessOpen=true;
@@ -398,7 +396,7 @@ export class Game {
     if(target.health<=0&&!target.dead){
       target.dead=true;const ordinary=target.kind!=='junk'&&!target.isMiniBoss&&!target.isVaultBoss&&!target.isDepthBoss&&!target.isCrownBoss&&target.type!=='boss';let reward=target.kind==='junk'?target.scrapValue:target.isMiniBoss||target.isVaultBoss||target.isDepthBoss||target.isCrownBoss?target.rewardScrap:(SCRAP_VALUES[target.type]??5);if(ordinary)reward+=this.relicValue('ordinaryScrapBonus');this.player.scrap+=reward;if(target.kind!=='junk')this.gainElectricity(this.relicValue('killElectricity'));const material=target.kind==='junk'?target.material:target.rewardMaterial,materials=target.kind==='junk'?(target.materials??(material?[material]:[])):(material?[material]:[]);for(const payout of materials)this.gainMaterial(payout.type,payout.amount);
       if(target.type==='boss'){this.bossArena.cleared=true;this.bossArena.active=false;this.bossProjectiles=[];this.bossExplosions=[];this.bossShockwave=null;const barriers=this.platforms.filter(block=>block.destructibleAfterBoss);this.platforms=this.platforms.filter(block=>!block.destructibleAfterBoss);for(const barrier of barriers)this.burst(barrier.x+barrier.w/2,barrier.y+barrier.h/2,'#ff493f',45);}
-      if(target.isVaultBoss){this.vaultBossArena.cleared=true;this.vaultBossArena.active=false;this.bossProjectiles=[];this.bossExplosions=[];this.bossShockwave=null;this.rewardToast={text:`+${reward} SCRAP`,detail:`${target.name} DEFEATED // VOLT CORE RELEASED`,time:3};}
+      if(target.isVaultBoss){this.vaultBossArena.cleared=true;this.vaultBossArena.active=false;this.bossProjectiles=[];this.bossExplosions=[];this.bossShockwave=null;this.syncDepthAccess();this.rewardToast={text:`+${reward} SCRAP`,detail:`${target.name} DEFEATED // VOLT CORE + DEPTH HATCH RELEASED`,time:3};}
       if(target.isDepthBoss){this.depthBossArena.cleared=true;this.depthBossArena.active=false;this.bossProjectiles=[];this.bossExplosions=[];this.bossShockwave=null;this.releaseDepthReturn();this.rewardToast={text:`+${reward} SCRAP`,detail:`${target.name} DEFEATED // DASH DRIVE RELEASED`,time:3};}
       if(target.isCrownBoss){this.crownBossArena.cleared=true;this.crownBossArena.active=false;this.bossProjectiles=[];this.crownHazards=[];this.rewardToast={text:`+${reward} SCRAP`,detail:`${target.name} DEFEATED // FIELD CORE RELEASED`,time:3};}
       if(target.isMiniBoss){const arena=this.miniBossArenas.find(item=>item.id===target.arenaId);if(arena){arena.cleared=true;arena.active=false;}this.rewardToast=material?{text:`+${material.amount} ${material.type.toUpperCase()}`,detail:`${target.name} DEFEATED`,time:3}:{text:`+${reward} SCRAP`,detail:`${target.name} DEFEATED`,time:3};}

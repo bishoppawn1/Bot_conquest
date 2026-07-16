@@ -25,8 +25,8 @@ function begin() {
   game = new Game();
   const openDebugDepth=()=>{
     const vaultBoss=game.vaultBoss(),volt=game.pickups.find(item=>item.id==='volt-core');
-    game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;volt.collected=true;game.unlockAbility('wallClimb');game.unlockAbility('electricJab');
-    Object.assign(game.player,{x:2890,y:1120-game.player.h,onGround:true});game.syncDepthAccess();
+    game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();volt.collected=true;game.unlockAbility('wallClimb');game.unlockAbility('electricJab');
+    Object.assign(game.player,{x:2890,y:1120-game.player.h,onGround:true});
   };
   if (debugSpawn === 'boss') {
     game.player.x=game.bossArena.triggerX+80;
@@ -146,6 +146,7 @@ function begin() {
     game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'volt') {
     const vaultBoss=game.vaultBoss();game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;
+    game.syncDepthAccess();
     const pickup=game.pickups.find(item=>item.id==='volt-core');
     game.player.x=pickup.x;
     game.player.y=pickup.y;

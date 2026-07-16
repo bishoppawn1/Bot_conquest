@@ -19,9 +19,9 @@ const canTraverse=(sourceId,targetId,{jump=true,clearMini=false}={})=>{
   }
   return false;
 };
-const canControlledDrop=(sourceId,targetId)=>{
+const canControlledDrop=(sourceId,targetId,{clearVault=true}={})=>{
   const g=new Game();g.enemies=[];g.junkPiles=[];g.traps=[];g.gauntletHazards=[];
-  g.vaultBossArena.cleared=true;for(const arena of g.miniBossArenas)arena.cleared=true;
+  g.vaultBossArena.cleared=clearVault;for(const arena of g.miniBossArenas)arena.cleared=true;
   const source=g.platforms.find(block=>block.id===sourceId),target=g.platforms.find(block=>block.id===targetId),player=g.player;
   const direction=Math.sign((target.x+target.w/2)-(source.x+source.w/2))||1,move=direction>0?'right':'left',brake=direction>0?'left':'right';let braking=false;
   Object.assign(player,{x:direction>0?source.x+source.w-player.w-4:source.x+4,y:source.y-player.h,vx:0,vy:0,onGround:true,jumps:1});g.setInput({[move]:true});
@@ -69,9 +69,8 @@ test('the starting jump physically connects the scattered exploration platforms'
   assert.ok(canTraverse('foundry-mid','foundry-west'));
   assert.ok(canTraverse('foundry-west','foundry-cooling-high'));
   assert.ok(canTraverse('foundry-cooling-high','foundry-west'));
-  assert.ok(canControlledDrop('vault-span','under-cache'),'the Vault boss entrance does not drop safely into its room');
+  assert.ok(canControlledDrop('vault-span','under-cache',{clearVault:false}),'the Vault boss entrance does not drop safely into its room');
   assert.equal(PLATFORMS.some(block=>block.id==='vault-high'),false,'the old hiding ledge must not obscure the deep-route hatch');
-  assert.ok(canTraverse('under-cache','under-threshold',{clearMini:true}),'the cleared Vault boss room has no exit');
   assert.ok(canControlledDrop('drift-threshold','drift-east'),'the optional Drift reward path has no safe drop');
   assert.ok(canControlledDrop('drift-east','drift-floor'),'the optional Drift reward path cannot return to the main floor');
   assert.ok(canStagedJump('under-threshold','under-exit-low'),'the exit ascent cannot reach its first platform');

@@ -128,13 +128,16 @@ export const VAULT_UPPER_BLOCKS = [
   {id:'vault-upper-east',x:3190,y:280,w:260,h:50,kind:'vault-upper',requires:'wallClimb',region:'vault-upper'}
 ];
 
-// Once Volt Jab and Wall Climb are owned and the Abyss Warden is dead, the low
-// hatch above this wall retracts while the player is safely west of the shaft.
-// The chamber below then zig-zags through two mandatory climb galleries.
+// The Abyss Warden's death immediately opens this hatch. A basic-jump stair
+// rises along its right side so an early visitor can return, while the first
+// deep gallery remains reachable only by climbing the wall west of the landing.
 export const DEPTH_ACCESS_BLOCKS = [
   {id:'vault-depth-floor-west',x:2500,y:1120,w:490,h:80,kind:'lower'},
-  {id:'vault-depth-access',x:2990,y:1000,w:60,h:120,kind:'wall',requires:'wallClimb',region:'vault-depth',gateEntry:true},
-  {id:'vault-depth-floor-east',x:3250,y:1120,w:80,h:80,kind:'lower'}
+  {id:'vault-depth-floor-east',x:3230,y:1120,w:80,h:80,kind:'lower'},
+  {id:'vault-depth-stair-floor',x:3300,y:1480,w:230,h:50,kind:'vault-depth-stair-floor',removeAfterDepthBoss:true},
+  {id:'vault-depth-return-step-one',x:3450,y:1390,w:80,h:40,kind:'vault-depth-stair',removeAfterDepthBoss:true},
+  {id:'vault-depth-return-step-two',x:3370,y:1300,w:80,h:40,kind:'vault-depth-stair',removeAfterDepthBoss:true},
+  {id:'vault-depth-return-step-three',x:3290,y:1250,w:80,h:40,kind:'vault-depth-stair',removeAfterDepthBoss:true}
 ];
 
 export const VAULT_DEEP_BLOCKS = [
@@ -147,7 +150,8 @@ export const VAULT_DEEP_BLOCKS = [
   {id:'vault-deep-gallery-east',x:2840,y:1580,w:380,h:50,kind:'vault-depth',requires:'wallClimb',region:'vault-depth'},
   {id:'vault-deep-drop-three',x:3170,y:2110,w:320,h:50,kind:'vault-depth'},
   {id:'vault-depth-west-containment',x:2380,y:1200,w:80,h:1350,kind:'wall'},
-  {id:'vault-depth-east-containment',x:3300,y:1200,w:70,h:910,kind:'wall',removeAfterDepthBoss:true},
+  {id:'vault-depth-stair-containment',x:3530,y:1200,w:40,h:280,kind:'wall',removeAfterDepthBoss:true},
+  {id:'vault-depth-east-containment',x:3300,y:1530,w:70,h:580,kind:'wall',removeAfterDepthBoss:true},
   {id:'depth-boss-floor',x:2440,y:2550,w:1110,h:150,kind:'foundation'}
 ];
 

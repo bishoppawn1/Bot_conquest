@@ -26,7 +26,7 @@ test('the Abyss Warden randomly uses charge, leap shockwave, and three-bolt voll
   assert.ok(moves.has('wardenCharge'));assert.ok(moves.has('wardenLeap'));assert.equal(sawShockwave,true);assert.ok(maxProjectiles>=3);
 });
 
-test('defeating the Abyss Warden opens the full exit and releases Volt Jab',()=>{
+test('defeating the Abyss Warden immediately opens the depth hatch and releases Volt Jab',()=>{
   const game=new Game(),boss=game.vaultBoss(),pickup=game.pickups.find(item=>item.id==='volt-core');game.vaultBossArena.active=true;game.vaultBossArena.leftGateProgress=1;boss.health=1;assert.equal(game.pickupAvailable(pickup),false);game.hitTarget(boss,1,new Set(),0);
-  assert.equal(boss.dead,true);assert.equal(game.vaultBossArena.cleared,true);assert.equal(game.player.scrap,game.vaultBossArena.rewardScrap);assert.equal(game.vaultBossGates().length,0);assert.equal(game.pickupAvailable(pickup),true);
+  assert.equal(boss.dead,true);assert.equal(game.vaultBossArena.cleared,true);assert.equal(game.player.scrap,game.vaultBossArena.rewardScrap);assert.equal(game.vaultBossGates().length,0);assert.equal(game.pickupAvailable(pickup),true);assert.equal(game.depthAccessOpen,true);assert.equal(game.platforms.some(block=>block.id==='under-cache'),false);assert.equal(game.player.abilities.wallClimb,false);assert.equal(pickup.collected,false);
 });

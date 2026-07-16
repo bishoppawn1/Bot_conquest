@@ -202,7 +202,7 @@ test('the lower vault has a contained full-boss floor and a staged escape',()=>{
 test('the Sunken Vault has a Wall-Climb loft and a much deeper Dash-locked return',()=>{
   assert.ok(VAULT_UPPER_BLOCKS.some(block=>block.y<0));assert.ok(VAULT_UPPER_BLOCKS.some(block=>block.kind==='wall'&&block.requires==='wallClimb'));
   assert.ok(VAULT_DEEP_BLOCKS.some(block=>block.y>=2100));assert.equal(DEPTH_BOSS_ARENA.floorY,2550);assert.ok(DEPTH_BOSS_ARENA.boss.health>VAULT_BOSS_ARENA.boss.health);
-  assert.ok(DEPTH_ACCESS_BLOCKS.some(block=>block.kind==='wall'&&block.requires==='wallClimb'));assert.ok(DEPTH_RETURN_BLOCKS.length>=5);assert.ok(DEPTH_RETURN_BLOCKS.every(block=>block.requires==='dash'));
+  assert.equal(DEPTH_ACCESS_BLOCKS.filter(block=>block.kind==='vault-depth-stair').length,3);assert.ok(DEPTH_RETURN_BLOCKS.length>=5);assert.ok(DEPTH_RETURN_BLOCKS.every(block=>block.requires==='dash'));
   const climbWalls=VAULT_DEEP_BLOCKS.filter(block=>block.kind==='wall'&&block.requires==='wallClimb'),galleries=VAULT_DEEP_BLOCKS.filter(block=>block.id?.includes('gallery'));assert.equal(climbWalls.length,2);assert.ok(climbWalls.every(block=>block.h>=200));assert.equal(galleries.length,2);assert.ok(galleries.reduce((sum,block)=>sum+block.w,0)>=700);assert.ok(DEPTH_BOSS_ARENA.floorY-VAULT_BOSS_ARENA.floorY>=1400);
 });
 
