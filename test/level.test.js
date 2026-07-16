@@ -4,7 +4,7 @@ import {
   ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, CROWN_BOSS_ARENA, CROWN_UPPER_BLOCKS, DASH_POCKET_BLOCKS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
   ENEMY_SPAWNS, FIELD_ANNEX_BLOCKS, FORGE_UPGRADE_COSTS, FORGE_UPGRADE_RECIPES, FOUNDATION_BLOCKS, GAUNTLET_HAZARDS, INTERIOR_BLOCKS, JUNK_PILES,
   LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
-  PLATFORMS, POCKET_BLOCKS, POST_BOSS_CROWN_CONNECTORS, RECESSES, REGION_EXPANSION_BLOCKS, REGION_GATES, REGIONS,
+  PLATFORMS, POCKET_BLOCKS, POST_BOSS_CROWN_CONNECTORS, REAR_WORKS_BLOCKS, RECESSES, REGION_EXPANSION_BLOCKS, REGION_GATES, REGIONS,
   REST_AREA, TRAPS, VAULT_BOSS_ARENA, VAULT_DEEP_BLOCKS, VAULT_UPPER_BLOCKS, WALL_BLOCKS, WORLD_BOTTOM, WORLD_HEIGHT, WORLD_TOP, WORLD_WIDTH
 } from '../src/level.js';
 
@@ -109,6 +109,11 @@ test('Dash creates optional pockets across ordinary regions',()=>{
   for(const region of new Set(DASH_POCKET_BLOCKS.map(block=>block.region)))assert.ok(DASH_POCKET_BLOCKS.filter(block=>block.region===region).length>=2,`${region} lacks a real Dash pocket`);
 });
 
+test('the rear works is a populated dual-ability backtracking chamber',()=>{
+  const floor=REAR_WORKS_BLOCKS.find(block=>block.id==='rear-works-floor'),wall=REAR_WORKS_BLOCKS.find(block=>block.id==='rear-works-climb-wall'),launch=REAR_WORKS_BLOCKS.find(block=>block.id==='rear-works-launch');assert.ok(floor&&wall&&launch);assert.equal(wall.requires,'wallClimb');assert.ok(floor.requiresAll.includes('wallClimb')&&floor.requiresAll.includes('dash'));assert.ok(wall.h>=800);assert.ok(wall.x-(floor.x+floor.w)>=300);
+  assert.ok(ENEMY_SPAWNS.filter(enemy=>enemy.x>=floor.x&&enemy.x<floor.x+floor.w&&enemy.y<floor.y).length>=4);assert.ok(TRAPS.some(trap=>trap.platform==='rear-works-mid-span'));assert.ok(JUNK_PILES.some(pile=>pile.id==='rear-works-cache'));
+});
+
 test('every named region has a substantial populated expansion route',()=>{
   assert.equal(REGION_EXPANSION_BLOCKS.length,55);
   for(const region of REGIONS){
@@ -175,7 +180,7 @@ test('starting-kit platforms form varied room networks with combat',()=>{
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.zone)).size>=9);
   assert.ok(BRANCH_BLOCKS.every(block=>!('step' in block)&&!('branch' in block)&&!block.requires));
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.w)).size>=12);
-  const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS,...FIELD_ANNEX_BLOCKS,...DASH_POCKET_BLOCKS,...REGION_EXPANSION_BLOCKS];
+  const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS,...FIELD_ANNEX_BLOCKS,...DASH_POCKET_BLOCKS,...REAR_WORKS_BLOCKS,...REGION_EXPANSION_BLOCKS];
   const combatants=[...ENEMY_SPAWNS,...MINI_BOSS_ARENAS.map(arena=>arena.enemy)];
   const supportedEnemies=combatants.filter(enemy=>enemy.type!=='drone'&&combatSurfaces.some(block=>enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w&&enemy.y+enemy.h===block.y));
   assert.ok(supportedEnemies.length>=12,'upper and lower exploration spaces need their own encounters');
@@ -209,7 +214,7 @@ test('the Sunken Vault has a Wall-Climb loft and a much deeper Dash-locked retur
 
 test('walkable surfaces leave enough headroom for the bot',()=>{
   const botWidth=50,botHeight=36;
-  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper'),...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex'),...DASH_POCKET_BLOCKS,...REGION_EXPANSION_BLOCKS]){
+  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper'),...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex'),...DASH_POCKET_BLOCKS,...REAR_WORKS_BLOCKS.filter(block=>block.kind==='rear-works'||block.kind==='rear-works-entry'),...REGION_EXPANSION_BLOCKS]){
     const blockers=PLATFORMS.filter(block=>block!==surface&&block.y<surface.y&&block.y+block.h>surface.y-botHeight)
       .map(block=>[Math.max(surface.x,block.x),Math.min(surface.x+surface.w,block.x+block.w)])
       .filter(([start,end])=>end>start).sort((a,b)=>a[0]-b[0]);

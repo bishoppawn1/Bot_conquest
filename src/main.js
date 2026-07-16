@@ -119,6 +119,10 @@ function begin() {
     game.player.x=970;
     game.player.y=300-game.player.h;
     game.safePosition={x:game.player.x,y:game.player.y};
+  } else if (debugSpawn === 'rear-works') {
+    game.unlockAbility('wallClimb');game.unlockAbility('dash');
+    const floor=game.platforms.find(block=>block.id==='rear-works-floor');game.player.x=560;game.player.y=floor.y-game.player.h;
+    game.safePosition={x:game.player.x,y:game.player.y};
   } else if (debugSpawn === 'depth-boss') {
     openDebugDepth();
     game.player.x=2920;

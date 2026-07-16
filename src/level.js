@@ -189,11 +189,11 @@ export const WALL_BLOCKS = [
 // kit. Their first platforms require double jump, dash, or wall movement;
 // their remaining surfaces form explorable rooms beyond those entrances.
 export const ABILITY_GATED_BLOCKS = [
-  {id:'double-entry',x:1160,y:-80,w:190,h:45,kind:'cache',requires:'doubleJump',region:'upper-assembly',gateEntry:true},
+  {id:'double-entry',x:1350,y:-80,w:190,h:45,kind:'cache',requires:'doubleJump',region:'upper-assembly',gateEntry:true},
   {id:'double-gallery',x:1480,y:-220,w:370,h:55,kind:'cache',requires:'doubleJump',region:'upper-assembly'},
   {id:'double-east',x:1960,y:-70,w:230,h:40,kind:'cache',requires:'doubleJump',region:'upper-assembly'},
   {id:'double-vault',x:1830,y:-390,w:280,h:50,kind:'cache',requires:'doubleJump',region:'upper-assembly'},
-  {id:'double-cache',x:1330,y:-540,w:330,h:60,kind:'cache',requires:'doubleJump',region:'upper-assembly'},
+  {id:'double-cache',x:1660,y:-540,w:330,h:60,kind:'cache',requires:'doubleJump',region:'upper-assembly'},
 
   {id:'dash-entry',x:4430,y:80,w:180,h:40,kind:'cache',requires:'dash',region:'high-foundry',gateEntry:true},
   {id:'dash-pier',x:4700,y:-70,w:140,h:45,kind:'cache',requires:'dash',region:'high-foundry'},
@@ -263,6 +263,24 @@ export const DASH_POCKET_BLOCKS = [
   {id:'dash-gauntlet-cache',x:10040,y:70,w:260,h:50,kind:'dash-pocket',requires:'dash',region:'gauntlet'},
   {id:'dash-exchange-landing',x:14220,y:180,w:220,h:50,kind:'dash-pocket',requires:'dash',region:'exchange'},
   {id:'dash-exchange-cache',x:14220,y:20,w:230,h:50,kind:'dash-pocket',requires:'dash',region:'exchange'}
+];
+
+// A late-game return above and behind the initial spawn. The base ledge gives
+// every build a safe approach, but the tall right-hand shaft needs Wall Climb.
+// Its enclosed launch shelf then faces a gap that only Dash can clear into the
+// rear works; a failed crossing falls safely onto the old Rusted Verge roof.
+export const REAR_WORKS_BLOCKS = [
+  {id:'rear-works-roof',x:100,y:-1200,w:800,h:100,kind:'ceiling',requiresAll:['wallClimb','dash'],region:'verge'},
+  {id:'rear-works-west-wall',x:40,y:-1200,w:60,h:500,kind:'wall',requiresAll:['wallClimb','dash'],region:'verge'},
+  {id:'rear-works-floor',x:100,y:-700,w:800,h:50,kind:'rear-works',requiresAll:['wallClimb','dash'],region:'verge'},
+  {id:'rear-works-mid-span',x:160,y:-840,w:300,h:50,kind:'rear-works',requiresAll:['wallClimb','dash'],region:'verge'},
+  {id:'rear-works-mid-brace',x:460,y:-840,w:60,h:50,kind:'wall',requiresAll:['wallClimb','dash'],region:'verge'},
+  {id:'rear-works-high-span',x:540,y:-1000,w:300,h:50,kind:'rear-works',requiresAll:['wallClimb','dash'],region:'verge'},
+  {id:'rear-works-high-brace',x:840,y:-1000,w:60,h:210,kind:'wall',requiresAll:['wallClimb','dash'],region:'verge'},
+  {id:'rear-works-climb-base',x:1260,y:180,w:150,h:45,kind:'rear-works-entry',requires:'wallClimb',region:'verge'},
+  {id:'rear-works-climb-wall',x:1200,y:-700,w:60,h:880,kind:'wall',requires:'wallClimb',region:'verge',gateEntry:true},
+  {id:'rear-works-launch',x:1320,y:-700,w:220,h:50,kind:'rear-works-entry',requires:'wallClimb',region:'verge'},
+  {id:'rear-works-launch-wall',x:1540,y:-800,w:60,h:150,kind:'wall',requires:'wallClimb',region:'verge'}
 ];
 
 // Every named region now contains an additional multi-platform exploration
@@ -488,7 +506,8 @@ export const RECESSES = [
   {x:12750,y:-700,w:1700,h:1360,floorY:660,ceilingY:-700,openSide:'left'},
   {x:2400,y:1120,w:1150,h:1430,floorY:2550,ceilingY:1120,openSide:'top',deepVault:true},
   {x:8400,y:-1800,w:1200,h:350,floorY:-1450,ceilingY:-1800,openSide:'bottom',crownUpper:true},
-  {x:7410,y:-1800,w:930,h:350,floorY:-1450,ceilingY:-1800,openSide:'right',fieldAnnex:true}
+  {x:7410,y:-1800,w:930,h:350,floorY:-1450,ceilingY:-1800,openSide:'right',fieldAnnex:true},
+  {x:100,y:-1100,w:800,h:400,floorY:-700,ceilingY:-1100,openSide:'right',rearWorks:true}
 ];
 
 export const PLATFORMS = [
@@ -505,6 +524,7 @@ export const PLATFORMS = [
   ...CROWN_UPPER_BLOCKS,
   ...FIELD_ANNEX_BLOCKS,
   ...DASH_POCKET_BLOCKS,
+  ...REAR_WORKS_BLOCKS,
   ...REGION_EXPANSION_BLOCKS,
   ...MERCHANT_ROOM_BLOCKS
 ];
@@ -525,6 +545,7 @@ export const TRAPS = [
   {x:12600,y:690,w:100,h:110},
   {id:'verge-substation-spikes',x:800,y:60,w:70,h:20,platform:'verge-substation-high'},
   {id:'verge-watch-spikes',x:2150,y:110,w:60,h:20,platform:'verge-east-watch'},
+  {id:'rear-works-mid-spikes',x:250,y:-860,w:70,h:20,platform:'rear-works-mid-span'},
   {id:'vault-flood-spikes',x:3190,y:430,w:60,h:20,platform:'vault-flood-shelf-mid'},
   {id:'vault-upper-side-spikes',x:2430,y:80,w:60,h:20,platform:'vault-upper-side-west'},
   {id:'foundry-cooling-spikes',x:3890,y:230,w:70,h:20,platform:'foundry-cooling-high'},
@@ -559,6 +580,10 @@ export const ENEMY_SPAWNS = [
   {type:'roller',x:1050,y:272,w:46,h:28,patrol:true,patrolRange:80,patrolDirection:-1},
   {type:'hopper',x:1950,y:235,w:34,h:45},
   {type:'drone',x:1450,y:300,w:42,h:30},
+  {type:'crawler',x:200,y:-740,w:30,h:40,patrol:true,patrolRange:90},
+  {type:'roller',x:700,y:-728,w:46,h:28,patrol:true,patrolRange:70,patrolDirection:-1},
+  {type:'hopper',x:350,y:-885,w:34,h:45},
+  {type:'drone',x:500,y:-1080,w:42,h:30},
   {type:'roller',x:2450,y:652,w:46,h:28,patrol:true,patrolRange:45},
   {type:'crawler',x:2760,y:890,w:30,h:40,patrol:true,patrolRange:60},
   {type:'crawler',x:2670,y:1240,w:30,h:40,patrol:true,patrolRange:70},
@@ -689,6 +714,7 @@ export const JUNK_PILES = [
   {id:'crown-field-seal',x:8340,y:-1740,w:60,h:290,health:1,scrapValue:25,gate:true,requires:'field'},
   {id:'crown-volt-shell-seal',x:7650,y:-1570,w:50,h:120,health:2,scrapValue:0,minimumDamage:2,gate:true,requires:'electricJab'},
   {x:320,y:44,w:82,h:46,health:6,scrapValue:36},
+  {id:'rear-works-cache',x:650,y:-1046,w:90,h:46,health:9,scrapValue:95},
   {x:5010,y:-146,w:86,h:46,health:6,scrapValue:40},
   {id:'gauntlet-prize-cache',x:10090,y:24,w:110,h:46,health:12,scrapValue:450,materials:[{type:'titanium',amount:3},{type:'uranium',amount:2}]},
   {x:14280,y:-26,w:88,h:46,health:7,scrapValue:48},
