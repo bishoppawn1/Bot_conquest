@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ABILITY_GATED_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, CROWN_BOSS_ARENA, CROWN_UPPER_BLOCKS, DASH_POCKET_BLOCKS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
+  ABILITY_GATED_BLOCKS, AREA_EXTENSION_BLOCKS, BOSS_ARENA, BRANCH_BLOCKS, CONDUITS, CROWN_BOSS_ARENA, CROWN_UPPER_BLOCKS, DASH_POCKET_BLOCKS, DEPTH_ACCESS_BLOCKS, DEPTH_BOSS_ARENA, DEPTH_RETURN_BLOCKS,
   ENEMY_SPAWNS, FIELD_ANNEX_BLOCKS, FORGE_UPGRADE_COSTS, FORGE_UPGRADE_RECIPES, FOUNDATION_BLOCKS, GAUNTLET_HAZARDS, INTERIOR_BLOCKS, JUNK_PILES,
   LOWER_BLOCKS, MERCHANT_ROOM, MERCHANT_ROOM_BLOCKS, MERCHANT_SPAWNS, MINI_BOSS_ARENAS, OVERHEAD_BLOCKS, PICKUP_SPAWNS,
   PLATFORMS, POCKET_BLOCKS, POST_BOSS_CROWN_CONNECTORS, REAR_WORKS_BLOCKS, RECESSES, REGION_EXPANSION_BLOCKS, REGION_GATES, REGIONS,
@@ -23,7 +23,7 @@ test('the map occupies a genuine two-dimensional playfield',()=>{
 });
 
 test('suspended platforms vary in width and thickness',()=>{
-  const suspended=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...DASH_POCKET_BLOCKS,...REGION_EXPANSION_BLOCKS,...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex')];
+  const suspended=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...DASH_POCKET_BLOCKS,...REGION_EXPANSION_BLOCKS,...AREA_EXTENSION_BLOCKS,...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex')];
   assert.ok(FOUNDATION_BLOCKS.filter(block=>!block.id.startsWith('vault-')).every(block=>block.h>=120));
   assert.ok(FOUNDATION_BLOCKS.filter(block=>block.id.startsWith('vault-')).every(block=>block.h===60));
   assert.ok(suspended.every(block=>block.h>=40&&block.h<=80));
@@ -180,7 +180,7 @@ test('starting-kit platforms form varied room networks with combat',()=>{
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.zone)).size>=9);
   assert.ok(BRANCH_BLOCKS.every(block=>!('step' in block)&&!('branch' in block)&&!block.requires));
   assert.ok(new Set(BRANCH_BLOCKS.map(block=>block.w)).size>=12);
-  const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS,...FIELD_ANNEX_BLOCKS,...DASH_POCKET_BLOCKS,...REAR_WORKS_BLOCKS,...REGION_EXPANSION_BLOCKS];
+  const combatSurfaces=[...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS,...FIELD_ANNEX_BLOCKS,...DASH_POCKET_BLOCKS,...REAR_WORKS_BLOCKS,...REGION_EXPANSION_BLOCKS,...AREA_EXTENSION_BLOCKS];
   const combatants=[...ENEMY_SPAWNS,...MINI_BOSS_ARENAS.map(arena=>arena.enemy)];
   const supportedEnemies=combatants.filter(enemy=>enemy.type!=='drone'&&combatSurfaces.some(block=>enemy.x>=block.x&&enemy.x+enemy.w<=block.x+block.w&&enemy.y+enemy.h===block.y));
   assert.ok(supportedEnemies.length>=12,'upper and lower exploration spaces need their own encounters');
@@ -214,7 +214,7 @@ test('the Sunken Vault has a Wall-Climb loft and a much deeper Dash-locked retur
 
 test('walkable surfaces leave enough headroom for the bot',()=>{
   const botWidth=50,botHeight=36;
-  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper'),...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex'),...DASH_POCKET_BLOCKS,...REAR_WORKS_BLOCKS.filter(block=>block.kind==='rear-works'||block.kind==='rear-works-entry'),...REGION_EXPANSION_BLOCKS]){
+  for(const surface of [...FOUNDATION_BLOCKS,...INTERIOR_BLOCKS,...BRANCH_BLOCKS,...LOWER_BLOCKS,...ABILITY_GATED_BLOCKS,...CROWN_UPPER_BLOCKS.filter(block=>block.kind==='crown-upper'),...FIELD_ANNEX_BLOCKS.filter(block=>block.kind==='field-annex'),...DASH_POCKET_BLOCKS,...REAR_WORKS_BLOCKS.filter(block=>block.kind==='rear-works'||block.kind==='rear-works-entry'),...REGION_EXPANSION_BLOCKS,...AREA_EXTENSION_BLOCKS]){
     const blockers=PLATFORMS.filter(block=>block!==surface&&block.y<surface.y&&block.y+block.h>surface.y-botHeight)
       .map(block=>[Math.max(surface.x,block.x),Math.min(surface.x+surface.w,block.x+block.w)])
       .filter(([start,end])=>end>start).sort((a,b)=>a[0]-b[0]);

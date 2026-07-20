@@ -7,6 +7,7 @@
     "build": "node build.mjs",
     "start": "node server.js",
     "test": "node --test",
-    "check": "node --check server.js && node --check build.mjs && node --check worker.mjs && for file in src/*.js; do node --check \"$file\" || exit 1; done && npm test"
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/*.js --test-coverage-lines=80 --test-coverage-branches=90 --test-coverage-functions=80",
+    "check": "node --check server.js && node --check build.mjs && node --check worker.mjs && for file in src/*.js test/*.js; do node --check \"$file\" || exit 1; done && npm run build && npm test"
   }
 }

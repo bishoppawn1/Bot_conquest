@@ -1,6 +1,6 @@
 # Bot Conquest
 
-A dependency-free 2D canvas platformer prototype set in a growing interconnected world. Explore a 14,500-unit-wide, 2,200-unit-tall mechanical ruin with the dark descending Sunken Vault, two full bosses, an optional scrap mini-boss, the trap-heavy Shard Gauntlet, Quiet Drift, and the expansive Grand Exchange. Ability cores unlock Volt Jab after the Abyss Warden and wall climbing after the Heavy Core.
+A dependency-free 2D canvas platformer prototype set in a growing interconnected world. Explore eight linked industrial regions across a 14,500-unit-wide ruin, fight four full bosses and an optional mini-boss, unlock movement and electrical abilities, discover alternate shells, and backtrack through ability-gated routes.
 
 ## Run
 
@@ -9,6 +9,8 @@ npm start
 ```
 
 Open http://127.0.0.1:4173.
+
+The start card includes an optional God Mode for playtesting. It begins with every upgrade, shell, item, and map while making shells and electricity infinite. Leave it unchecked for ordinary progression.
 
 ## Controls
 
@@ -21,17 +23,19 @@ Open http://127.0.0.1:4173.
 - `O`: interact with rest stations and unlocked merchant doors
 - `F`: Volt Jab after collecting the blue Sunken Vault core
 - Hold `W` at a wall to climb after collecting the post-boss upgrade; press the direction away from the wall to jump off
-- `I`: reserved for the future inventory/map; currently unbound
+- `I`: open the pausing inventory/map overlay
 - `Shift`, `Q`, `F`: locked at the beginning and unlocked through later pickups
 
 ## Test
 
 ```bash
 npm test
+npm run test:coverage
+npm run check
 ```
 
-The suite checks movement, jumping, wall climbing, merchant-room access, repair timing and interruption, pickups and tutorial popups, region transitions, bosses, cardinal melee combat, resources, enemy damage, traps, lives, aggro, edge avoidance, reversible Vault routes, ability gates, headroom, junk bypasses, and surface queries.
+The automated suite checks deterministic simulation, all boss phases and rewards, combat economy, progression, God Mode, inventory and merchants, shells and equipment, enemy behavior, regional extensions, physical traversal, collision-free geometry, headroom, junk bypasses, and map projection. `npm run check` syntax-checks all source and test files, produces a production build, and runs the full suite.
 
-The Edge Forge merchant in the Grand Exchange sells one `+1` primary-slash damage upgrade for 100 scrap.
+The Edge Forge merchant in the Grand Exchange sells four persistent `+1` primary-slash upgrades with escalating scrap and material recipes.
 
 See [SPEC.md](SPEC.md) for the current gameplay contract and [AGENTS.md](AGENTS.md) for contributor guidance and code ownership boundaries.

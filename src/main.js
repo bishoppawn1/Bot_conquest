@@ -4,6 +4,7 @@ import { Renderer } from './renderer.js';
 
 const canvas = document.querySelector('#game');
 const startScreen = document.querySelector('#start');
+const godModeOption = document.querySelector('#god-mode');
 const renderer = new Renderer(canvas);
 const debugSpawn = new URLSearchParams(location.search).get('debug');
 const debugPanel = new URLSearchParams(location.search).get('panel');
@@ -23,6 +24,7 @@ function syncAbilityControls() {
 
 function begin() {
   game = new Game();
+  if(godModeOption.checked)game.enableGodMode();
   const openDebugDepth=()=>{
     const vaultBoss=game.vaultBoss(),volt=game.pickups.find(item=>item.id==='volt-core');
     game.vaultBossArena.cleared=true;vaultBoss.dead=true;vaultBoss.health=0;game.syncDepthAccess();volt.collected=true;game.unlockAbility('wallClimb');game.unlockAbility('electricJab');

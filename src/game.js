@@ -20,7 +20,7 @@ export const WALL_CLIMB_SPEED = 155;
 export class Game {
   constructor() { this.reset(); }
   reset() {
-    this.time=0; this.running=true; this.cameraX=0; this.cameraY=0; this.shake=0;this.worldTop=WORLD_TOP;this.worldBottom=WORLD_BOTTOM;
+    this.time=0; this.running=true; this.godMode=false;this.cameraX=0; this.cameraY=0; this.shake=0;this.worldTop=WORLD_TOP;this.worldBottom=WORLD_BOTTOM;
     this.input={left:false,right:false,jump:false,down:false,dash:false,attack:false,heal:false,field:false,electricJab:false,rest:false,inventory:false};
     this.prev={...this.input}; this.particles=[];this.bossProjectiles=[];this.bossExplosions=[];this.bossShockwave=null;this.crownHazards=[];this.gauntletHazards=GAUNTLET_HAZARDS.map(hazard=>({...hazard,active:false,hit:false}));this.abilityPopup=null;this.rewardToast=null;
     this.spawn={...SPAWN};
@@ -52,6 +52,29 @@ export class Game {
     this.junkPiles=JUNK_PILES.map((pile,index)=>({...pile,kind:'junk',id:pile.id??`junk-${index}`,maxHealth:pile.health,dead:false,hitFlash:0}));
   }
   enemy({type,x,y,w,h,health,patrol=false,patrolRange=80,patrolDirection=1}){const ordinaryHealth=type==='brute'?12:type==='hopper'||type==='drone'?9:6;return{type,x,y,w,h,originX:x,originY:y,vx:0,vy:0,health:health??ordinaryHealth,onGround:false,phase:x*.01,dead:false,active:false,aggroRadius:type==='drone'?340:type==='brute'?240:210,patrol,patrolRange,patrolDirection,windup:0,chargeTime:0,chargeCooldown:0,jumpCooldown:0,jumping:false,chargeDirection:patrolDirection};}
+  enableGodMode(){
+    if(this.godMode)return false;
+    this.godMode=true;const p=this.player;
+    p.healthUpgrades=3;p.energyUpgrades=3;p.damageUpgrades=4;p.bayUpgrades=2;p.primaryDamage=7;
+    for(const ability of Object.keys(p.abilities))p.abilities[ability]=true;
+    p.ownedShells=['standard-body','slicer-body'];p.bodies={
+      'standard-body':this.createBody('standard-body',2),
+      'slicer-body':this.createBody('slicer-body',2)
+    };p.body=p.bodies['standard-body'];
+    p.purchasedItems=[
+      ...Array.from({length:4},(_,index)=>({id:`edge-coil-${index+1}`,kind:'upgrade',name:`EDGE COIL MK ${index+1}`,detail:'+1 PRIMARY SLASH DAMAGE'})),
+      ...Array.from({length:3},(_,index)=>({id:`shell-capacity-${index+1}`,kind:'upgrade',name:`SHELL CAPACITY MK ${index+1}`,detail:'+1 MAX SHELL'})),
+      ...Array.from({length:3},(_,index)=>({id:`capacitor-bank-${index+1}`,kind:'upgrade',name:`CAPACITOR BANK MK ${index+1}`,detail:'+25 MAX ELECTRICITY'})),
+      ...BAY_SLOT_DEFINITIONS.slice(1).map((definition,index)=>({id:`bay-upgrade-${index+1}`,kind:'upgrade',name:definition.name,detail:definition.detail})),
+      {id:'shell-slicer-body',shellId:'slicer-body',kind:'shell',name:SHELL_DEFINITIONS['slicer-body'].name,detail:SHELL_DEFINITIONS['slicer-body'].description},
+      ...BODY_MODIFIERS.map(definition=>({id:`modifier-${definition.id}`,modifierId:definition.id,kind:'modifier',name:definition.name,detail:'UNEQUIPPED',equippedSlot:null})),
+      ...RELICS.map(definition=>({id:`relic-${definition.id}`,relicId:definition.id,kind:'relic',name:definition.name,detail:`NORMAL-MOUNT RELIC // ${definition.detail}`,equippedSlot:null}))
+    ];
+    for(const pickup of this.pickups)pickup.collected=true;
+    for(const region of this.regions)this.mappedRegions.add(region.id);
+    this.recomputeBodyStats();p.lives=p.maxLives;p.electricity=p.maxElectricity;p.jumps=p.onGround?2:1;
+    this.rewardToast={text:'GOD MODE ONLINE',detail:'ALL UPGRADES // INFINITE SHELLS + ENERGY',time:4};return true;
+  }
   nextBossRandom(enemy){const seed=enemy.bossRngState??((Math.imul(Math.floor(enemy.originX),31)+Math.imul(Math.floor(enemy.originY),17)+0x9e3779b9)>>>0);enemy.bossRngState=(Math.imul(seed,1664525)+1013904223)>>>0;return enemy.bossRngState/0x100000000;}
   chooseBossMove(enemy,moves){const choices=moves.filter(move=>move!==enemy.lastBossMove),pool=choices.length?choices:moves,move=pool[Math.floor(this.nextBossRandom(enemy)*pool.length)];enemy.lastBossMove=move;return move;}
   shellDefinition(id){return SHELL_DEFINITIONS[id]??null;}
@@ -78,7 +101,7 @@ export class Game {
   recomputeBodyStats(){
     const p=this.player,shell=this.shellDefinition(p.body.id)??SHELL_DEFINITIONS['standard-body'];let maxLives=shell.baseLives+p.healthUpgrades,maxElectricity=shell.baseElectricity+p.energyUpgrades*25,baseMoveSpeed=PLAYER_MOVE_SPEED,primaryRange=shell.baseRange,maxShield=0,damageSpeedBonus=0,damageSpeedDuration=0,damageEnergyGain=0,postHitInvulnerabilityBonus=0;
     for(const item of p.purchasedItems.filter(entry=>entry.kind==='modifier'&&entry.equippedSlot)){const slot=this.bodySlots().find(candidate=>candidate.id===item.equippedSlot),effect=this.modifierEffect(item,slot);if(!effect)continue;maxLives+=effect.maxLives??0;maxElectricity+=effect.maxElectricity??0;baseMoveSpeed+=effect.moveSpeed??0;primaryRange+=effect.attackRange??0;maxShield+=effect.healShield??0;damageSpeedBonus+=effect.damageSpeedBonus??0;damageSpeedDuration=Math.max(damageSpeedDuration,effect.damageSpeedDuration??0);damageEnergyGain+=effect.damageEnergy??0;postHitInvulnerabilityBonus+=effect.postHitInvulnerability??0;}
-    Object.assign(p,{maxLives,maxElectricity,baseMoveSpeed,primaryRange,maxShield,damageSpeedBonus,damageSpeedDuration,damageEnergyGain,postHitInvulnerabilityBonus});p.moveSpeed=baseMoveSpeed+(p.reactiveSpeedTime>0?damageSpeedBonus:0);p.lives=Math.min(p.lives,p.maxLives);p.electricity=Math.min(p.electricity,p.maxElectricity);p.shield=Math.min(p.shield,p.maxShield);return{maxLives,maxElectricity,moveSpeed:p.moveSpeed,primaryRange,maxShield,damageSpeedBonus,damageEnergyGain};
+    Object.assign(p,{maxLives,maxElectricity,baseMoveSpeed,primaryRange,maxShield,damageSpeedBonus,damageSpeedDuration,damageEnergyGain,postHitInvulnerabilityBonus});p.moveSpeed=baseMoveSpeed+(p.reactiveSpeedTime>0?damageSpeedBonus:0);p.lives=this.godMode?p.maxLives:Math.min(p.lives,p.maxLives);p.electricity=this.godMode?p.maxElectricity:Math.min(p.electricity,p.maxElectricity);p.shield=Math.min(p.shield,p.maxShield);return{maxLives,maxElectricity,moveSpeed:p.moveSpeed,primaryRange,maxShield,damageSpeedBonus,damageEnergyGain};
   }
   itemPlacementDetail(item){if(!item.equippedSlot)return'IN STORAGE // Q INSTALL';if(item.kind==='relic'){const slot=this.normalSlots().find(candidate=>candidate.id===item.equippedSlot);return`${slot?.label??'UNKNOWN NORMAL MOUNT'} // EFFECT ACTIVE`;}const slot=this.bodySlots().find(candidate=>candidate.id===item.equippedSlot),effect=this.modifierEffect(item,slot);return`${slot?.label??'UNKNOWN SLOT'} // ${effect?.label??'NO EFFECT'}`;}
   modifierPlacementDetail(item){return this.itemPlacementDetail(item);}
@@ -135,6 +158,7 @@ export class Game {
     }
     this.time+=dt;
     this.syncDepthAccess();
+    if(this.godMode){p.lives=p.maxLives;p.electricity=p.maxElectricity;}
     p.invuln=Math.max(0,p.invuln-dt);p.reactiveSpeedTime=Math.max(0,p.reactiveSpeedTime-dt);p.moveSpeed=p.baseMoveSpeed+(p.reactiveSpeedTime>0?p.damageSpeedBonus:0);p.dashCooldown=Math.max(0,p.dashCooldown-dt);p.wallJumpTime=Math.max(0,p.wallJumpTime-dt);p.attackCooldown=Math.max(0,p.attackCooldown-dt);p.attackTime=Math.max(0,p.attackTime-dt);p.specialTime=Math.max(0,p.specialTime-dt);p.healFlash=Math.max(0,p.healFlash-dt);p.restFlash=Math.max(0,p.restFlash-dt);this.regionToastTime=Math.max(0,this.regionToastTime-dt);if(this.abilityPopup)this.abilityPopup.time=Math.max(0,this.abilityPopup.time-dt);if(this.rewardToast)this.rewardToast.time=Math.max(0,this.rewardToast.time-dt);for(const c of this.conduits)c.hitFlash=Math.max(0,c.hitFlash-dt);if(this.recoveryCorpse)this.recoveryCorpse.hitFlash=Math.max(0,this.recoveryCorpse.hitFlash-dt);
     if(p.healTime>0){p.healTime=Math.max(0,p.healTime-dt);if(p.healTime===0)this.completeHeal();}
     const axis=(this.input.right?1:0)-(this.input.left?1:0);
@@ -334,10 +358,10 @@ export class Game {
   attackBox(){return directionalBox(this.player,this.attackDirection(),this.player.primaryRange,30);}
   startAttack(){const p=this.player;if(p.healTime>0)return false;p.attackAimX=p.aimX;p.attackAimY=p.aimY;p.attackTime=ATTACK_TIMING.primary;p.attackCooldown=.32;p.attackId++;p.attackHits=new Set();const damage=p.primaryDamage+p.pendingRelicDamage;p.pendingRelicDamage=0;this.resolvePrimaryAttack(damage);this.burst(p.x+p.w/2+p.attackAimX*62,p.y+p.h/2+p.attackAimY*62,'#ffffff',6);return true;}
   startSpecial(type){
-    const p=this.player,cost=ABILITY_COSTS[type];if(p.healTime>0||!p.abilities[type]||p.specialTime>0||p.electricity<cost)return false;
-    p.electricity-=cost;p.specialAimX=p.aimX;p.specialAimY=p.aimY;p.specialType=type;p.specialTime=ATTACK_TIMING[type];p.specialHits=new Set();return true;
+    const p=this.player,cost=ABILITY_COSTS[type];if(p.healTime>0||!p.abilities[type]||p.specialTime>0||(!this.godMode&&p.electricity<cost))return false;
+    if(this.godMode)p.electricity=p.maxElectricity;else p.electricity-=cost;p.specialAimX=p.aimX;p.specialAimY=p.aimY;p.specialType=type;p.specialTime=ATTACK_TIMING[type];p.specialHits=new Set();return true;
   }
-  startHeal(){const p=this.player,cost=this.healCost();if(p.healTime>0||p.invuln>0||!p.abilities.heal||p.lives>=p.maxLives||p.electricity<cost)return false;p.electricity-=cost;p.healTime=HEAL_DURATION;p.shield=p.maxShield;return true;}
+  startHeal(){const p=this.player,cost=this.healCost();if(p.healTime>0||p.invuln>0||!p.abilities.heal||p.lives>=p.maxLives||(!this.godMode&&p.electricity<cost))return false;if(this.godMode)p.electricity=p.maxElectricity;else p.electricity-=cost;p.healTime=HEAL_DURATION;p.shield=p.maxShield;return true;}
   cancelHeal(){const p=this.player,active=p.healTime>0;p.healTime=0;p.shield=0;return active;}
   completeHeal(){const p=this.player;p.shield=0;if(p.lives>=p.maxLives)return false;p.lives++;p.healFlash=.6;this.burst(p.x+p.w/2,p.y+p.h/2,'#75f5ff',24);return true;}
   canRest(){const p=this.player,station=this.restArea.station,dx=(p.x+p.w/2)-(station.x+station.w/2),dy=(p.y+p.h/2)-(station.y+station.h/2);return this.bossArena.cleared&&Math.hypot(dx,dy)<=station.interactionRadius;}
@@ -388,7 +412,7 @@ export class Game {
   buyDamageUpgrade(merchant){const p=this.player,cost=this.nextDamageUpgradeCost(merchant),materials=this.nextDamageUpgradeMaterials();if(cost===null||p.scrap<cost||!this.canAffordMaterials(materials))return false;p.scrap-=cost;this.spendMaterials(materials);p.damageUpgrades++;p.primaryDamage++;p.purchasedItems.push({id:`edge-coil-${p.damageUpgrades}`,kind:'upgrade',name:`EDGE COIL MK ${p.damageUpgrades}`,detail:`+1 PRIMARY SLASH DAMAGE${this.materialCostText(materials)?` // FORGED WITH ${this.materialCostText(materials)}`:''}`});this.rewardToast={text:'SLASH DAMAGE +1',detail:`${merchant.name} INSTALLED EDGE COIL MK ${p.damageUpgrades}`,time:3};this.burst(p.x+p.w/2,p.y+p.h/2,'#ffffff',34);return true;}
   unlockAbility(name){if(name in this.player.abilities){this.player.abilities[name]=true;if(name==='doubleJump'&&this.player.onGround)this.player.jumps=2;return true;}return false;}
   gainMaterial(type,amount){if(!(type in this.player.materials))return false;this.player.materials[type]+=amount;return true;}
-  gainElectricity(amount=ELECTRICITY_PER_HIT){this.player.electricity=clamp(this.player.electricity+amount,0,this.player.maxElectricity);}
+  gainElectricity(amount=ELECTRICITY_PER_HIT){this.player.electricity=this.godMode?this.player.maxElectricity:clamp(this.player.electricity+amount,0,this.player.maxElectricity);}
   hitTarget(target,damage,hitSet,electricity=ELECTRICITY_PER_HIT){
     if(hitSet.has(target))return;hitSet.add(target);
     if(target.kind==='corpse'){
@@ -533,7 +557,7 @@ export class Game {
   }
   activateDamageModifiers(){const p=this.player;if(p.damageEnergyGain>0)this.gainElectricity(p.damageEnergyGain);if(p.damageSpeedBonus>0){p.reactiveSpeedTime=p.damageSpeedDuration;p.moveSpeed=p.baseMoveSpeed+p.damageSpeedBonus;}}
   activateDamageRelics(){const p=this.player;this.gainElectricity(this.relicValue('damageElectricity'));p.pendingRelicDamage=Math.max(p.pendingRelicDamage,this.relicValue('nextSlashDamage'));const damage=this.relicValue('retaliationDamage'),radius=this.relicValue('retaliationRadius');if(damage>0&&radius>0){const pulse={x:p.x+p.w/2,y:p.y+p.h/2,radius},hits=new Set();for(const enemy of this.enemies)if(!enemy.dead&&this.enemyTargetable(enemy)&&circleIntersectsRect(pulse,enemy))this.hitTarget(enemy,damage,hits,0);this.burst(pulse.x,pulse.y,'#ff786f',26);}}
-  damagePlayer(cause='enemy',sourceX=0){const p=this.player;if(p.invuln>0)return;if(cause==='enemy'&&p.healTime>0&&p.shield>0){p.shield--;p.invuln=.45;this.shake=6;this.rewardToast={text:'REPAIR GUARD ABSORBED',detail:'CHANNEL MAINTAINED // NO SHELL DAMAGE',time:2};this.burst(p.x+p.w/2,p.y+p.h/2,'#75f5ff',28);return;}this.cancelHeal();p.lives--;this.shake=12;this.burst(p.x+20,p.y+20,'#ff493f',22);if(p.lives<=0){this.destroyPlayer(cause);return;}this.activateDamageModifiers();this.activateDamageRelics();if(cause==='spike'||cause==='fall'){const reset=cause==='spike'?this.safePosition:this.spawn;p.x=reset.x;p.y=reset.y;p.vx=0;p.vy=0;p.invuln=.6;}else{const knockback=Math.max(0,1-this.relicValue('knockbackReduction'));p.invuln=1.2+p.postHitInvulnerabilityBonus;p.vx=(p.x<sourceX?-1:1)*360*knockback;p.vy=-300*knockback;}}
+  damagePlayer(cause='enemy',sourceX=0){const p=this.player;if(this.godMode){p.lives=p.maxLives;if(cause==='spike'||cause==='fall'){const reset=cause==='spike'?this.safePosition:this.spawn;p.x=reset.x;p.y=reset.y;p.vx=0;p.vy=0;p.invuln=.2;}return false;}if(p.invuln>0)return;if(cause==='enemy'&&p.healTime>0&&p.shield>0){p.shield--;p.invuln=.45;this.shake=6;this.rewardToast={text:'REPAIR GUARD ABSORBED',detail:'CHANNEL MAINTAINED // NO SHELL DAMAGE',time:2};this.burst(p.x+p.w/2,p.y+p.h/2,'#75f5ff',28);return;}this.cancelHeal();p.lives--;this.shake=12;this.burst(p.x+20,p.y+20,'#ff493f',22);if(p.lives<=0){this.destroyPlayer(cause);return;}this.activateDamageModifiers();this.activateDamageRelics();if(cause==='spike'||cause==='fall'){const reset=cause==='spike'?this.safePosition:this.spawn;p.x=reset.x;p.y=reset.y;p.vx=0;p.vy=0;p.invuln=.6;}else{const knockback=Math.max(0,1-this.relicValue('knockbackReduction'));p.invuln=1.2+p.postHitInvulnerabilityBonus;p.vx=(p.x<sourceX?-1:1)*360*knockback;p.vy=-300*knockback;}}
   burst(x,y,color,count){for(let i=0;i<count;i++)this.particles.push({x,y,vx:(Math.random()-.5)*260,vy:(Math.random()-.5)*260,life:.25+Math.random()*.35,color});}
   updateParticles(dt){for(const q of this.particles){q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=300*dt;q.life-=dt;}this.particles=this.particles.filter(q=>q.life>0);}
 }

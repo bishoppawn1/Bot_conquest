@@ -351,6 +351,43 @@ export const REGION_EXPANSION_BLOCKS = [
   {id:'exchange-floor-market',x:14100,y:520,w:140,h:45,kind:'region-expansion',region:'exchange'}
 ];
 
+// These longline additions extend an existing route in every region instead
+// of widening the fixed world bounds. Each group touches established geometry
+// and carries its own encounter, salvage, and hazard farther into the chamber.
+export const AREA_EXTENSION_BLOCKS = [
+  {id:'verge-longline-floor',x:370,y:332,w:180,h:45,kind:'area-extension',region:'verge'},
+  {id:'verge-longline-pocket',x:140,y:-996,w:200,h:45,kind:'area-extension',region:'verge',requiresAll:['wallClimb','dash']},
+  {id:'verge-longline-watch',x:340,y:-998,w:200,h:45,kind:'area-extension',region:'verge',requiresAll:['wallClimb','dash']},
+
+  {id:'vault-longline-floor',x:2540,y:102,w:180,h:45,kind:'area-extension',region:'vault',requires:'wallClimb'},
+  {id:'vault-longline-high',x:3390,y:82,w:160,h:45,kind:'area-extension',region:'vault',requires:'wallClimb'},
+  {id:'vault-longline-exit',x:2720,y:84,w:140,h:45,kind:'area-extension',region:'vault',requires:'wallClimb'},
+
+  {id:'foundry-longline-floor',x:3770,y:-224,w:200,h:45,kind:'area-extension',region:'foundry',requires:'dash'},
+  {id:'foundry-longline-watch',x:3970,y:-226,w:150,h:45,kind:'area-extension',region:'foundry',requires:'dash'},
+  {id:'foundry-longline-approach',x:4120,y:-228,w:200,h:45,kind:'area-extension',region:'foundry',requires:'dash'},
+
+  {id:'bastion-longline-floor',x:6620,y:-1738,w:200,h:50,kind:'area-extension',region:'bastion',requires:'field'},
+  {id:'bastion-longline-crown',x:6420,y:-1736,w:200,h:50,kind:'area-extension',region:'bastion',requires:'field'},
+  {id:'bastion-longline-return',x:6860,y:-1588,w:200,h:50,kind:'area-extension',region:'bastion',requires:'field'},
+
+  {id:'crown-longline-floor',x:8780,y:202,w:180,h:45,kind:'area-extension',region:'crown'},
+  {id:'crown-longline-watch',x:8760,y:-1306,w:120,h:45,kind:'area-extension',region:'crown',requires:'wallClimb'},
+  {id:'crown-longline-shaft',x:8640,y:-1308,w:120,h:50,kind:'area-extension',region:'crown',requires:'wallClimb'},
+
+  {id:'gauntlet-longline-floor',x:9780,y:452,w:140,h:45,kind:'area-extension',region:'gauntlet'},
+  {id:'gauntlet-longline-needle',x:9900,y:72,w:140,h:45,kind:'area-extension',region:'gauntlet',requires:'dash'},
+  {id:'gauntlet-longline-east',x:10300,y:72,w:120,h:45,kind:'area-extension',region:'gauntlet',requires:'dash'},
+
+  {id:'drift-longline-west',x:12300,y:-148,w:180,h:45,kind:'area-extension',region:'drift'},
+  {id:'drift-longline-high',x:12120,y:-146,w:180,h:45,kind:'area-extension',region:'drift'},
+  {id:'drift-longline-east',x:12570,y:172,w:130,h:45,kind:'area-extension',region:'drift'},
+
+  {id:'exchange-longline-entry',x:13200,y:-448,w:180,h:45,kind:'area-extension',region:'exchange',requires:'wallClimb'},
+  {id:'exchange-longline-archive',x:13020,y:-446,w:180,h:45,kind:'area-extension',region:'exchange',requires:'wallClimb'},
+  {id:'exchange-longline-market',x:12840,y:-444,w:180,h:45,kind:'area-extension',region:'exchange',requires:'wallClimb'}
+];
+
 export const BOSS_ARENA = {
   x:5890,y:350,w:1300,h:250,floorY:600,
   triggerX:6000,leftGateX:5905,rightGateX:7133,gateWidth:42,
@@ -526,6 +563,7 @@ export const PLATFORMS = [
   ...DASH_POCKET_BLOCKS,
   ...REAR_WORKS_BLOCKS,
   ...REGION_EXPANSION_BLOCKS,
+  ...AREA_EXTENSION_BLOCKS,
   ...MERCHANT_ROOM_BLOCKS
 ];
 
@@ -562,7 +600,15 @@ export const TRAPS = [
   {id:'gauntlet-capacitor-spikes',x:11200,y:170,w:60,h:20,platform:'gauntlet-capacitor-roof'},
   {id:'drift-upper-spikes',x:12230,y:10,w:70,h:20,platform:'drift-upper-mid'},
   {id:'exchange-upper-spikes',x:13290,y:130,w:70,h:20,platform:'exchange-upper-west'},
-  {id:'exchange-archive-spikes',x:13650,y:-320,w:70,h:20,platform:'exchange-archive-east'}
+  {id:'exchange-archive-spikes',x:13650,y:-320,w:70,h:20,platform:'exchange-archive-east'},
+  {id:'verge-longline-spikes',x:380,y:312,w:40,h:20,platform:'verge-longline-floor'},
+  {id:'vault-longline-spikes',x:3440,y:62,w:60,h:20,platform:'vault-longline-high'},
+  {id:'foundry-longline-spikes',x:4020,y:-246,w:50,h:20,platform:'foundry-longline-watch'},
+  {id:'bastion-longline-spikes',x:6480,y:-1756,w:60,h:20,platform:'bastion-longline-crown'},
+  {id:'crown-longline-spikes',x:8690,y:-1328,w:20,h:20,platform:'crown-longline-shaft'},
+  {id:'gauntlet-longline-spikes',x:9830,y:432,w:40,h:20,platform:'gauntlet-longline-floor'},
+  {id:'drift-longline-spikes',x:12620,y:152,w:30,h:20,platform:'drift-longline-east'},
+  {id:'exchange-longline-spikes',x:13250,y:-468,w:60,h:20,platform:'exchange-longline-entry'}
 ];
 
 export const GAUNTLET_HAZARDS = Object.freeze([
@@ -687,7 +733,16 @@ export const ENEMY_SPAWNS = [
   {type:'drone',x:13500,y:-100,w:42,h:30},
   {type:'crawler',x:13620,y:-340,w:30,h:40,patrol:true,patrolRange:55},
   {type:'hopper',x:13430,y:-495,w:34,h:45},
-  {type:'roller',x:14100,y:492,w:46,h:28,patrol:true,patrolRange:35}
+  {type:'roller',x:14100,y:492,w:46,h:28,patrol:true,patrolRange:35},
+
+  {type:'crawler',x:430,y:292,w:30,h:40,patrol:true,patrolRange:45,extensionRegion:'verge'},
+  {type:'crawler',x:2760,y:44,w:30,h:40,patrol:true,patrolRange:45,extensionRegion:'vault'},
+  {type:'crawler',x:3810,y:-264,w:30,h:40,patrol:true,patrolRange:45,extensionRegion:'foundry'},
+  {type:'crawler',x:6740,y:-1778,w:30,h:40,patrol:true,patrolRange:40,extensionRegion:'bastion'},
+  {type:'crawler',x:8800,y:-1346,w:30,h:40,patrol:true,patrolRange:35,extensionRegion:'crown'},
+  {type:'crawler',x:10340,y:32,w:30,h:40,patrol:true,patrolRange:35,extensionRegion:'gauntlet'},
+  {type:'crawler',x:12340,y:-188,w:30,h:40,patrol:true,patrolRange:45,extensionRegion:'drift'},
+  {type:'crawler',x:12880,y:-484,w:30,h:40,patrol:true,patrolRange:40,extensionRegion:'exchange'}
 ];
 
 export const CONDUITS = [
@@ -731,5 +786,13 @@ export const JUNK_PILES = [
   {id:'crown-shaft-junk',x:8460,y:-1356,w:86,h:46,health:7,scrapValue:56},
   {id:'gauntlet-capacitor-cache',x:11140,y:144,w:82,h:46,health:7,scrapValue:54},
   {id:'drift-ceiling-junk',x:11720,y:-216,w:84,h:46,health:6,scrapValue:48},
-  {id:'exchange-archive-junk',x:13490,y:-496,w:86,h:46,health:8,scrapValue:68}
+  {id:'exchange-archive-junk',x:13490,y:-496,w:86,h:46,health:8,scrapValue:68},
+  {id:'verge-longline-cache',x:340,y:-1044,w:80,h:46,health:6,scrapValue:38},
+  {id:'vault-longline-cache',x:2540,y:56,w:80,h:46,health:6,scrapValue:42},
+  {id:'foundry-longline-cache',x:4120,y:-274,w:80,h:46,health:7,scrapValue:46},
+  {id:'bastion-longline-cache',x:6910,y:-1634,w:80,h:46,health:7,scrapValue:52},
+  {id:'crown-longline-cache',x:8830,y:156,w:80,h:46,health:7,scrapValue:50},
+  {id:'gauntlet-longline-cache',x:9900,y:26,w:82,h:46,health:8,scrapValue:58},
+  {id:'drift-longline-cache',x:12120,y:-192,w:84,h:46,health:7,scrapValue:54},
+  {id:'exchange-longline-cache',x:13020,y:-492,w:80,h:46,health:8,scrapValue:64}
 ];
